@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PleiadEntities\PleiadEntities.csproj" />
+    <ProjectReference Include="..\PleiadSystems\PleiadSystems.csproj" />
+    <ProjectReference Include="..\PleiadTasks\PleiadTasks.csproj" />
+  </ItemGroup>
+
+</Project>
