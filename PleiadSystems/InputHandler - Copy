@@ -1,0 +1,189 @@
+﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+
+namespace PleiadSystems
+{
+    public class InputHandler: IDisposable
+    {
+        private GlobalKBHook _kbHook;
+
+
+        public void Setup()
+        {
+            _kbHook = new GlobalKBHook();
+            _kbHook.KeyPressed += OnKeyPressed;
+        }
+
+        private void OnKeyPressed(object sender, GlobalKBHEventArgs e)
+        {
+            if (e.KBData.VirtualCode != GlobalKBHook.VkSnapshot)
+            {
+                return;
+            }
+
+            if (e.KBState == GlobalKBHook.KB_State.KeyDown)
+            {
+                Console.WriteLine("Print Screen");
+                e.Handled = true;
+            }
+        }
+        public void Dispose()
+        {
+            _kbHook?.Dispose();
+        }
+    }
+
+
+
+
+
+    public class GlobalKBHEventArgs : HandledEventArgs
+    {
+        public GlobalKBHook.KB_State KBState { get; private set; }
+        public GlobalKBHook.LowLevelKBInputEvent KBData { get; private set; }
+
+        public GlobalKBHEventArgs(
+            GlobalKBHook.KB_State kbState,
+            GlobalKBHook.LowLevelKBInputEvent kbData)
+        {
+            KBState = kbState;
+            KBData = kbData;
+        }
+    }
+    public class GlobalKBHook : IDisposable
+    {
+        public event EventHandler<GlobalKBHEventArgs> KeyPressed;
+
+        public GlobalKBHook()
+        {
+            _winHookHandle = IntPtr.Zero;
+            _u32libHandle = IntPtr.Zero;
+            _hookProc = LowLevelKeyboardProc;
+
+            _u32libHandle = LoadLibrary("USER32");
+            if (_u32libHandle == IntPtr.Zero)
+            {
+                int errorCode = Marshal.GetLastWin32Error(); throw new Win32Exception(errorCode, $"Failed to load library 'User32.dll'. Error {errorCode}: {new Win32Exception(Marshal.GetLastWin32Error()).Message}.");
+            }
+
+
+            _winHookHandle = SetWindowsHookEx(WH_KEYBOARD_LL, _hookProc, _u32libHandle, 0);
+            if (_winHookHandle == IntPtr.Zero)
+            {
+                int errorCode = Marshal.GetLastWin32Error();
+                throw new Win32Exception(errorCode, $"Failed to adjust keyboard hooks for '{Process.GetCurrentProcess().ProcessName}'. Error {errorCode}: {new Win32Exception(Marshal.GetLastWin32Error()).Message}.");
+            }
+        }
+
+
+
+        private IntPtr _winHookHandle;
+        private IntPtr _u32libHandle;
+        private HookProc _hookProc;
+
+        delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        public IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
+        {
+            bool fEatKeyStroke = false;
+
+            var wparamTyped = wParam.ToInt32();
+            if (Enum.IsDefined(typeof(KB_State), wparamTyped))
+            {
+                object o = Marshal.PtrToStructure(lParam, typeof(LowLevelKBInputEvent));
+                LowLevelKBInputEvent p = (LowLevelKBInputEvent)o;
+
+                var eventArgs = new GlobalKBHEventArgs((KB_State)wparamTyped, p);
+
+                EventHandler<GlobalKBHEventArgs> handler = KeyPressed;
+                handler?.Invoke(this, eventArgs);
+
+                fEatKeyStroke = eventArgs.Handled;
+            }
+
+            return fEatKeyStroke ? (IntPtr)1 : CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
+        }
+        [StructLayout(LayoutKind.Sequential)]
+        public struct LowLevelKBInputEvent
+        {
+            public int VirtualCode;
+            public int HardwareScanCode;
+            public int Flags;
+            public int Timestamp;
+            public IntPtr AdditionalInfo;
+        }
+
+
+
+
+        public const int WH_KEYBOARD_LL = 13;
+        public enum KB_State
+        {
+            KeyDown = 0x0100,
+            KeyUp = 0x0101,
+            SysKeyDown = 0x0104,
+            SysKeyUp = 0x0105
+        }
+        public const int VkSnapshot = 0x2c;
+        const int KfAltDown = 0x2000;
+        public const int LlkhfAltdown = (KfAltDown >> 8);
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr LoadLibrary(string lpFileName);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        private static extern bool FreeLibrary(IntPtr hModule);
+
+        [DllImport("USER32", SetLastError = true)]
+        static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hMod, int dwThreadId);
+
+        [DllImport("USER32", SetLastError = true)]
+        public static extern bool UnhookWindowsHookEx(IntPtr hHook);
+
+        [DllImport("USER32", SetLastError = true)]
+        static extern IntPtr CallNextHookEx(IntPtr hHook, int code, IntPtr wParam, IntPtr lParam);
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_winHookHandle != IntPtr.Zero)
+                {
+                    if (!UnhookWindowsHookEx(_winHookHandle))
+                    {
+                        int errorCode = Marshal.GetLastWin32Error();
+                        throw new Win32Exception(errorCode, $"Failed to remove keyboard hooks for '{Process.GetCurrentProcess().ProcessName}'. Error {errorCode}: {new Win32Exception(Marshal.GetLastWin32Error()).Message}.");
+                    }
+                    _winHookHandle = IntPtr.Zero;
+                    _hookProc -= LowLevelKeyboardProc;
+                }
+            }
+
+            if (_u32libHandle != IntPtr.Zero)
+            {
+                if (!FreeLibrary(_u32libHandle)) // reduces reference to library by 1.
+                {
+                    int errorCode = Marshal.GetLastWin32Error();
+                    throw new Win32Exception(errorCode, $"Failed to unload library 'User32.dll'. Error {errorCode}: {new Win32Exception(Marshal.GetLastWin32Error()).Message}.");
+                }
+                _u32libHandle = IntPtr.Zero;
+            }
+        }
+
+        // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        ~GlobalKBHook()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: false);
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+    }
+}

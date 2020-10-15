@@ -65,8 +65,8 @@ namespace PleiadEntities
         public List<Entity> GetAllWith(List<Type> components)
         {
             List<Entity> entities = new List<Entity>();
-            Dictionary<int, List<Type>> search = new Dictionary<int, List<Type>>();
-            Dictionary<Type, List<int>> chunks = new Dictionary<Type, List<int>>();
+            //Dictionary<int, List<Type>> search = new Dictionary<int, List<Type>>();
+            //Dictionary<Type, List<int>> chunks = new Dictionary<Type, List<int>>();
             List<int> IDs = new List<int>();
 
             var firstComp = components[0];

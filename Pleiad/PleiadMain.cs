@@ -1,12 +1,17 @@
 ﻿using PleiadEntities;
-using PleiadMisc.Dice;
+using PleiadInput;
+using PleiadSystems;
 using PleiadWorld;
 using System;
+using System.IO;
+using System.Windows.Input;
+using System.Windows.Media.TextFormatting;
 
 namespace Pleiad
 {
-    class PleiadMain
+    class PleiadMain: IRegisterInput
     {
+        [STAThread]
         static void Main(string[] args)
         {
             EntityManager em = World.DefaultWorld.EntityManager;
@@ -57,35 +62,26 @@ namespace Pleiad
                 });
 
 
-
             em.AddEntity(soundTemplate);
             em.DEBUG_PrintChunks();
 
 
-            var dump = em.DEBUG_RetrieveCache(new Type[] { typeof(IntTestComponent) });
-
-
-
-            Console.Clear();
-            int rolls = 1;
-            Console.WriteLine($"D4, {rolls} rolls: {Roll.D4(rolls)}");
-            Console.WriteLine($"D6, {rolls} rolls: {Roll.D6(rolls)}");
-            rolls = 3;
-            Console.WriteLine($"D8, {rolls} rolls: {Roll.D8(rolls)}");
-            Console.WriteLine($"D10, {rolls} rolls: {Roll.D10(rolls)}");
-            rolls = 1;
-            Console.WriteLine($"D12, {rolls} rolls: {Roll.D12(rolls)}");
-            Console.WriteLine($"D20, {rolls} rolls: {Roll.D20(rolls)}");
-            int faces = 1337;
-            rolls = 5;
-            Console.WriteLine($"Custom D{faces}, {rolls} rolls: {Roll.DCustom(faces, dice: rolls)}");
-            Console.Clear();
-
-
-
             while (World.DefaultWorld.CanUpdate())
             {
+
+                Console.WriteLine(World.DefaultWorld.DeltaTime);
             }
+
+        }
+
+
+        private void Exit()
+        {
+            World.DefaultWorld.StopUpdate();
+        }
+        public void Register()
+        {
+            //InputSystem.Assign(Key.Escape, EventType.Press, Exit);
         }
     }
 }

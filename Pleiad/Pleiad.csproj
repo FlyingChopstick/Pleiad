@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <StartupObject>Pleiad.PleiadMain</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,6 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PleiadInput\PleiadInput.csproj" />
     <ProjectReference Include="..\PleiadWorld\PleiadWorld.csproj" />
   </ItemGroup>
 

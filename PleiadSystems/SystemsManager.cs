@@ -1,4 +1,5 @@
 ﻿using PleiadEntities;
+using PleiadInput;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,6 +11,7 @@ namespace PleiadSystems
     public class SystemsManager
     {
         private Dictionary<Type, SystemPack> _systems;
+        //private Dictionary<object, MethodInfo> _input;
 
         private float _currentTime;
         private float _lastTime;
@@ -30,27 +32,9 @@ namespace PleiadSystems
                 _systems = new Dictionary<Type, SystemPack>();
 
 
+                LoadSystems();
+                RegisterInput();
 
-                Console.WriteLine("Loading Systems...");
-                List<Type> sysInterfaces = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
-                    .Where(x => x.IsInterface && x.Name.Contains("Pleiad") && x.Name.Contains("System")).ToList();
-
-                foreach (var ISys in sysInterfaces)
-                {
-                    try
-                    {
-                        if (ISys.Name.Contains("For"))
-                            LoadSystem(SystemIs.For, ISys);
-                        else
-                            LoadSystem(SystemIs.Simple, ISys);
-                    }
-                    catch (ArgumentException e)
-                    {
-                        Console.WriteLine(e.Message);
-                    }
-                }
-
-                Console.WriteLine("All Systems loaded successfully.");
 
                 _sw = new Stopwatch();
                 _sw.Start();
@@ -68,6 +52,36 @@ namespace PleiadSystems
             }
         }
 
+
+        private void LoadSystems()
+        {
+            Console.WriteLine("Loading Systems...");
+            List<Type> sysInterfaces = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
+                .Where(x => x.IsInterface && x.Name.Contains("Pleiad") && x.Name.Contains("System")).ToList();
+
+            foreach (var ISys in sysInterfaces)
+            {
+                try
+                {
+                    if (ISys.Name.Contains("For"))
+                        LoadSystem(SystemIs.For, ISys);
+                    else
+                        LoadSystem(SystemIs.Simple, ISys);
+                }
+                catch (ArgumentException e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+
+            Console.WriteLine("All Systems loaded successfully.");
+        }
+
+
+        private void LoadInputSystem()
+        {
+
+        }
         /// <summary>
         /// Loads all specified Systems
         /// </summary>
@@ -88,7 +102,6 @@ namespace PleiadSystems
 
             foreach (var systemType in systems)
             {
-                Console.WriteLine($"--- Loading {systemType}");
                 //Store the MethodInfo
                 //methodBuffer.Add(systemType.GetMethod("Cycle"));
 
@@ -96,6 +109,7 @@ namespace PleiadSystems
                 //systemObjBuffer.Add(systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { }));
 
                 sysDict[systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { })] = systemType.GetMethod("Cycle");
+                Console.WriteLine($"   | Loaded {systemType}");
             }
 
             //Bind method to an object
@@ -107,6 +121,40 @@ namespace PleiadSystems
             _systems[system] = new SystemPack(category, sysDict);
             Console.WriteLine($"-- Loaded.");
         }
+        private void RegisterInput()
+        {
+            //InputSystem.SetupEvents();
+
+            Type ir = typeof(IRegisterInput);
+            Console.WriteLine("Input registration");
+            //Get all classes that implement the IRegisterInput interface
+            List<Type> systems = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
+              .Where(x => ir.IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
+              .ToList();
+
+
+            //var sysDict = new Dictionary<object, MethodInfo>();
+            foreach (var systemType in systems)
+            {
+                //Store the MethodInfo
+                //methodBuffer.Add(systemType.GetMethod("Cycle"));
+
+                //Construct and store the System object
+                //systemObjBuffer.Add(systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { }));
+
+                //sysDict[systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { })] = systemType.GetMethod("Register");
+
+                object summoner = systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { });
+                MethodInfo method = systemType.GetMethod("Register");
+                //_input[summoner] = method;
+                method.Invoke(summoner, new object[] { });
+                Console.WriteLine($"   | Registered {systemType}");
+            }
+
+
+            Console.WriteLine($"Input registration complete.");
+        }
+
 
         /// <summary>
         /// Function goes over each system in namespace and executes their Cycle()
@@ -114,6 +162,8 @@ namespace PleiadSystems
         /// <returns></returns>
         public bool Update()
         {
+            //Input.Update();
+
             foreach (var systemType in _systems.Keys)
             {
                 var system = _systems[systemType];

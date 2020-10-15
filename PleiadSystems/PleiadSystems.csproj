@@ -1,11 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="InputHandler - Copy" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PleiadEntities\PleiadEntities.csproj" />
+    <ProjectReference Include="..\PleiadInput\PleiadInput.csproj" />
   </ItemGroup>
 
 </Project>

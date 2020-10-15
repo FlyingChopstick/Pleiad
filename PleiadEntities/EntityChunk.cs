@@ -61,28 +61,34 @@ namespace PleiadEntities
 
                 return (T)Convert.ChangeType(temp, ChunkType);
             }
-            else
-                return default;
+            return default;
         }
 
         public List<T> GetAllData<T>()
         {
-            List<T> output = new List<T>();
+            List<T> output = new List<T>(_componentData.Count);
             foreach (var data in _componentData)
             {
                 output.Add((T)Convert.ChangeType(data, ChunkType));
             }
             return output;
         }
+        public void SetAll(IPleiadComponent[] newData)
+        {
+            if (newData.Length == _componentData.Count)
+            {
+                for (int i = 0; i < _componentData.Count; i++)
+                {
+                    _componentData[i] = newData[i];
+                }
+            }
+            else
+                throw new ArgumentException($"Can't set all: new data size is not equal to Entity count in chunk {ChunkType}:{ChunkIndex}");
+        }
 
         public bool IsInChunk(Entity entity) => ChunkIDs.Contains(entity.ID);
         public bool IsInChunk(int entityID) => ChunkIDs.Contains(entityID);
 
-
-        private void CheckIfFull()
-        {
-            IsFull = EntityCount >= Capacity;
-        }
         public Type ChunkType { get; }
         public int ChunkIndex { get; private set; }
         public int EntityCount { get; private set; }

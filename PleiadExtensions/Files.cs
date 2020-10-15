@@ -78,7 +78,7 @@ namespace PleiadExtensions
                     Thread.Sleep(5);
                 }
                 sw.Stop();
-                return new string[0];
+                return Array.Empty<string>();
             }
             public static string[] ReadContaining(this FileContract contract, string sequence)
             {
@@ -98,7 +98,7 @@ namespace PleiadExtensions
                     Thread.Sleep(5);
                 }
                 sw.Stop();
-                return new string[0];
+                return Array.Empty<string>();
             }
             public static void Write(this FileContract contract, string content)
             {

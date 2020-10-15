@@ -1,10 +1,13 @@
 ﻿using PleiadEntities;
+using PleiadInput;
 using PleiadMisc.Dice;
 using PleiadSystems;
 using PleiadWorld;
 using System;
 using System.Collections.Generic;
 using System.Media;
+using System.Threading;
+using System.Windows.Input;
 
 namespace Pleiad
 {
@@ -28,17 +31,22 @@ namespace Pleiad
     {
         public string[] files;
     }
-    public class SoundSystem : IPleiadSystem
+    public class SoundSystem : IPleiadSystem, IRegisterInput
     {
+        private bool _started;
         readonly SoundPlayer player = new SoundPlayer();
         readonly Type soundComponent = typeof(SoundComponent);
         readonly EntityManager em = World.DefaultWorld.EntityManager;
-        public void Cycle(float dTime)
+
+        int die = 0;
+
+        public void StartDialog()
         {
-            Console.Clear();
+            _started = true;
             var entities = em.GetAllWith(new List<Type>() { soundComponent });
             if (entities.Count > 0)
             {
+                InputSystem.ClearConsole();
                 var entity = entities[0];
                 int select = Roll.DCustom(5, lower: 0);
                 SoundComponent sc = em.GetComponentData<SoundComponent>(entity);
@@ -46,11 +54,11 @@ namespace Pleiad
                 Console.WriteLine($"DEBUG Selected file {sc.files[select]}");
                 player.SoundLocation = sc.files[select];
 
-                Console.Write("Which die do you want to roll (4, 6, 8, 10, 12, 20)? D");
 
+                Console.Write("Which die do you want to roll (4, 6, 8, 10, 12, 20)? D");
                 try
                 {
-                    int die = Convert.ToInt32(Console.ReadLine());
+                    die = Convert.ToInt32(Console.ReadLine());
 
                     switch (die)
                     {
@@ -101,9 +109,45 @@ namespace Pleiad
                 {
                     Console.WriteLine("Wrong input");
                 }
-                Console.WriteLine("Press enter to retry or e to exit.");
-                string input = Console.ReadLine();
-                if (input == "e") World.DefaultWorld.StopUpdate();
+
+
+                Console.WriteLine("Press R to retry or X to close.");
+
+                InputSystem.WaitForInput(new Key[] { Key.R, Key.X });
+            }
+        }
+
+        public void Register()
+        {
+            _started = false;
+            //InputSystem.Assign(Key.R, EventType.Press, StartDialog);
+            //InputSystem.Assign(Key.X, EventType.Press, ExitDialog);
+        }
+
+        private void ExitDialog()
+        {
+            if (_started)
+            {
+                _started = false;
+            }
+        }
+
+        public void Cycle(float dTime)
+        {
+            if (!_started)
+            {
+                //InputSystem.ClearConsole();
+                //Console.WriteLine("/==========================\\");
+                //Console.WriteLine("|                          |");
+                //Console.WriteLine("|                          |");
+                //Console.WriteLine("|     Press R to start     |");
+                //Console.WriteLine("|                          |");
+                //Console.WriteLine("|                          |");
+                //Console.WriteLine("|    Press Esc to exit     |");
+                //Console.WriteLine("|                          |");
+                //Console.WriteLine("|                          |");
+                //Console.WriteLine("\\==========================/");
+                //InputSystem.WaitForInput(new Key[] { Key.R, Key.Escape });
             }
         }
     }

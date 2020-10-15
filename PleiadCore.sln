@@ -3,19 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pleiad", "Pleiad\Pleiad.csproj", "{0F461A15-C2B7-47DA-B673-9FE1A438C99A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad", "Pleiad\Pleiad.csproj", "{0F461A15-C2B7-47DA-B673-9FE1A438C99A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PleiadEntities", "PleiadEntities\PleiadEntities.csproj", "{655F2891-4730-4A05-A64D-217C6C9CCCC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadEntities", "PleiadEntities\PleiadEntities.csproj", "{655F2891-4730-4A05-A64D-217C6C9CCCC7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PleiadExtensions", "PleiadExtensions\PleiadExtensions.csproj", "{FB5B0090-EA5A-4D61-8DF7-1208E2F63922}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadExtensions", "PleiadExtensions\PleiadExtensions.csproj", "{FB5B0090-EA5A-4D61-8DF7-1208E2F63922}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PleiadMisc", "PleiadMisc\PleiadMisc.csproj", "{F8BC0178-08DA-4223-BB20-ABFFC017BCAD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadMisc", "PleiadMisc\PleiadMisc.csproj", "{F8BC0178-08DA-4223-BB20-ABFFC017BCAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PleiadSystems", "PleiadSystems\PleiadSystems.csproj", "{5BA37964-FF33-4358-8937-1C6B3D4BBCAB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadSystems", "PleiadSystems\PleiadSystems.csproj", "{5BA37964-FF33-4358-8937-1C6B3D4BBCAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PleiadWorld", "PleiadWorld\PleiadWorld.csproj", "{C73E622A-3B4F-4EAD-BC99-AB303E88B910}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadWorld", "PleiadWorld\PleiadWorld.csproj", "{C73E622A-3B4F-4EAD-BC99-AB303E88B910}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PleiadTasks", "PleiadTasks\PleiadTasks.csproj", "{BA42782F-1699-4B84-ADDA-1D051AFF274B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadTasks", "PleiadTasks\PleiadTasks.csproj", "{BA42782F-1699-4B84-ADDA-1D051AFF274B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PleiadInput", "PleiadInput\PleiadInput.csproj", "{58C33718-531C-41C1-BD84-EE08A4D3F852}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{BA42782F-1699-4B84-ADDA-1D051AFF274B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA42782F-1699-4B84-ADDA-1D051AFF274B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA42782F-1699-4B84-ADDA-1D051AFF274B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58C33718-531C-41C1-BD84-EE08A4D3F852}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58C33718-531C-41C1-BD84-EE08A4D3F852}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58C33718-531C-41C1-BD84-EE08A4D3F852}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58C33718-531C-41C1-BD84-EE08A4D3F852}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
