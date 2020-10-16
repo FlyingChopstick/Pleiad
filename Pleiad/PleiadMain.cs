@@ -63,6 +63,10 @@ namespace Pleiad
 
 
 
+            //Makes Input listener check only the keys added by ListenTo()
+            World.DefaultWorld.SystemsManager.UseInputTable = true;
+
+            //Same as the cycle below
             World.DefaultWorld.StartUpdate();
             //while (World.DefaultWorld.CanUpdate())
             //{
@@ -73,6 +77,7 @@ namespace Pleiad
         public void Register(ref InputListener listener)
         {
             listener.KeyPress += Exit;
+            listener.ListenTo(Key.Escape);
         }
 
         private void Exit(Key key)

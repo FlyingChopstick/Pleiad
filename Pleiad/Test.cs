@@ -6,6 +6,7 @@ using PleiadWorld;
 using System;
 using System.Collections.Generic;
 using System.Media;
+using System.Threading;
 
 namespace Pleiad
 {
@@ -125,12 +126,13 @@ namespace Pleiad
                 Console.WriteLine("|                          |");
                 Console.WriteLine("|     Press R to start     |");
                 Console.WriteLine("|                          |");
+                Console.WriteLine("|     Press B to beep      |");
                 Console.WriteLine("|                          |");
                 Console.WriteLine("|    Press Esc to exit     |");
                 Console.WriteLine("|                          |");
                 Console.WriteLine("|                          |");
                 Console.WriteLine("\\==========================/");
-                SystemsManager.WaitForInput(new Key[] { Key.R, Key.Escape });
+                SystemsManager.WaitForInput(new Key[] { Key.R, Key.Escape, Key.B });
             }
         }
 
@@ -138,6 +140,7 @@ namespace Pleiad
         {
             //sm = World.DefaultWorld.SystemsManager;
             listener.KeyPress += InputManager;
+            listener.ListenTo(new Key[] { Key.R, Key.Escape, Key.B });
         }
         private void InputManager(Key key)
         {
@@ -145,6 +148,7 @@ namespace Pleiad
             {
                 case Key.R: StartDialog(); break;
                 case Key.X: _started = false; break;
+                case Key.B: Console.Beep(); break;
             }
         }
     }

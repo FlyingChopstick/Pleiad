@@ -22,6 +22,9 @@ namespace PleiadSystems
         public float DeltaTime { get; private set; }
         public bool ShouldUpdate { get; set; }
 
+        private bool _useInputTable;
+        public bool UseInputTable { get => _useInputTable; set { _useInputTable = value; _il.UseInputTable = value; } }
+
         /// <summary>
         /// Constructor, tries to load all Systems in the namespace and sets up initial values
         /// </summary>
@@ -30,7 +33,7 @@ namespace PleiadSystems
             try
             {
                 _em = entityManager;
-                _il = new InputListener();
+                _il = new InputListener(false);
                 _systems = new Dictionary<Type, SystemPack>();
 
 
