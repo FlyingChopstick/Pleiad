@@ -6,8 +6,6 @@ using PleiadWorld;
 using System;
 using System.Collections.Generic;
 using System.Media;
-using System.Threading;
-using System.Windows.Input;
 
 namespace Pleiad
 {
@@ -46,12 +44,13 @@ namespace Pleiad
             var entities = em.GetAllWith(new List<Type>() { soundComponent });
             if (entities.Count > 0)
             {
-                InputSystem.ClearConsole();
+                //Console.Clear();
+                InputListener.ClearConsole();
                 var entity = entities[0];
                 int select = Roll.DCustom(5, lower: 0);
                 SoundComponent sc = em.GetComponentData<SoundComponent>(entity);
 
-                Console.WriteLine($"DEBUG Selected file {sc.files[select]}");
+                //Console.WriteLine($"DEBUG Selected file {sc.files[select]}");
                 player.SoundLocation = sc.files[select];
 
 
@@ -112,23 +111,7 @@ namespace Pleiad
 
 
                 Console.WriteLine("Press R to retry or X to close.");
-
-                InputSystem.WaitForInput(new Key[] { Key.R, Key.X });
-            }
-        }
-
-        public void Register()
-        {
-            _started = false;
-            //InputSystem.Assign(Key.R, EventType.Press, StartDialog);
-            //InputSystem.Assign(Key.X, EventType.Press, ExitDialog);
-        }
-
-        private void ExitDialog()
-        {
-            if (_started)
-            {
-                _started = false;
+                SystemsManager.WaitForInput(new Key[] { Key.R, Key.X });
             }
         }
 
@@ -136,18 +119,32 @@ namespace Pleiad
         {
             if (!_started)
             {
-                //InputSystem.ClearConsole();
-                //Console.WriteLine("/==========================\\");
-                //Console.WriteLine("|                          |");
-                //Console.WriteLine("|                          |");
-                //Console.WriteLine("|     Press R to start     |");
-                //Console.WriteLine("|                          |");
-                //Console.WriteLine("|                          |");
-                //Console.WriteLine("|    Press Esc to exit     |");
-                //Console.WriteLine("|                          |");
-                //Console.WriteLine("|                          |");
-                //Console.WriteLine("\\==========================/");
-                //InputSystem.WaitForInput(new Key[] { Key.R, Key.Escape });
+                Console.Clear();
+                Console.WriteLine("/==========================\\");
+                Console.WriteLine("|                          |");
+                Console.WriteLine("|                          |");
+                Console.WriteLine("|     Press R to start     |");
+                Console.WriteLine("|                          |");
+                Console.WriteLine("|                          |");
+                Console.WriteLine("|    Press Esc to exit     |");
+                Console.WriteLine("|                          |");
+                Console.WriteLine("|                          |");
+                Console.WriteLine("\\==========================/");
+                SystemsManager.WaitForInput(new Key[] { Key.R, Key.Escape });
+            }
+        }
+
+        public void Register(ref InputListener listener)
+        {
+            //sm = World.DefaultWorld.SystemsManager;
+            listener.KeyPress += InputManager;
+        }
+        private void InputManager(Key key)
+        {
+            switch (key)
+            {
+                case Key.R: StartDialog(); break;
+                case Key.X: _started = false; break;
             }
         }
     }

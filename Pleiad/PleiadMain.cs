@@ -1,15 +1,11 @@
 ﻿using PleiadEntities;
 using PleiadInput;
-using PleiadSystems;
 using PleiadWorld;
 using System;
-using System.IO;
-using System.Windows.Input;
-using System.Windows.Media.TextFormatting;
 
 namespace Pleiad
 {
-    class PleiadMain: IRegisterInput
+    class PleiadMain : IRegisterInput
     {
         [STAThread]
         static void Main(string[] args)
@@ -63,25 +59,28 @@ namespace Pleiad
 
 
             em.AddEntity(soundTemplate);
-            em.DEBUG_PrintChunks();
+            //em.DEBUG_PrintChunks();
 
 
-            while (World.DefaultWorld.CanUpdate())
+
+            World.DefaultWorld.StartUpdate();
+            //while (World.DefaultWorld.CanUpdate())
+            //{
+            //}
+
+        }
+
+        public void Register(ref InputListener listener)
+        {
+            listener.KeyPress += Exit;
+        }
+
+        private void Exit(Key key)
+        {
+            if (key == Key.Escape)
             {
-
-                Console.WriteLine(World.DefaultWorld.DeltaTime);
+                World.DefaultWorld.StopUpdate(); 
             }
-
-        }
-
-
-        private void Exit()
-        {
-            World.DefaultWorld.StopUpdate();
-        }
-        public void Register()
-        {
-            //InputSystem.Assign(Key.Escape, EventType.Press, Exit);
         }
     }
 }

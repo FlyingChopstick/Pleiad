@@ -17,6 +17,7 @@ namespace PleiadSystems
         private float _lastTime;
         private Stopwatch _sw;
         private EntityManager _em;
+        private static InputListener _il;
 
         public float DeltaTime { get; private set; }
         public bool ShouldUpdate { get; set; }
@@ -29,6 +30,7 @@ namespace PleiadSystems
             try
             {
                 _em = entityManager;
+                _il = new InputListener();
                 _systems = new Dictionary<Type, SystemPack>();
 
 
@@ -51,7 +53,14 @@ namespace PleiadSystems
                 throw e;
             }
         }
-
+        public static void WaitForInput(Key[] keys)
+        {
+            _il.WaitForInput(keys);
+        }
+        public static void WaitForInput(Key key)
+        {
+            _il.WaitForInput(key);
+        }
 
         private void LoadSystems()
         {
@@ -147,7 +156,8 @@ namespace PleiadSystems
                 object summoner = systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { });
                 MethodInfo method = systemType.GetMethod("Register");
                 //_input[summoner] = method;
-                method.Invoke(summoner, new object[] { });
+                object[] args = new object[] { _il };
+                method.Invoke(summoner, args);
                 Console.WriteLine($"   | Registered {systemType}");
             }
 
@@ -163,6 +173,8 @@ namespace PleiadSystems
         public bool Update()
         {
             //Input.Update();
+            _il.ReadKeys();
+
 
             foreach (var systemType in _systems.Keys)
             {
@@ -221,6 +233,5 @@ namespace PleiadSystems
 
             return ShouldUpdate;
         }
-
     }
 }

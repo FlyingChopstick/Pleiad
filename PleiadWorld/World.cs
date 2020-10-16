@@ -33,7 +33,13 @@ namespace PleiadWorld
             /// Returns a reference to the Entity manager
             /// </summary>
             public static ref EntityManager EntityManager { get => ref _def_em; }
+            public static ref SystemsManager SystemsManager { get => ref _def_sm; }
             public static ref TaskManager TaskManager { get => ref _def_tm; }
+            public static void StartUpdate()
+            {
+                while (_def_sm.ShouldUpdate)
+                    _def_sm.Update();
+            }
             public static void StopUpdate()
             {
                 _def_sm.ShouldUpdate = false;

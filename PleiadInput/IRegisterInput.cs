@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PleiadInput
+﻿namespace PleiadInput
 {
     public interface IRegisterInput
     {
-        void Register();
+        void Register(ref InputListener listener);
     }
 }

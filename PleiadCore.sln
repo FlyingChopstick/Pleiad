@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadWorld", "PleiadWorld\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadTasks", "PleiadTasks\PleiadTasks.csproj", "{BA42782F-1699-4B84-ADDA-1D051AFF274B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PleiadInput", "PleiadInput\PleiadInput.csproj", "{58C33718-531C-41C1-BD84-EE08A4D3F852}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PleiadInput", "PleiadInput\PleiadInput.csproj", "{33E5D97E-2752-466A-A596-EF6486538F28}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,10 +53,10 @@ Global
 		{BA42782F-1699-4B84-ADDA-1D051AFF274B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA42782F-1699-4B84-ADDA-1D051AFF274B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA42782F-1699-4B84-ADDA-1D051AFF274B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{58C33718-531C-41C1-BD84-EE08A4D3F852}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{58C33718-531C-41C1-BD84-EE08A4D3F852}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{58C33718-531C-41C1-BD84-EE08A4D3F852}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{58C33718-531C-41C1-BD84-EE08A4D3F852}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33E5D97E-2752-466A-A596-EF6486538F28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33E5D97E-2752-466A-A596-EF6486538F28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33E5D97E-2752-466A-A596-EF6486538F28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33E5D97E-2752-466A-A596-EF6486538F28}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
