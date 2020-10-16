@@ -1,5 +1,4 @@
-﻿using PleiadEntities;
-using PleiadInput;
+﻿using PleiadInput;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,35 +9,31 @@ namespace PleiadSystems
 {
     public class SystemsManager
     {
-        private Dictionary<Type, SystemPack> _systems;
-        //private Dictionary<object, MethodInfo> _input;
+        private readonly Dictionary<Type, SystemPack> _systems;
+        private static readonly InputListener _il = new InputListener(true);
+        private readonly Stopwatch _sw;
 
-        private float _currentTime;
         private float _lastTime;
-        private Stopwatch _sw;
-        private EntityManager _em;
-        private static InputListener _il;
+        private float _currentTime;
 
         public float DeltaTime { get; private set; }
         public bool ShouldUpdate { get; set; }
 
-        private bool _useInputTable;
-        public bool UseInputTable { get => _useInputTable; set { _useInputTable = value; _il.UseInputTable = value; } }
+        public bool UseInputTable { get => _il.UseInputTable; set { _il.UseInputTable = value; } }
 
         /// <summary>
         /// Constructor, tries to load all Systems in the namespace and sets up initial values
         /// </summary>
-        public SystemsManager(ref EntityManager entityManager)
+        public SystemsManager()
         {
             try
             {
-                _em = entityManager;
-                _il = new InputListener(false);
                 _systems = new Dictionary<Type, SystemPack>();
-
 
                 LoadSystems();
                 RegisterInput();
+
+                Pause();
 
 
                 _sw = new Stopwatch();
@@ -56,18 +51,47 @@ namespace PleiadSystems
                 throw e;
             }
         }
+
+        /// <summary>
+        /// Stops the execution and waits for the key press (default: <see cref="Key.Enter"/>)
+        /// </summary>
+        /// <param name="key">Key to wait for</param>
+        /// <param name="showMessage">Should the message be displayed</param>
+        public static void Pause(Key key = Key.Enter, bool showMessage = true)
+        {
+            if (showMessage)
+            {
+                Console.WriteLine($"Press {key} to continue");
+            }
+
+            //need to temporarily disable InputTable to prevent the key not being found
+            bool uit = _il.UseInputTable;
+            _il.UseInputTable = false;
+            _il.WaitForInput(key);
+            _il.UseInputTable = uit;
+        }
+        /// <summary>
+        /// Waits for any of the keys
+        /// </summary>
+        /// <param name="keys">Keys to wait for</param>
         public static void WaitForInput(Key[] keys)
         {
             _il.WaitForInput(keys);
         }
+        /// <summary>
+        /// Waits for key press
+        /// </summary>
+        /// <param name="key">Key to wait for</param>
         public static void WaitForInput(Key key)
         {
             _il.WaitForInput(key);
         }
 
+
+
         private void LoadSystems()
         {
-            Console.WriteLine("Loading Systems...");
+            Console.WriteLine("Loading Systems");
             List<Type> sysInterfaces = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
                 .Where(x => x.IsInterface && x.Name.Contains("Pleiad") && x.Name.Contains("System")).ToList();
 
@@ -75,10 +99,7 @@ namespace PleiadSystems
             {
                 try
                 {
-                    if (ISys.Name.Contains("For"))
-                        LoadSystem(SystemIs.For, ISys);
-                    else
-                        LoadSystem(SystemIs.Simple, ISys);
+                    LoadSystem(ISys);
                 }
                 catch (ArgumentException e)
                 {
@@ -86,21 +107,10 @@ namespace PleiadSystems
                 }
             }
 
-            Console.WriteLine("All Systems loaded successfully.");
+            Console.WriteLine("Systems loaded.");
         }
-
-
-        private void LoadInputSystem()
+        private void LoadSystem(Type system)
         {
-
-        }
-        /// <summary>
-        /// Loads all specified Systems
-        /// </summary>
-        /// <param name="system">System type</param>
-        private void LoadSystem(SystemIs category, Type system)
-        {
-            Console.WriteLine($"-- Loading {system}");
             //Get all classes that implement the selected System interface
             List<Type> systems = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
               .Where(x => system.IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
@@ -114,29 +124,16 @@ namespace PleiadSystems
 
             foreach (var systemType in systems)
             {
-                //Store the MethodInfo
-                //methodBuffer.Add(systemType.GetMethod("Cycle"));
-
-                //Construct and store the System object
-                //systemObjBuffer.Add(systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { }));
-
                 sysDict[systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { })] = systemType.GetMethod("Cycle");
-                Console.WriteLine($"   | Loaded {systemType}");
+                Console.WriteLine($"  | Loaded {systemType}");
             }
 
-            //Bind method to an object
-            //for (int i = 0; i < methodBuffer.Count; i++)
-            //{
-            //    sysDict[systemObjBuffer[i]] = methodBuffer[i];
-            //}
-
-            _systems[system] = new SystemPack(category, sysDict);
-            Console.WriteLine($"-- Loaded.");
+            _systems[system] = new SystemPack(sysDict);
         }
+
+
         private void RegisterInput()
         {
-            //InputSystem.SetupEvents();
-
             Type ir = typeof(IRegisterInput);
             Console.WriteLine("Input registration");
             //Get all classes that implement the IRegisterInput interface
@@ -144,29 +141,24 @@ namespace PleiadSystems
               .Where(x => ir.IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
               .ToList();
 
-
             //var sysDict = new Dictionary<object, MethodInfo>();
-            foreach (var systemType in systems)
+            foreach (var system in systems)
             {
-                //Store the MethodInfo
-                //methodBuffer.Add(systemType.GetMethod("Cycle"));
-
-                //Construct and store the System object
-                //systemObjBuffer.Add(systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { }));
-
-                //sysDict[systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { })] = systemType.GetMethod("Register");
-
-                object summoner = systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { });
-                MethodInfo method = systemType.GetMethod("Register");
-                //_input[summoner] = method;
-                object[] args = new object[] { _il };
-                method.Invoke(summoner, args);
-                Console.WriteLine($"   | Registered {systemType}");
+                RegisterInputFor(system);
+                Console.WriteLine($"   | Registered {system}");
             }
 
 
             Console.WriteLine($"Input registration complete.");
         }
+        private void RegisterInputFor(Type system)
+        {
+            object summoner = system.GetConstructor(Type.EmptyTypes).Invoke(new object[] { });
+            MethodInfo method = system.GetMethod(typeof(IRegisterInput).GetMethods()[0].Name);
+            object[] args = new object[] { _il };
+            method.Invoke(summoner, args);
+        }
+
 
 
         /// <summary>
@@ -175,7 +167,6 @@ namespace PleiadSystems
         /// <returns></returns>
         public bool Update()
         {
-            //Input.Update();
             _il.ReadKeys();
 
 
@@ -189,46 +180,17 @@ namespace PleiadSystems
 
                 var objEn = system.Systems.Keys.GetEnumerator();
                 var methEn = system.Systems.Values.GetEnumerator();
-                switch (system.Type)
+                //Using an iterator over objects and methods
+                while (objEn.MoveNext())
                 {
-                    case SystemIs.Simple:
-                        {
-                            //Using an iterator over objects and methods
-                            while (objEn.MoveNext())// && _AS_methods.MoveNext())
-                            {
-                                methEn.MoveNext();
+                    methEn.MoveNext();
 
-                                var method = methEn.Current;
-                                var summoner = objEn.Current;
+                    var method = methEn.Current;
+                    var summoner = objEn.Current;
 
-                                //Invoke the Cycle()
-                                method.Invoke(summoner, new object[] { DeltaTime });
-                            }
-
-                            break;
-                        }
-                    case SystemIs.For:
-                        {
-
-                            //Using an iterator over objects and methods
-                            while (objEn.MoveNext())// && _AS_methods.MoveNext())
-                            {
-                                methEn.MoveNext();
-
-
-                                var method = methEn.Current;
-                                var summoner = objEn.Current;
-
-                                //Invoke the Cycle()
-                                method.Invoke(summoner, new object[] { DeltaTime, system.Query });
-                            }
-
-                            break;
-                        }
+                    //Invoke the Cycle()
+                    method.Invoke(summoner, new object[] { DeltaTime });
                 }
-
-
-                //Reset iterators to the beginning
 
                 _lastTime = _currentTime;
             }

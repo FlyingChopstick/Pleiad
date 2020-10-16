@@ -2,6 +2,6 @@
 {
     public interface IRegisterInput
     {
-        void Register(ref InputListener listener);
+        void InputRegistration(ref InputListener listener);
     }
 }

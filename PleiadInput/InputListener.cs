@@ -15,15 +15,14 @@ namespace PleiadInput
             Console.Clear();
         }
 
-
         public event KeyEvent KeyRelease;
         public event KeyEvent KeyPress;
 
-        private List<Key> _keys;
-        private Dictionary<Key, bool> _keyState;
+        private readonly List<Key> _keys;
+        private readonly Dictionary<Key, bool> _keyState;
 
-        private List<Key> _inputTable;
-        public bool UseInputTable { get; set; }
+        private readonly List<Key> _inputTable;
+        public bool UseInputTable { get; set; } = true;
 
         public InputListener(bool useInputTable)
         {
@@ -78,8 +77,9 @@ namespace PleiadInput
             {
                 foreach (var key in keys)
                 {
+                    if (!_keyState.ContainsKey(key)) _keyState[key] = false;
                     CheckKey(key);
-                    if (_keyState.ContainsKey(key) && _keyState[key])
+                    if (_keyState[key])
                     {
                         waiting = false;
                         break;
@@ -94,8 +94,10 @@ namespace PleiadInput
             {
                 foreach (var key in keys)
                 {
+                    if (!_keyState.ContainsKey(key)) _keyState[key] = false;
                     CheckKey(key);
-                    if (_keyState.ContainsKey(key) && _keyState[key])
+
+                    if (_keyState[key])
                     {
                         waiting = false;
                         break;
@@ -105,6 +107,8 @@ namespace PleiadInput
         }
         public void WaitForInput(Key key)
         {
+            if (!_keyState.ContainsKey(key)) _keyState[key] = false;
+
             while (!_keyState[key])
             {
                 CheckKey(key);

@@ -74,7 +74,7 @@ namespace Pleiad
 
         }
 
-        public void Register(ref InputListener listener)
+        public void InputRegistration(ref InputListener listener)
         {
             listener.KeyPress += Exit;
             listener.ListenTo(Key.Escape);

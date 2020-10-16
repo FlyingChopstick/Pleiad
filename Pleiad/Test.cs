@@ -30,7 +30,7 @@ namespace Pleiad
     {
         public string[] files;
     }
-    public class SoundSystem : IPleiadSystem, IRegisterInput
+    public class DiceGame : IPleiadSystem, IRegisterInput
     {
         private bool _started;
         readonly SoundPlayer player = new SoundPlayer();
@@ -136,11 +136,10 @@ namespace Pleiad
             }
         }
 
-        public void Register(ref InputListener listener)
+        public void InputRegistration(ref InputListener listener)
         {
-            //sm = World.DefaultWorld.SystemsManager;
-            listener.KeyPress += InputManager;
             listener.ListenTo(new Key[] { Key.R, Key.Escape, Key.B });
+            listener.KeyPress += InputManager;
         }
         private void InputManager(Key key)
         {
