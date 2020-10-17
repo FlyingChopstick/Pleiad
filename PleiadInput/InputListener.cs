@@ -18,19 +18,41 @@ namespace PleiadInput
         public event KeyEvent KeyRelease;
         public event KeyEvent KeyPress;
 
-        private readonly List<Key> _keys;
+
+        private List<Key> _activeList;
+        private readonly List<Key> _allKeys;
+        private readonly List<Key> _inputTable;
         private readonly Dictionary<Key, bool> _keyState;
 
-        private readonly List<Key> _inputTable;
-        public bool UseInputTable { get; set; } = true;
-
-        public InputListener(bool useInputTable)
+        private bool _useInputTable = true;
+        public bool UseInputTable
         {
-            _keys = Enum.GetValues(typeof(Key)).Cast<Key>().ToList();
+            get => _useInputTable;
+            set
+            {
+                if (value)
+                {
+                    Console.WriteLine("Listening to Input Table");
+                    _activeList = _inputTable;
+                }
+                else
+                {
+                    Console.WriteLine("Listening to all keys");
+                    _activeList = _allKeys;
+                }
+                _useInputTable = value;
+            }
+        }
+
+        public InputListener(bool useInputTable = true)
+        {
+            _allKeys = Enum.GetValues(typeof(Key)).Cast<Key>().ToList();
             _keyState = new Dictionary<Key, bool>();
 
             UseInputTable = useInputTable;
             _inputTable = new List<Key>();
+
+            UseInputTable = useInputTable;
         }
 
         public void ListenTo(Key key)
@@ -52,22 +74,11 @@ namespace PleiadInput
                 _inputTable.Remove(key);
         }
 
-
         public void ReadKeys()
         {
-            if (!UseInputTable)
+            foreach (var key in _activeList)
             {
-                foreach (var key in _keys)
-                {
-                    CheckKey(key);
-                }
-            }
-            else
-            {
-                foreach (var key in _inputTable)
-                {
-                    CheckKey(key);
-                }
+                CheckKey(key);
             }
         }
         public void WaitForInput(Key[] keys)
@@ -119,7 +130,6 @@ namespace PleiadInput
         private void CheckKey(Key key)
         {
             short state = GetAsyncKeyState((short)key);
-            var bit = state & 0x8000;
             if (state == short.MinValue)
             {
                 KeyPress?.Invoke(key);
@@ -127,7 +137,11 @@ namespace PleiadInput
             }
             else
             {
-                if (_keyState.ContainsKey(key) && _keyState[key])
+                if (!_keyState.ContainsKey(key))
+                {
+                    _keyState[key] = false;
+                }
+                if (_keyState[key])
                 {
                     KeyRelease?.Invoke(key);
                     _keyState[key] = false;

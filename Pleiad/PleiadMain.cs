@@ -1,13 +1,12 @@
-﻿using PleiadEntities;
+﻿using System;
+using PleiadEntities;
 using PleiadInput;
 using PleiadWorld;
-using System;
 
 namespace Pleiad
 {
     class PleiadMain : IRegisterInput
     {
-        [STAThread]
         static void Main(string[] args)
         {
             EntityManager em = World.DefaultWorld.EntityManager;
@@ -63,7 +62,8 @@ namespace Pleiad
 
 
 
-            //Makes Input listener check only the keys added by ListenTo()
+            //Makes Input listener check only the keys added by ListenTo() 
+            //(enabled by default, so you don't have to write this)
             World.DefaultWorld.SystemsManager.UseInputTable = true;
 
             //Same as the cycle below
@@ -76,15 +76,17 @@ namespace Pleiad
 
         public void InputRegistration(ref InputListener listener)
         {
-            listener.KeyPress += Exit;
+            //listener should listen to this key
             listener.ListenTo(Key.Escape);
+            //function will handle the event
+            listener.KeyPress += Exit;
         }
 
         private void Exit(Key key)
         {
             if (key == Key.Escape)
             {
-                World.DefaultWorld.StopUpdate(); 
+                World.DefaultWorld.StopUpdate();
             }
         }
     }

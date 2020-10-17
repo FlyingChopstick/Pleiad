@@ -10,7 +10,7 @@ namespace PleiadSystems
     public class SystemsManager
     {
         private readonly Dictionary<Type, SystemPack> _systems;
-        private static readonly InputListener _il = new InputListener(true);
+        private static readonly InputListener _il = new InputListener();
         private readonly Stopwatch _sw;
 
         private float _lastTime;
