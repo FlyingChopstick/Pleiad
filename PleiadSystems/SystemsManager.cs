@@ -1,9 +1,9 @@
-﻿using PleiadInput;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using PleiadInput;
 
 namespace PleiadSystems
 {
@@ -33,7 +33,7 @@ namespace PleiadSystems
                 LoadSystems();
                 RegisterInput();
 
-                Pause();
+                //Pause();
 
 
                 _sw = new Stopwatch();
@@ -169,14 +169,14 @@ namespace PleiadSystems
         {
             _il.ReadKeys();
 
+            //Update the time
+            _currentTime = (float)_sw.Elapsed.TotalMilliseconds;
+            DeltaTime = _currentTime - _lastTime;
 
             foreach (var systemType in _systems.Keys)
             {
                 var system = _systems[systemType];
 
-                //Update the time
-                _currentTime = (float)_sw.Elapsed.TotalMilliseconds;
-                DeltaTime = _currentTime - _lastTime;
 
                 var objEn = system.Systems.Keys.GetEnumerator();
                 var methEn = system.Systems.Values.GetEnumerator();
@@ -192,9 +192,9 @@ namespace PleiadSystems
                     method.Invoke(summoner, new object[] { DeltaTime });
                 }
 
-                _lastTime = _currentTime;
             }
 
+            _lastTime = _currentTime;
 
             return ShouldUpdate;
         }

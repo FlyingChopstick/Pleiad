@@ -1,6 +1,7 @@
 ﻿using System;
 using PleiadEntities;
 using PleiadInput;
+using PleiadTasks;
 using PleiadWorld;
 
 namespace Pleiad
@@ -57,6 +58,8 @@ namespace Pleiad
                 });
 
 
+
+
             em.AddEntity(soundTemplate);
             //em.DEBUG_PrintChunks();
 
@@ -66,11 +69,30 @@ namespace Pleiad
             //(enabled by default, so you don't have to write this)
             World.DefaultWorld.SystemsManager.UseInputTable = true;
 
+            TestTask testTask1 = new TestTask();
+            TestTask testTask2 = new TestTask();
+            testTask1.value = 0;
+            testTask1.num = 31;
+
+            testTask2.value = 0;
+            testTask2.num = 2;
             //Same as the cycle below
-            World.DefaultWorld.StartUpdate();
-            //while (World.DefaultWorld.CanUpdate())
-            //{
-            //}
+            //World.DefaultWorld.StartUpdate();
+            while (World.DefaultWorld.CanUpdate())
+            {
+                //Console.Clear();
+                testTask1.dTime = World.DefaultWorld.DeltaTime;
+                testTask2.dTime = World.DefaultWorld.DeltaTime;
+                var handle1 = new TaskHandle(testTask1);
+                var handle2 = new TaskHandle(testTask2);
+                TaskManager.Enqueue(handle2);
+                TaskManager.Enqueue(handle1);
+
+
+                //TaskManager.Cancel(handle);
+
+                TaskManager.Complete();
+            }
 
         }
 

@@ -64,7 +64,7 @@ namespace PleiadEntities
             return default;
         }
 
-        public List<T> GetAllData<T>()
+        public ref List<T> GetAllData<T>()
         {
             List<T> output = new List<T>(_componentData.Count);
             foreach (var data in _componentData)

@@ -1,12 +1,14 @@
-﻿using PleiadEntities;
-using PleiadInput;
-using PleiadMisc.Dice;
-using PleiadSystems;
-using PleiadWorld;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Media;
 using System.Threading;
+using System.Threading.Tasks;
+using PleiadEntities;
+using PleiadInput;
+using PleiadMisc.Dice;
+using PleiadSystems;
+using PleiadTasks;
+using PleiadWorld;
 
 namespace Pleiad
 {
@@ -25,12 +27,24 @@ namespace Pleiad
 
 
 
+    public struct TestTask : IPleiadTask
+    {
+        public float dTime;
+        public int num;
+        public float value;
+
+        public void Run()
+        {
+            Console.WriteLine(num);
+            value += dTime;
+        }
+    }
 
     public struct SoundComponent : IPleiadComponent
     {
         public string[] files;
     }
-    public class DiceGame : IPleiadSystem, IRegisterInput
+    public class DiceGame// : IPleiadSystem, IRegisterInput
     {
         private bool _started;
         readonly SoundPlayer player = new SoundPlayer();
@@ -48,7 +62,7 @@ namespace Pleiad
                 //Console.Clear();
                 InputListener.ClearConsole();
                 var entity = entities[0];
-                int select = Roll.DCustom(5, lower: 0);
+                int select = Roll.Custom(5, lower: 0);
                 SoundComponent sc = em.GetComponentData<SoundComponent>(entity);
 
                 //Console.WriteLine($"DEBUG Selected file {sc.files[select]}");

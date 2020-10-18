@@ -1,6 +1,5 @@
 ﻿using PleiadEntities;
 using PleiadSystems;
-using PleiadTasks;
 
 namespace PleiadWorld
 {
@@ -16,7 +15,7 @@ namespace PleiadWorld
         {
             private static EntityManager _def_em = new EntityManager();
             private static SystemsManager _def_sm = new SystemsManager();
-            private static TaskManager _def_tm = new TaskManager();
+            //private static TaskManager _def_tm = new TaskManager();
 
             public static float DeltaTime { get => _def_sm.DeltaTime; }
 
@@ -34,7 +33,7 @@ namespace PleiadWorld
             /// </summary>
             public static ref EntityManager EntityManager { get => ref _def_em; }
             public static ref SystemsManager SystemsManager { get => ref _def_sm; }
-            public static ref TaskManager TaskManager { get => ref _def_tm; }
+            //public static ref TaskManager TaskManager { get => ref _def_tm; }
             public static void StartUpdate()
             {
                 while (_def_sm.ShouldUpdate)
