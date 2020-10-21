@@ -14,7 +14,7 @@ namespace PleiadWorld
         /// </summary>
         public static class DefaultWorld
         {
-            private static EntityManager _def_em = new EntityManager();
+            private static Entities _def_em = new Entities();
             private static SystemsManager _def_sm = new SystemsManager();
             //private static TaskManager _def_tm = new TaskManager();
             public static float DeltaTime { get => _def_sm.DeltaTime; }
@@ -32,7 +32,7 @@ namespace PleiadWorld
             /// <summary>
             /// Returns a reference to the Entity manager
             /// </summary>
-            public static ref EntityManager EntityManager { get => ref _def_em; }
+            public static ref Entities EntityManager { get => ref _def_em; }
             public static ref SystemsManager SystemsManager { get => ref _def_sm; }
             //public static ref TaskManager TaskManager { get => ref _def_tm; }
             public static void StartUpdate()
@@ -48,18 +48,18 @@ namespace PleiadWorld
 
         //WIP
 
-        private EntityManager _em;
+        private Entities _em;
         private SystemsManager _sm;
 
         public World()
         {
-            _em = new EntityManager();
+            _em = new Entities();
             _sm = new SystemsManager();
         }
 
         /// <summary>
         /// Returns a reference to the Entity manager
         /// </summary>
-        public ref EntityManager EntityManager { get { return ref _em; } }
+        public ref Entities EntityManager { get { return ref _em; } }
     }
 }

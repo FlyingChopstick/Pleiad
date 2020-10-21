@@ -72,13 +72,13 @@ namespace PleiadEntities
 
             return default;
         }
-        public List<int> GetIndices(Type query)
+        public int[] GetIndices(Type query)
         {
             foreach (var template in _layout.Keys)
             {
                 if (template.Contains(query))
                 {
-                    return _layout[template][query];
+                    return _layout[template][query].ToArray();
                 }
             }
 
@@ -90,10 +90,10 @@ namespace PleiadEntities
         /// <param name="template">Chunk template</param>
         /// <param name="component">Subtype</param>
         /// <returns>A list of Chunk indices or default</returns>
-        public List<int> GetIndices(Type[] template, Type component)
+        public int[] GetIndices(Type[] template, Type component)
         {
             if (_layout.ContainsKey(template) && _layout[template].ContainsKey(component))
-                return _layout[template][component];
+                return _layout[template][component].ToArray();
 
             return default;
         }

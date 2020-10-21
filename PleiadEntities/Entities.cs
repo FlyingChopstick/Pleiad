@@ -8,10 +8,10 @@ namespace PleiadEntities
     /// <summary>
     /// Provides control over Entities and Components
     /// </summary>
-    public class EntityManager
+    public class Entities
     {
 
-        public EntityManager()
+        public Entities()
         {
             _chunkIndex = 1;
             _nextID = 1;
@@ -253,7 +253,7 @@ namespace PleiadEntities
         {
             //Dictionary<Type, List<int>> query = _lookup.GetIndices(template.Components);
             Type type = typeof(T);
-            List<int> indices = _lookup.GetIndices(type);
+            int[] indices = _lookup.GetIndices(type);
             Dictionary<int, int> chunkSizes = new Dictionary<int, int>();
             List<IPleiadComponent> data = new List<IPleiadComponent>();
 
@@ -268,80 +268,19 @@ namespace PleiadEntities
         public void SetTypeData<T>(DataPack<T> data) where T : IPleiadComponent
         {
             Type type = typeof(T);
-            foreach (var index in data.ChunkIndices)
+            foreach (var index in data.GetChunkIndices())
             {
                 //int chunkSize = data.ChunkSizes[index];
 
-                _componentChunks[type][index].SetAllData(data.ConvertedData());
+                _componentChunks[type][index].SetAllData(data.GetConvertedData());
             }
         }
-        public void SetTypeDataAt<T>(DataPackSmall<T> pack) where T : IPleiadComponent
+        public void SetTypeDataAt<T>(Payload<T> pack) where T : IPleiadComponent
         {
             Type type = typeof(T);
-
-
             _componentChunks[type][pack.ChunkIndex].SetDataAt(pack.Data);
-        }
+        }        
 
-
-        public struct DataPack<T> where T: IPleiadComponent
-        {
-            public DataPack(int[] indices, Dictionary<int, int> chunkSizes, IPleiadComponent[] data)
-            {
-                ChunkIndices = indices;
-                ChunkSizes = chunkSizes;
-                DataRaw = data;
-            }
-            public DataPack(int[] indices, Dictionary<int, int> chunkSizes, T[] data)
-            {
-                ChunkIndices = indices;
-                ChunkSizes = chunkSizes;
-
-                DataRaw = new IPleiadComponent[data.Length];
-                for (int i = 0; i < data.Length; i++)
-                {
-                    DataRaw[i] = data[i];
-                }
-
-                //DataRaw = data;
-            }
-
-            public T[] ConvertedData()
-            {
-                T[] arr = new T[DataRaw.Length];
-                for (int i = 0; i < DataRaw.Length; i++)
-                {
-                    arr[i] = (T)Convert.ChangeType(DataRaw[i], typeof(T));
-                }
-                return arr;
-            }
-
-
-            public int[] ChunkIndices;
-            //ChunkIndex -> count
-            public Dictionary<int, int> ChunkSizes { get; }
-            public IPleiadComponent[] DataRaw { get; private set; }
-        }
-        public struct DataPackSmall<T> where T: IPleiadComponent
-        {
-            public DataPackSmall(int chunkIndex, IPleiadComponent[] data)
-            {
-                ChunkIndex = chunkIndex;
-                Data = data;
-            }
-            public DataPackSmall(int chunkIndex, T[] data)
-            {
-                ChunkIndex = chunkIndex;
-                Data = new IPleiadComponent[data.Length];
-                for (int i = 0; i < data.Length; i++)
-                {
-                    Data[i] = data[i];
-                }
-            }
-
-            public int ChunkIndex { get; }
-            public IPleiadComponent[] Data;
-        }
 
 
         /// <summary>

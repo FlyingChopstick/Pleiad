@@ -1,4 +1,5 @@
 ﻿using PleiadEntities;
+using PleiadExtensions.Files;
 using PleiadInput;
 using PleiadMisc.Dice;
 using PleiadSystems;
@@ -7,6 +8,7 @@ using PleiadWorld;
 using System;
 using System.Collections.Generic;
 using System.Media;
+using System.Reflection.Metadata;
 
 namespace Pleiad
 {
@@ -46,16 +48,43 @@ namespace Pleiad
         }
     }
 
+    public struct TextWriteTask : IPleiadTask
+    {
+        public FileContract file;
+        public string message;
+        public void Run()
+        {
+            file.Write(message);
+        }
+    }
+
+    public class TextWriter : IPleiadSystem
+    {
+        TextWriteTask task = new TextWriteTask 
+        { 
+            message = "Writing in system", 
+            file = new FileContract("text.txt") 
+        };
+        TaskHandle handle;
+
+        public void Cycle(float dTime)
+        {
+            handle = new TaskHandle(task);
+            Tasks.SetTask(handle);
+        }
+    }
+
+
     public struct SoundComponent : IPleiadComponent
     {
         public string[] files;
     }
-    public class DiceGame : IPleiadSystem, IRegisterInput
+    public class DiceGame// : IPleiadSystem, IRegisterInput
     {
         private bool _started;
         readonly SoundPlayer player = new SoundPlayer();
         readonly Type soundComponent = typeof(SoundComponent);
-        readonly EntityManager em = World.DefaultWorld.EntityManager;
+        readonly Entities em = World.DefaultWorld.EntityManager;
 
         int die = 0;
 
@@ -68,9 +97,9 @@ namespace Pleiad
                 //Console.Clear();
                 InputListener.ClearConsole();
                 var entity = entities[0];
-                int select = Roll.Custom(5, lower: 0);
                 SoundComponent sc = em.GetComponentData<SoundComponent>(entity);
 
+                int select = Roll.Custom(sc.files.Length - 1, lower: 0);
                 //Console.WriteLine($"DEBUG Selected file {sc.files[select]}");
                 player.SoundLocation = sc.files[select];
 

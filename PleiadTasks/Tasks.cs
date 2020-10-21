@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using static PleiadEntities.EntityManager;
+using static PleiadEntities.Entities;
 
 namespace PleiadTasks
 {
@@ -10,10 +10,10 @@ namespace PleiadTasks
     {
         private static readonly List<Task> _taskQueue = new List<Task>();
         private static readonly List<Task> _taskOnQueue = new List<Task>();
-        private static EntityManager _em;
-        public static EntityManager EntityManager { set => _em = value; }
+        private static Entities _em;
+        public static Entities EntityManager { set => _em = value; }
 
-        public static void SetEntityManager(ref EntityManager entityManager) => _em = entityManager;
+        public static void SetEntityManager(ref Entities entityManager) => _em = entityManager;
 
         public static void SetTask(TaskHandle handle)
         {
@@ -23,26 +23,28 @@ namespace PleiadTasks
         {
             var dataPack = _em.GetTypeData<T>();
 
-            T[] chunkData = dataPack.ConvertedData();
+            T[] chunkData = dataPack.GetConvertedData();
             int[] chunkSizes = new int[dataPack.ChunkSizes.Keys.Count];
+            int[] chunkIndices = dataPack.GetChunkIndices();
 
-
-            for (int i = 0; i < dataPack.ChunkIndices.Length; i++)
+            //Run the action for each type chunk
+            for (int i = 0; i < chunkIndices.Length; i++)
             {
-                int chIndex = dataPack.ChunkIndices[i];
+                int chIndex = chunkIndices[i];
                 chunkSizes[i] = dataPack.ChunkSizes[chIndex];
                 int currentChSize = chunkSizes[chIndex];
                 _taskOnQueue.Add(Task.Run(() =>
                 {
-                    List<T> newData = new List<T>();
+                    //List<T> newData = new List<T>();
+                    T[] newData = new T[currentChSize];  
                     for (int j = 0; j < currentChSize; j++)
                     {
                         handle.ActionOn(j, ref chunkData);
-                        newData.Add(chunkData[j]);
+                        newData[j] = chunkData[j];
                     }
 
-                    var a = newData.ToArray();
-                    DataPackSmall<T> payload = new DataPackSmall<T>(chIndex, a);
+                    //var a = newData.ToArray();
+                    Payload<T> payload = new Payload<T>(chIndex, newData);
                     _em.SetTypeDataAt(payload);
                 }, handle.Token));
             }

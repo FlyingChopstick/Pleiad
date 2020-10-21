@@ -1,8 +1,10 @@
 ﻿using PleiadEntities;
+using PleiadExtensions.Files;
 using PleiadInput;
 using PleiadTasks;
 using PleiadWorld;
 using System;
+using System.IO;
 
 namespace Pleiad
 {
@@ -10,8 +12,9 @@ namespace Pleiad
     {
         static void Main(string[] args)
         {
-            EntityManager em = World.DefaultWorld.EntityManager;
+            Entities em = World.DefaultWorld.EntityManager;
             Tasks.EntityManager = em;
+
 
 
             EntityTemplate template1 = new EntityTemplate
@@ -85,22 +88,29 @@ namespace Pleiad
             testTask2.num = 2;
 
             TestTaskOn<TestComponent> testTaskOn = new TestTaskOn<TestComponent>();
+            FileContract contract = new FileContract("text.txt");
+            File.Delete(contract.FileName);
+            TextWriteTask textWriteTask = new TextWriteTask();
+            textWriteTask.message = "Writing in main";
+            textWriteTask.file = contract;
 
+            TaskHandle textWrite = new TaskHandle(textWriteTask);
             //Same as the cycle below
             //World.DefaultWorld.StartUpdate();
             while (World.DefaultWorld.CanUpdate())
             {
-                TaskHandle simple1 = new TaskHandle(testTask1);
-                TaskHandle simple2 = new TaskHandle(testTask2);
+                //TaskHandle simple1 = new TaskHandle(testTask1);
+                //TaskHandle simple2 = new TaskHandle(testTask2);
 
                 TaskOnHandle<TestComponent> handleOn = new TaskOnHandle<TestComponent>(testTaskOn);
 
-                Tasks.SetTask(simple1);
-                Tasks.SetTask(simple2);
-                Tasks.SetTask(handleOn);
+                //Tasks.SetTask(simple1);
+                //Tasks.SetTask(simple2);
+                //Tasks.SetTask(handleOn);
+
+                //Tasks.SetTask(textWrite);
 
                 Tasks.CompleteTasks();
-                Console.WriteLine();
             }
 
         }

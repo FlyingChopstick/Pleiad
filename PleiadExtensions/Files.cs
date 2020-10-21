@@ -13,6 +13,7 @@ namespace PleiadExtensions
         {
             public FileContract(string filename)
             {
+                if (!File.Exists(filename)) File.Create(filename);
                 FileName = filename;
                 Locker = new object();
             }
@@ -103,14 +104,14 @@ namespace PleiadExtensions
             public static void Write(this FileContract contract, string content)
             {
                 Stopwatch sw = new Stopwatch();
-
+                sw.Start();
                 while (true)
                 {
                     try
                     {
                         lock (contract.Locker)
                         {
-                            File.AppendText($"{content}\n");
+                            File.AppendAllText(contract.FileName, $"{content}\n");
                         }
                         break;
                     }
@@ -126,7 +127,7 @@ namespace PleiadExtensions
             public static void WriteLines(this FileContract contract, string[] content)
             {
                 Stopwatch sw = new Stopwatch();
-
+                sw.Start();
                 while (true)
                 {
                     try
