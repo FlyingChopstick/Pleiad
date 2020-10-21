@@ -64,16 +64,16 @@ namespace PleiadEntities
             return default;
         }
 
-        public ref List<T> GetAllData<T>()
+        public List<IPleiadComponent> GetAllData()
         {
-            List<T> output = new List<T>(_componentData.Count);
-            foreach (var data in _componentData)
-            {
-                output.Add((T)Convert.ChangeType(data, ChunkType));
-            }
-            return output;
+            //List<T> output = new List<T>(_componentData.Count);
+            //foreach (var data in _componentData)
+            //{
+            //    output.Add((T)Convert.ChangeType(data, ChunkType));
+            //}
+            return _componentData;
         }
-        public void SetAll(IPleiadComponent[] newData)
+        public void SetAllData<T>(T[] newData) where T : IPleiadComponent
         {
             if (newData.Length == _componentData.Count)
             {
@@ -85,9 +85,27 @@ namespace PleiadEntities
             else
                 throw new ArgumentException($"Can't set all: new data size is not equal to Entity count in chunk {ChunkType}:{ChunkIndex}");
         }
+        public void SetDataAt<T>(T[] newData, int start = 0) where T : IPleiadComponent
+        {
+            if (newData.Length != 0)
+            {
+                for (int i = start; i < _componentData.Count; i++)
+                {
+                    _componentData[i] = newData[i];
+                } 
+            }
+            //if (newData.Length == _componentData.Count)
+            //{
+
+            //}
+            //else
+            //    throw new ArgumentException($"Can't set all: new data size is not equal to Entity count in chunk {ChunkType}:{ChunkIndex}");
+        }
 
         public bool IsInChunk(Entity entity) => ChunkIDs.Contains(entity.ID);
         public bool IsInChunk(int entityID) => ChunkIDs.Contains(entityID);
+
+
 
         public Type ChunkType { get; }
         public int ChunkIndex { get; private set; }

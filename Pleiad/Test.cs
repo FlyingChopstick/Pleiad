@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Media;
-using System.Threading;
-using System.Threading.Tasks;
-using PleiadEntities;
+﻿using PleiadEntities;
 using PleiadInput;
 using PleiadMisc.Dice;
 using PleiadSystems;
 using PleiadTasks;
 using PleiadWorld;
+using System;
+using System.Collections.Generic;
+using System.Media;
 
 namespace Pleiad
 {
@@ -39,12 +37,20 @@ namespace Pleiad
             value += dTime;
         }
     }
+    public struct TestTaskOn<T> : IPleiadTaskOn<TestComponent>
+    {
+        public void RunOn(int i, ref TestComponent[] array)
+        {
+            var c = array[i].testValue;
+            array[i] = new TestComponent { testValue = $"goodbye {c}" };
+        }
+    }
 
     public struct SoundComponent : IPleiadComponent
     {
         public string[] files;
     }
-    public class DiceGame// : IPleiadSystem, IRegisterInput
+    public class DiceGame : IPleiadSystem, IRegisterInput
     {
         private bool _started;
         readonly SoundPlayer player = new SoundPlayer();

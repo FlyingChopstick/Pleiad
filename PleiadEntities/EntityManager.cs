@@ -23,7 +23,7 @@ namespace PleiadEntities
             _componentChunks = new Dictionary<Type, List<EntityChunk>>();
             _currentChunk = new Dictionary<Type, int>();
 
-            _cache = new DataCache();
+            _lookup = new ChunkLookup();
         }
         /// <summary>
         /// Adds an empty Entity
@@ -144,7 +144,7 @@ namespace PleiadEntities
                 _componentChunks[component][index].AddEntity(_nextID, template.ComponentData[i]);
                 chunks[component] = index;
 
-                _cache.AddIndex(template.Components, component, index);
+                _lookup.AddIndex(template.Components, component, index);
             }
 
             EntityCount++;
@@ -247,6 +247,102 @@ namespace PleiadEntities
             else
                 AddComponent(ref entity, component, componentData);
         }
+
+
+        public DataPack<T> GetTypeData<T>() where T: IPleiadComponent
+        {
+            //Dictionary<Type, List<int>> query = _lookup.GetIndices(template.Components);
+            Type type = typeof(T);
+            List<int> indices = _lookup.GetIndices(type);
+            Dictionary<int, int> chunkSizes = new Dictionary<int, int>();
+            List<IPleiadComponent> data = new List<IPleiadComponent>();
+
+            foreach (var index in indices)
+            {
+                chunkSizes[index] = _componentChunks[type][index].EntityCount;
+                data.AddRange(_componentChunks[type][index].GetAllData());
+            }
+
+            return new(indices.ToArray(), chunkSizes, data.ToArray());
+        }
+        public void SetTypeData<T>(DataPack<T> data) where T : IPleiadComponent
+        {
+            Type type = typeof(T);
+            foreach (var index in data.ChunkIndices)
+            {
+                //int chunkSize = data.ChunkSizes[index];
+
+                _componentChunks[type][index].SetAllData(data.ConvertedData());
+            }
+        }
+        public void SetTypeDataAt<T>(DataPackSmall<T> pack) where T : IPleiadComponent
+        {
+            Type type = typeof(T);
+
+
+            _componentChunks[type][pack.ChunkIndex].SetDataAt(pack.Data);
+        }
+
+
+        public struct DataPack<T> where T: IPleiadComponent
+        {
+            public DataPack(int[] indices, Dictionary<int, int> chunkSizes, IPleiadComponent[] data)
+            {
+                ChunkIndices = indices;
+                ChunkSizes = chunkSizes;
+                DataRaw = data;
+            }
+            public DataPack(int[] indices, Dictionary<int, int> chunkSizes, T[] data)
+            {
+                ChunkIndices = indices;
+                ChunkSizes = chunkSizes;
+
+                DataRaw = new IPleiadComponent[data.Length];
+                for (int i = 0; i < data.Length; i++)
+                {
+                    DataRaw[i] = data[i];
+                }
+
+                //DataRaw = data;
+            }
+
+            public T[] ConvertedData()
+            {
+                T[] arr = new T[DataRaw.Length];
+                for (int i = 0; i < DataRaw.Length; i++)
+                {
+                    arr[i] = (T)Convert.ChangeType(DataRaw[i], typeof(T));
+                }
+                return arr;
+            }
+
+
+            public int[] ChunkIndices;
+            //ChunkIndex -> count
+            public Dictionary<int, int> ChunkSizes { get; }
+            public IPleiadComponent[] DataRaw { get; private set; }
+        }
+        public struct DataPackSmall<T> where T: IPleiadComponent
+        {
+            public DataPackSmall(int chunkIndex, IPleiadComponent[] data)
+            {
+                ChunkIndex = chunkIndex;
+                Data = data;
+            }
+            public DataPackSmall(int chunkIndex, T[] data)
+            {
+                ChunkIndex = chunkIndex;
+                Data = new IPleiadComponent[data.Length];
+                for (int i = 0; i < data.Length; i++)
+                {
+                    Data[i] = data[i];
+                }
+            }
+
+            public int ChunkIndex { get; }
+            public IPleiadComponent[] Data;
+        }
+
 
         /// <summary>
         /// Checks that _typeChunks contains all components of the entity and that the index in entity.Chunks is appropriate
@@ -390,7 +486,7 @@ namespace PleiadEntities
         private readonly Dictionary<Type, List<EntityChunk>> _componentChunks;
         private readonly Dictionary<Type, int> _currentChunk;
 
-        private readonly DataCache _cache;
+        private readonly ChunkLookup _lookup;
 
         #region DebugFunctions
 #if DEBUG
@@ -412,7 +508,7 @@ namespace PleiadEntities
 
         public Dictionary<Type, List<int>> DEBUG_RetrieveCache(Type[] query)
         {
-            return _cache.GetIndices(query);
+            return _lookup.GetIndices(query);
         }
 #endif
         #endregion

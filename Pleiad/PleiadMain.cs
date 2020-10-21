@@ -1,8 +1,8 @@
-﻿using System;
-using PleiadEntities;
+﻿using PleiadEntities;
 using PleiadInput;
 using PleiadTasks;
 using PleiadWorld;
+using System;
 
 namespace Pleiad
 {
@@ -11,6 +11,8 @@ namespace Pleiad
         static void Main(string[] args)
         {
             EntityManager em = World.DefaultWorld.EntityManager;
+            Tasks.EntityManager = em;
+
 
             EntityTemplate template1 = new EntityTemplate
                 (
@@ -59,8 +61,13 @@ namespace Pleiad
 
 
 
+            for (int i = 0; i < 30; i++)
+            {
 
-            em.AddEntity(soundTemplate);
+                em.AddEntity(template2);
+            }
+            em.AddEntity(template2);
+            em.AddEntity(template2);
             //em.DEBUG_PrintChunks();
 
 
@@ -76,22 +83,24 @@ namespace Pleiad
 
             testTask2.value = 0;
             testTask2.num = 2;
+
+            TestTaskOn<TestComponent> testTaskOn = new TestTaskOn<TestComponent>();
+
             //Same as the cycle below
             //World.DefaultWorld.StartUpdate();
             while (World.DefaultWorld.CanUpdate())
             {
-                //Console.Clear();
-                testTask1.dTime = World.DefaultWorld.DeltaTime;
-                testTask2.dTime = World.DefaultWorld.DeltaTime;
-                var handle1 = new TaskHandle(testTask1);
-                var handle2 = new TaskHandle(testTask2);
-                TaskManager.Enqueue(handle2);
-                TaskManager.Enqueue(handle1);
+                TaskHandle simple1 = new TaskHandle(testTask1);
+                TaskHandle simple2 = new TaskHandle(testTask2);
 
+                TaskOnHandle<TestComponent> handleOn = new TaskOnHandle<TestComponent>(testTaskOn);
 
-                //TaskManager.Cancel(handle);
+                Tasks.SetTask(simple1);
+                Tasks.SetTask(simple2);
+                Tasks.SetTask(handleOn);
 
-                TaskManager.Complete();
+                Tasks.CompleteTasks();
+                Console.WriteLine();
             }
 
         }

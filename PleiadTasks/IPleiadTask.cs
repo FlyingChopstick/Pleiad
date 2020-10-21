@@ -1,4 +1,5 @@
 ﻿using PleiadEntities;
+using System;
 
 namespace PleiadTasks
 {
@@ -7,8 +8,8 @@ namespace PleiadTasks
         void Run();
     }
 
-    public interface IPleiadTaskOn
+    public interface IPleiadTaskOn<T>
     {
-        void RunOn<T>(int i, T[] array);
+        void RunOn(int i, ref T[] array);
     }
 }
