@@ -15,6 +15,7 @@
     <None Remove="Sounds\dice6.wav" />
   </ItemGroup>
 
+
   <ItemGroup>
     <Content Include="Sounds\dice1.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

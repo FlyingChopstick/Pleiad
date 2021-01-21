@@ -4,6 +4,7 @@ using PleiadInput;
 using PleiadTasks;
 using PleiadWorld;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Pleiad
@@ -63,46 +64,84 @@ namespace Pleiad
                 });
 
 
+            EntityTemplate displayTemplate = new EntityTemplate(
+                new Type[]
+                {
+                    typeof(DisplayComponent)
+                },
+                new IPleiadComponent[]
+                {
+                    new DisplayComponent()
+                    {
+                        queue = new List<string>(),
+                        output = string.Empty
+                    }
+                });
 
-            for (int i = 0; i < 30; i++)
-            {
+            EntityTemplate backgroundTmplt = new EntityTemplate(
+                new Type[]
+                {
+                    typeof(TextureComponent),
+                    typeof(IsBackgroundComp)
+                },
+                new IPleiadComponent[]
+                {
+                    new TextureComponent()
+                    {
+                        texture = "|_|_|_|_|_|_|_|"
+                    },
+                    new IsBackgroundComp()
+                    {
+                        id = 0
+                    }
+                });
+            EntityTemplate characterTmplt = new EntityTemplate(
+                new Type[]
+                {
+                    typeof(TextureComponent),
+                    typeof(IsCharacterComponent)
+                },
+                new IPleiadComponent[]
+                {
+                    new TextureComponent()
+                    {
+                        texture = "   ="
+                    },
+                    new IsCharacterComponent()
+                    {
+                        name = "Brave hero"
+                    }
+                });
 
-                em.AddEntity(template2);
-            }
-            em.AddEntity(template2);
-            em.AddEntity(template2);
+
+            //for (int i = 0; i < 30; i++)
+            //{
+
+            //    em.AddEntity(template2);
+            //}
+            //em.AddEntity(template2);
+            //em.AddEntity(template2);
             //em.DEBUG_PrintChunks();
+            //em.AddEntity(displayTemplate);
+            var be = em.AddEntity(backgroundTmplt);
+            var ce = em.AddEntity(characterTmplt);
 
-
-
+            //em.RemoveComponent(ref be, typeof(TextureComponent));
+            //em.DEBUG_PrintChunks();
+            var b = em.GetComponentData<TextureComponent>(be);
+            var bID = em.GetComponentData<IsBackgroundComp>(be);
+            em.RemoveComponent(be, typeof(TextureComponent));
             //Makes Input listener check only the keys added by ListenTo() 
             //(enabled by default, so you don't have to write this)
             World.DefaultWorld.SystemsManager.UseInputTable = true;
 
-            TestTask testTask1 = new TestTask();
-            TestTask testTask2 = new TestTask();
-            testTask1.value = 0;
-            testTask1.num = 31;
-
-            testTask2.value = 0;
-            testTask2.num = 2;
-
-            TestTaskOn<TestComponent> testTaskOn = new TestTaskOn<TestComponent>();
-            FileContract contract = new FileContract("text.txt");
-            File.Delete(contract.FileName);
-            TextWriteTask textWriteTask = new TextWriteTask();
-            textWriteTask.message = "Writing in main";
-            textWriteTask.file = contract;
-
-            TaskHandle textWrite = new TaskHandle(textWriteTask);
+            
             //Same as the cycle below
             //World.DefaultWorld.StartUpdate();
             while (World.DefaultWorld.CanUpdate())
             {
                 //TaskHandle simple1 = new TaskHandle(testTask1);
                 //TaskHandle simple2 = new TaskHandle(testTask2);
-
-                TaskOnHandle<TestComponent> handleOn = new TaskOnHandle<TestComponent>(testTaskOn);
 
                 //Tasks.SetTask(simple1);
                 //Tasks.SetTask(simple2);

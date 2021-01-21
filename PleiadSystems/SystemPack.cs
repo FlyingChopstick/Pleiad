@@ -1,17 +1,36 @@
 ﻿using PleiadEntities;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
 namespace PleiadSystems
 {
-    internal struct SystemPack
+
+    public enum LoadOrder
     {
-        public SystemPack(Dictionary<object, MethodInfo> systemsInfo, IPleiadComponent[] query = default)
+        LoadFirst = 0,
+        LoadMiddle = 1,
+        LoadLast = 2
+    }
+
+    internal struct SystemData
+    {
+        public SystemData(
+            Type systemType,
+            object systemObject,
+            MethodInfo systemMethod,
+            LoadOrder loadOrder
+            )
         {
-            Systems = systemsInfo;
-            Query = query;
+            SystemType = systemType;
+            SystemObject = systemObject;
+            SystemMethod = systemMethod;
+            LoadOrder = loadOrder;
         }
-        public Dictionary<object, MethodInfo> Systems { get; private set; }
-        public IPleiadComponent[] Query { get; }
+
+        public Type SystemType { get; }
+        public object SystemObject { get; }
+        public MethodInfo SystemMethod { get; }
+        public LoadOrder LoadOrder { get; }
     }
 }

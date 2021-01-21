@@ -1,6 +1,7 @@
 ﻿using PleiadInput;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -9,12 +10,15 @@ namespace PleiadSystems
 {
     public class SystemsManager
     {
-        private readonly Dictionary<Type, SystemPack> _systems;
+        private readonly Dictionary<Type, HashSet<SystemData>> _systems;
         private static readonly InputListener _il = new InputListener();
         private readonly Stopwatch _sw;
 
         private float _lastTime;
         private float _currentTime;
+
+        private Dictionary<LoadOrder, HashSet<SystemData>> _loadOrder = new Dictionary<LoadOrder, HashSet<SystemData>>();
+
 
         public float DeltaTime { get; private set; }
         public bool ShouldUpdate { get; set; }
@@ -28,7 +32,7 @@ namespace PleiadSystems
         {
             try
             {
-                _systems = new Dictionary<Type, SystemPack>();
+                _systems = new Dictionary<Type, HashSet<SystemData>>();
 
                 LoadSystems();
                 RegisterInput();
@@ -99,6 +103,7 @@ namespace PleiadSystems
             {
                 try
                 {
+                    _systems[ISys] = new HashSet<SystemData>();
                     LoadSystem(ISys);
                 }
                 catch (ArgumentException e)
@@ -107,10 +112,13 @@ namespace PleiadSystems
                 }
             }
 
+            //SortSystems();
             Console.WriteLine("Systems loaded.");
         }
         private void LoadSystem(Type system)
         {
+
+
             //Get all classes that implement the selected System interface
             List<Type> systems = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
               .Where(x => system.IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
@@ -118,17 +126,42 @@ namespace PleiadSystems
 
             if (systems.Count == 0) throw new ArgumentException($"Could not find any Systems of type \"{system}\"");
 
+
             List<object> systemObjBuffer = new List<object>();
             List<MethodInfo> methodBuffer = new List<MethodInfo>();
             var sysDict = new Dictionary<object, MethodInfo>();
 
+
             foreach (var systemType in systems)
             {
-                sysDict[systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { })] = systemType.GetMethod("Cycle");
+                var sysObj = systemType.GetConstructor(Type.EmptyTypes).Invoke(Array.Empty<object>());
+                var sysMethod = systemType.GetMethod("Cycle");
+
+                var attr = systemType.GetCustomAttribute<SysOrderAttribute>();
+                var sysLoadOrder = attr != null ? attr.Order : LoadOrder.LoadLast;
+
+                var systemData = new SystemData(systemType, sysObj, sysMethod, sysLoadOrder);
+
+                if (!_loadOrder.ContainsKey(sysLoadOrder))
+                {
+                    _loadOrder[sysLoadOrder] = new HashSet<SystemData>();
+                }
+
+                _loadOrder[sysLoadOrder].Add(systemData);
+
+
+                //sysDict[systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { })] = systemType.GetMethod("Cycle");
+
+                //_systems[system].Add(new SystemData(systemType, sysObj, sysMethod, loadAfter));
+
                 Console.WriteLine($"  | Loaded {systemType}");
             }
+        }
 
-            _systems[system] = new SystemPack(sysDict);
+
+        private void SortSystems()
+        {
+
         }
 
 
@@ -173,26 +206,38 @@ namespace PleiadSystems
             _currentTime = (float)_sw.Elapsed.TotalMilliseconds;
             DeltaTime = _currentTime - _lastTime;
 
-            foreach (var systemType in _systems.Keys)
+
+            foreach (var layer in _loadOrder.Keys)
             {
-                var system = _systems[systemType];
-
-
-                var objEn = system.Systems.Keys.GetEnumerator();
-                var methEn = system.Systems.Values.GetEnumerator();
-                //Using an iterator over objects and methods
-                while (objEn.MoveNext())
+                foreach (var sys in _loadOrder[layer])
                 {
-                    methEn.MoveNext();
-
-                    var method = methEn.Current;
-                    var summoner = objEn.Current;
-
-                    //Invoke the Cycle()
-                    method.Invoke(summoner, new object[] { DeltaTime });
+                    sys.SystemMethod.Invoke(sys.SystemObject, new object[] { DeltaTime });
                 }
-
             }
+
+
+
+
+            //foreach (var systemType in _systems.Keys)
+            //{
+            //    var system = _systems[systemType];
+
+
+            //    var objEn = system.Systems.Keys.GetEnumerator();
+            //    var methEn = system.Systems.Values.GetEnumerator();
+            //    //Using an iterator over objects and methods
+            //    while (objEn.MoveNext())
+            //    {
+            //        methEn.MoveNext();
+
+            //        var method = methEn.Current;
+            //        var summoner = objEn.Current;
+
+            //        //Invoke the Cycle()
+            //        method.Invoke(summoner, new object[] { DeltaTime });
+            //    }
+
+            //}
 
             _lastTime = _currentTime;
 
