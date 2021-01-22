@@ -15,11 +15,13 @@ namespace PleiadTasks
         /// <summary>
         /// Entity manager that is used
         /// </summary>
-        public static Entities EntityManager { get; set; }
+        public static EntityManager EntityManager { get; set; }
         /// <summary>
         /// Amount of queued tasks;
         /// </summary>
         public static int QueuedTasksCount { get => _tasks.Count; }
+
+
 
         /// <summary>
         /// Sets a new task
@@ -95,10 +97,7 @@ namespace PleiadTasks
         public static void ChainTasks(ref TaskHandle previous, ref TaskHandle next)
         {
             WaitHandle(ref previous);
-
-            next.Task = new Task(next.Action, next.Source.Token);
-            _tasks.Add(next.Task);
-            next.Task.Start();
+            SetTask(ref next);
         }
         /// <summary>
         /// Wait for previous task to finish and start next
@@ -164,6 +163,7 @@ namespace PleiadTasks
             {
                 if (handle.Tasks.Count == 0)
                     SetTaskOn(ref handle);
+
                 Task.WaitAll(handle.Tasks.ToArray());
             }
         }
@@ -172,5 +172,36 @@ namespace PleiadTasks
         /// List of all set tasks
         /// </summary>
         private static readonly HashSet<Task> _tasks = new HashSet<Task>();
+
+
+        #region DEBUG
+        private static List<float> DEBUG_ts = new List<float>();
+        private static List<float> DEBUG_tf = new List<float>();
+        private static readonly System.Diagnostics.Stopwatch DEBUG_sw = new System.Diagnostics.Stopwatch();
+
+        public static void DEBUG_StartTime()
+        {
+            DEBUG_sw.Start();
+        }
+        public static void DEBUG_TaskStart()
+        {
+            DEBUG_ts.Add(DEBUG_sw.ElapsedMilliseconds);
+        }
+        public static void DEBUG_TaskFinish()
+        {
+            DEBUG_tf.Add(DEBUG_sw.ElapsedMilliseconds);
+        }
+        public static void DEBUG_StopTime()
+        {
+            DEBUG_sw.Stop();
+            DEBUG_sw.Reset();
+            for (int i = 0; i < DEBUG_ts.Count; i++)
+            {
+                Console.WriteLine($"Task started: {DEBUG_ts[i]}");
+                Console.WriteLine($"Task finished: {DEBUG_tf[i]}");
+            }
+            Console.WriteLine($"Total: {DEBUG_sw.ElapsedMilliseconds}");
+        }
+        #endregion
     }
 }

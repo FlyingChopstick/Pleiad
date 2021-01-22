@@ -11,7 +11,7 @@ namespace Pleiad
     {
         static void Main(string[] args)
         {
-            Entities em = World.DefaultWorld.EntityManager;
+            EntityManager em = World.DefaultWorld.EntityManager;
             Tasks.EntityManager = em;
 
 
@@ -123,15 +123,23 @@ namespace Pleiad
             //em.AddEntity(template2);
             //em.DEBUG_PrintChunks();
             //em.AddEntity(displayTemplate);
-            var string1 = em.AddEntity(tmpl_string);
-            var string2 = em.AddEntity(tmpl_string);
-            var string3 = em.AddEntity(tmpl_string);
+            // 
+
+
+            for (int i = 0; i < 50; i++)
+            {
+                var string1 = em.AddEntity(tmpl_string);
+            }
+
+            //var string2 = em.AddEntity(tmpl_string);
+            //var string3 = em.AddEntity(tmpl_string);
 
 
             var consoleWrite1 = new ReadAllStrings();
             var consoleWrite2 = new ReadAllStrings();
             var consoleWrite3 = new ReadAllStrings();
 
+            
             //Same as the cycle below
             //World.DefaultWorld.StartUpdate();
             while (World.DefaultWorld.CanUpdate())
@@ -140,11 +148,13 @@ namespace Pleiad
                 var sh2 = new TaskOnHandle<StringTestComponent>(consoleWrite2);
                 var sh3 = new TaskOnHandle<StringTestComponent>(consoleWrite3);
 
-                Tasks.SetTaskOn(ref sh1);
-                Tasks.ChainTasks(ref sh1, ref sh2);
-                Tasks.ChainTasks(ref sh2, ref sh3);
+                //Tasks.SetTaskOn(ref sh1);
+                //Tasks.ChainTasks(ref sh1, ref sh2);
+                //Tasks.ChainTasks(ref sh2, ref sh3);
 
-                Tasks.CompleteTasks();
+                //Tasks.CompleteTasks();
+
+                World.DefaultWorld.EntityManager.DEBUG_PrintChunks();
             }
 
         }

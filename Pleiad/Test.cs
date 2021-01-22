@@ -95,7 +95,7 @@ namespace Pleiad
     //    private bool _started;
     //    readonly SoundPlayer player = new SoundPlayer();
     //    readonly Type soundComponent = typeof(SoundComponent);
-    //    readonly Entities em = World.DefaultWorld.EntityManager;
+    //    readonly EntityManager em = World.DefaultWorld.EntityManager;
 
     //    int die = 0;
 

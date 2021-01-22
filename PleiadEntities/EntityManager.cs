@@ -8,7 +8,7 @@ namespace PleiadEntities
     /// <summary>
     /// Provides control over Entities and Components
     /// </summary>
-    public class Entities
+    public class EntityManager
     {
         /// <summary>
         /// All chunks
@@ -56,11 +56,11 @@ namespace PleiadEntities
         /// <summary>
         /// Total amount of entities 
         /// </summary>
-        public int EntityCount { get => _nextID; }
+        public int EntityCount { get; private set; }
         /// <summary>
         /// Total amount of chunks
         /// </summary>
-        public int ChunkCount { get => _nextChunkIndex; }
+        public int ChunkCount { get; private set; }
 
         /// <summary>
         /// Index for new chunk
@@ -77,11 +77,14 @@ namespace PleiadEntities
 
 
 
-        public Entities()
+        public EntityManager()
         {
             _nextChunkIndex = 0;
             _nextID = 1;
             _chunkSize = DEFAULT_ENTITY_CHUNK_SIZE;
+
+            EntityCount = 0;
+            ChunkCount = 0;
 
             //INIT STORAGE
             //_openTypeChunks = new Dictionary<Type, Stack<int>>();
@@ -208,6 +211,7 @@ namespace PleiadEntities
         {
             //init storage
             int enID = _nextID++;
+            EntityCount++;
             _entityComponentStorage[enID] = new Dictionary<Type, int>();
             _entityComponents[enID] = new HashSet<Type>();
             //add each component
@@ -219,6 +223,9 @@ namespace PleiadEntities
 
                 int chunkIndex = GetComponentChunk(component);
                 _chunks[chunkIndex].AddEntity(enID);
+                if (_chunks[chunkIndex].IsFull)
+                    _openTypeChunks.RemoveIndex(component, chunkIndex);
+
                 AddComponent(enID, component, data);
             }
 
@@ -241,6 +248,7 @@ namespace PleiadEntities
                 _entityChunks.RemoveKey(entity.ID);
                 _entityComponentStorage.Remove(entity.ID);
                 _entityComponents.Remove(entity.ID);
+                EntityCount--;
             }
         }
         /// <summary>
@@ -423,6 +431,7 @@ namespace PleiadEntities
         }
 
 
+
         /// <summary>
         /// Get the index of the existing open component chunk or create a new one
         /// </summary>
@@ -437,11 +446,13 @@ namespace PleiadEntities
                 chunkIndex = openChunk.Data.First();
             else
             {
-                var res = _chunkLUP.GetIndices(chunkType);
-                if (!res.IsFound || res.Data.Count == 0)
-                    chunkIndex = CreateComponentChunk(chunkType);
-                else
-                    chunkIndex = res.Data.First();
+                chunkIndex = CreateComponentChunk(chunkType);
+
+                //var res = _chunkLUP.GetIndices(chunkType);
+                //if (!res.IsFound || res.Data.Count == 0)
+                //    chunkIndex = CreateComponentChunk(chunkType);
+                //else
+                //    chunkIndex = res.Data.First();
             }
             return chunkIndex;
         }
@@ -459,6 +470,7 @@ namespace PleiadEntities
             _chunkLUP.AddIndex(component, _nextChunkIndex);
             _openTypeChunks.AddIndex(component, _nextChunkIndex);
 
+            ChunkCount++;
             return _nextChunkIndex++;
         }
 
@@ -543,6 +555,19 @@ namespace PleiadEntities
             //        chunk.DEBUG_PrintEntities();
             //    }
             //}
+        }
+        /// <summary>
+        /// Counts entities in all chunks
+        /// </summary>
+        /// <returns></returns>
+        public void DEBUG_CountEntitiesInChunks()
+        {
+            int total = 0;
+            foreach (var chunk in _chunks)
+            {
+                total += chunk.EntityCount;
+            }
+            Console.WriteLine($"Counted Entities in chunks: {total}");
         }
 #endif
         #endregion
