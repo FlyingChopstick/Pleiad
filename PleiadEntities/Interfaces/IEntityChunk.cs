@@ -65,7 +65,9 @@ namespace PleiadEntities
         /// <returns><see langword="true"/> if the data is updated successfully, <see langword="false"/> otherwise</returns>
         bool SetComponentData(int entityID, IPleiadComponent componentData);
 
-
+        /// <summary>
+        /// Prints all entities in the chunk
+        /// </summary>
         public void DEBUG_PrintEntities();
     }
 }

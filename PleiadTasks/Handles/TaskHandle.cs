@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace PleiadTasks
 {
+    /// <summary>
+    /// Structure that stores task info
+    /// </summary>
     public struct TaskHandle
     {
         public TaskHandle(IPleiadTask task)
@@ -13,8 +16,14 @@ namespace PleiadTasks
             Task = default;
         }
 
+        /// <summary>
+        /// What task should do
+        /// </summary>
         public Action Action { get; }
         public CancellationTokenSource Source { get; }
+        /// <summary>
+        /// Task object to track
+        /// </summary>
         public Task Task { get; set; }
 
         public override bool Equals(object obj)
@@ -37,7 +46,5 @@ namespace PleiadTasks
             return !(left == right);
         }
     }
-
-    public delegate void ActionRef<T, D>(int index, D[] array);
 }
 

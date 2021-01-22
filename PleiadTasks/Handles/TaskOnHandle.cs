@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+/// <summary>
+/// Structure that stores info about task on component chunks
+/// </summary>
+/// <typeparam name="T">Selected component</typeparam>
 public struct TaskOnHandle<T>
 {
     public TaskOnHandle(IPleiadTaskOn<T> task)
@@ -13,11 +17,21 @@ public struct TaskOnHandle<T>
         Tasks = new List<Task>();
     }
 
+    /// <summary>
+    /// Action to perform on chunks
+    /// </summary>
     public ActionOnDelegate ActionOn { get; }
     public CancellationTokenSource Source { get; }
+    /// <summary>
+    /// List of tasks on chunks
+    /// </summary>
     public List<Task> Tasks { get; set; }
 
-
+    /// <summary>
+    /// Delegate to perform action on array
+    /// </summary>
+    /// <param name="index">Current index</param>
+    /// <param name="array">Array of component data</param>
     public delegate void ActionOnDelegate(int index, ref T[] array);
 
 
