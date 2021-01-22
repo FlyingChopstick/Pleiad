@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PleiadMisc;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -201,7 +202,7 @@ namespace PleiadEntities
             var entityChunks = _entityChunks.GetIndices(entity.ID);
             if (entityChunks.IsFound)
             {
-                foreach (var chunkIndex in entityChunks.Result)
+                foreach (var chunkIndex in entityChunks.Data)
                 {
                     _chunks[chunkIndex].RemoveEntity(entity.ID);
                 }
@@ -226,13 +227,13 @@ namespace PleiadEntities
             var componentChunks = _chunkLUP.GetIndices(component);
 
             //if there's no free component chunk
-            if (!componentChunks.IsFound || componentChunks.Result.Count == 0)
+            if (!componentChunks.IsFound || componentChunks.Data.Count == 0)
             {
                 //create new chunk
                 chunkIndex = GetComponentChunk(component);
             }
             else
-                chunkIndex = componentChunks.Result.First();
+                chunkIndex = componentChunks.Data.First();
 
             //set data
             _chunks[chunkIndex].SetComponentData(entityID, componentData);
@@ -280,10 +281,8 @@ namespace PleiadEntities
         /// <typeparam name="T">Component to retrieve</typeparam>
         /// <param name="entity">Target</param>
         /// <returns>Component data</returns>
-        public T GetComponentData<T>(Entity entity)
+        public Result<T> GetComponentData<T>(Entity entity)
         {
-            //ValidateEntity(entity);
-
             Type dataType = typeof(T);
 
             if (_entityComponentStorage.ContainsKey(entity.ID))
@@ -296,13 +295,14 @@ namespace PleiadEntities
                         var ipc = _chunks[index].GetComponentData(entity.ID);
 
                         if (ipc.IsFound)
-                            return (T)Convert.ChangeType((T)ipc.Result, dataType);
+                            return Result<T>.Found((T)Convert.ChangeType((T)ipc.Data, dataType));
                     }
                 }
             }
 
-            ThrowError(ErrorType.CompDoesNotExist, entity, dataType);
-            return default;
+            //ThrowError(ErrorType.CompDoesNotExist, entity, dataType);
+            //return default;
+            return Result<T>.NotFound;
         }
         /// <summary>
         /// Sets the data for the existing Component or attaches a new one
@@ -339,20 +339,52 @@ namespace PleiadEntities
 
 
 
+        public Result<HashSet<int>> GetAllChunksOfType(Type chunkType)
+        {
+            return _chunkLUP.GetIndices(chunkType);
+        }
+        public Result<List<IPleiadComponent>> GetChunkData(int chunkIndex)
+        {
+            if (chunkIndex <= _chunks.Count && chunkIndex >= 0)
+            {
+                return Result<List<IPleiadComponent>>.Found(_chunks[chunkIndex].GetChunkData());
+            }
+            else
+                return Result<List<IPleiadComponent>>.NotFound;
+        }
+        public void SetChunkData<T>(int chunkIndex, List<T> data) where T : IPleiadComponent
+        {
+            if (chunkIndex <= _chunks.Count && chunkIndex >= 0
+                && _chunks[chunkIndex].ChunkType == typeof(T))
+            {
+                _chunks[chunkIndex].SetChunkData(data);
+            }
+        }
+        public void SetChunkData<T>(int chunkIndex, T[] data) where T : IPleiadComponent
+        {
+            if (chunkIndex <= _chunks.Count && chunkIndex >= 0
+                && _chunks[chunkIndex].ChunkType == typeof(T))
+            {
+                _chunks[chunkIndex].SetChunkData(data);
+            }
+        }
+
+
+
         private int GetComponentChunk(Type chunkType)
         {
             int chunkIndex;
 
             var openChunk = _openTypeChunks.GetIndices(chunkType);
-            if (openChunk.IsFound && openChunk.Result.Count == 0)
-                chunkIndex = openChunk.Result.First();
+            if (openChunk.IsFound && openChunk.Data.Count > 0)
+                chunkIndex = openChunk.Data.First();
             else
             {
                 var res = _chunkLUP.GetIndices(chunkType);
-                if (!res.IsFound || res.Result.Count == 0)
+                if (!res.IsFound || res.Data.Count == 0)
                     chunkIndex = CreateComponentChunk(chunkType);
                 else
-                    chunkIndex = res.Result.First();
+                    chunkIndex = res.Data.First();
             }
             return chunkIndex;
         }
@@ -366,6 +398,23 @@ namespace PleiadEntities
 
             return _nextChunkIndex++;
         }
+
+
+        //private DataPack<T> CreateDataPack<T>(Type component) where T: IPleiadComponent
+        //{
+        //    //get all chunks of selected component
+        //    var res = GetAllChunksOfType(component);
+        //    if (res.IsFound && res.Result.Count > 0)
+        //    {
+        //        foreach (var chunkIndex in res.Result)
+        //        {
+        //            _chunks[chunkIndex].DumpChunkData();
+        //        }
+        //    }
+
+        //    //dump their data to datapack
+
+        //}
 
 
         private enum ErrorType

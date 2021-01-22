@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PleiadMisc;
+using System;
 using System.Collections.Generic;
 
 namespace PleiadEntities
@@ -55,7 +56,7 @@ namespace PleiadEntities
         /// </summary>
         /// <param name="entityID">Entity to retrieve</param>
         /// <returns>IPleiadComponent containing the data</returns>
-        SearchResult<IPleiadComponent> GetComponentData(int entityID);
+        Result<IPleiadComponent> GetComponentData(int entityID);
         /// <summary>
         /// Try to set component data of the entity
         /// </summary>

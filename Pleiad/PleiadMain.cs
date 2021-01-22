@@ -1,11 +1,9 @@
 ﻿using PleiadEntities;
-using PleiadExtensions.Files;
 using PleiadInput;
 using PleiadTasks;
 using PleiadWorld;
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Pleiad
 {
@@ -18,32 +16,32 @@ namespace Pleiad
 
 
 
-            EntityTemplate template1 = new EntityTemplate
+            EntityTemplate tmpl_string_int = new EntityTemplate
                 (
                 new Type[]
                 {
-                    typeof(TestComponent),
+                    typeof(StringTestComponent),
                     typeof(IntTestComponent)
                 },
                 new IPleiadComponent[]
                 {
-                    new TestComponent(),
+                    new StringTestComponent(),
                     new IntTestComponent() { testValue = 13}
                 });
 
-            EntityTemplate template2 = new EntityTemplate
+            EntityTemplate tmpl_string = new EntityTemplate
                 (
                 new Type[]
                 {
-                    typeof(TestComponent)
+                    typeof(StringTestComponent)
                 },
                 new IPleiadComponent[]
                 {
-                    new TestComponent() { testValue = "hello" }
+                    new StringTestComponent() { text = "hello" }
                 });
 
 
-            EntityTemplate soundTemplate = new EntityTemplate(
+            EntityTemplate tmpl_sound = new EntityTemplate(
                 new Type[]
                 {
                     typeof(SoundComponent)
@@ -64,7 +62,7 @@ namespace Pleiad
                 });
 
 
-            EntityTemplate displayTemplate = new EntityTemplate(
+            EntityTemplate tmpl_display = new EntityTemplate(
                 new Type[]
                 {
                     typeof(DisplayComponent)
@@ -78,7 +76,7 @@ namespace Pleiad
                     }
                 });
 
-            EntityTemplate backgroundTmplt = new EntityTemplate(
+            EntityTemplate tmpl_background = new EntityTemplate(
                 new Type[]
                 {
                     typeof(TextureComponent),
@@ -95,7 +93,7 @@ namespace Pleiad
                         id = 0
                     }
                 });
-            EntityTemplate characterTmplt = new EntityTemplate(
+            EntityTemplate tmpl_character = new EntityTemplate(
                 new Type[]
                 {
                     typeof(TextureComponent),
@@ -114,6 +112,8 @@ namespace Pleiad
                 });
 
 
+
+
             //for (int i = 0; i < 30; i++)
             //{
 
@@ -123,31 +123,26 @@ namespace Pleiad
             //em.AddEntity(template2);
             //em.DEBUG_PrintChunks();
             //em.AddEntity(displayTemplate);
-            var be = em.AddEntity(backgroundTmplt);
-            var ce = em.AddEntity(characterTmplt);
+            var string1 = em.AddEntity(tmpl_string);
+            var string2 = em.AddEntity(tmpl_string);
+            var string3 = em.AddEntity(tmpl_string);
 
-            //em.RemoveComponent(ref be, typeof(TextureComponent));
-            //em.DEBUG_PrintChunks();
-            var b = em.GetComponentData<TextureComponent>(be);
-            var bID = em.GetComponentData<IsBackgroundComp>(be);
-            em.RemoveComponent(be, typeof(TextureComponent));
-            //Makes Input listener check only the keys added by ListenTo() 
-            //(enabled by default, so you don't have to write this)
-            World.DefaultWorld.SystemsManager.UseInputTable = true;
 
-            
+            var consoleWrite1 = new ReadAllStrings();
+            var consoleWrite2 = new ReadAllStrings();
+            var consoleWrite3 = new ReadAllStrings();
+
             //Same as the cycle below
             //World.DefaultWorld.StartUpdate();
             while (World.DefaultWorld.CanUpdate())
             {
-                //TaskHandle simple1 = new TaskHandle(testTask1);
-                //TaskHandle simple2 = new TaskHandle(testTask2);
+                var sh1 = new TaskOnHandle<StringTestComponent>(consoleWrite1);
+                var sh2 = new TaskOnHandle<StringTestComponent>(consoleWrite2);
+                var sh3 = new TaskOnHandle<StringTestComponent>(consoleWrite3);
 
-                //Tasks.SetTask(simple1);
-                //Tasks.SetTask(simple2);
-                //Tasks.SetTask(handleOn);
-
-                //Tasks.SetTask(textWrite);
+                Tasks.SetTaskOn(ref sh1);
+                Tasks.ChainTasks(ref sh1, ref sh2);
+                Tasks.ChainTasks(ref sh2, ref sh3);
 
                 Tasks.CompleteTasks();
             }

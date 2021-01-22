@@ -1,19 +1,14 @@
 ﻿using PleiadEntities;
 using PleiadExtensions.Files;
-using PleiadInput;
-using PleiadMisc.Dice;
 using PleiadSystems;
 using PleiadTasks;
-using PleiadWorld;
 using System;
-using System.Collections.Generic;
-using System.Media;
 
 namespace Pleiad
 {
-    public struct TestComponent : IPleiadComponent
+    public struct StringTestComponent : IPleiadComponent
     {
-        public string testValue;
+        public string text;
     }
     public struct IntTestComponent : IPleiadComponent
     {
@@ -38,12 +33,34 @@ namespace Pleiad
             value += dTime;
         }
     }
-    public struct TestTaskOn<T> : IPleiadTaskOn<TestComponent>
+
+    public struct ConsoleWriteTask : IPleiadTask
     {
-        public void RunOn(int i, ref TestComponent[] array)
+        public string message;
+        public void Run()
         {
-            var c = array[i].testValue;
-            array[i] = new TestComponent { testValue = $"goodbye {c}" };
+            Console.WriteLine(message);
+        }
+    }
+
+    public struct ReadAllStrings : IPleiadTaskOn<StringTestComponent>
+    {
+        public void RunOn(int i, ref StringTestComponent[] array)
+        {
+            if (array[i].text != null)
+            {
+                Console.WriteLine(array[i].text);
+                array[i] = new StringTestComponent { text = $"Modified {array[i].text}" };
+            }
+        }
+    }
+
+    public struct TestTaskOn<T> : IPleiadTaskOn<StringTestComponent>
+    {
+        public void RunOn(int i, ref StringTestComponent[] array)
+        {
+            var c = array[i].text;
+            array[i] = new StringTestComponent { text = $"goodbye {c}" };
         }
     }
 
@@ -57,7 +74,7 @@ namespace Pleiad
         }
     }
 
-    
+
 
 
 

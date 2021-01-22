@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PleiadMisc;
+using System;
 using System.Collections.Generic;
 
 namespace PleiadEntities
@@ -65,15 +66,15 @@ namespace PleiadEntities
 
         public bool ContainsID(int entityID) => _enitityIDs.Contains(entityID);
 
-        public SearchResult<IPleiadComponent> GetComponentData(int entityID)
+        public Result<IPleiadComponent> GetComponentData(int entityID)
         {
             int slot = _enitityIDs.IndexOf(entityID);
             if (slot != -1)
             {
-                return new SearchResult<IPleiadComponent>(_componentData[slot]);
+                return Result<IPleiadComponent>.Found(_componentData[slot]);
             }
 
-            return new SearchResult<IPleiadComponent>(false);
+            return Result<IPleiadComponent>.NotFound;
         }
 
         public bool RemoveEntity(int entityID)
@@ -105,6 +106,25 @@ namespace PleiadEntities
             return true;
         }
 
+        public List<IPleiadComponent> GetChunkData() => _componentData;
+        public void SetChunkData<T>(List<T> data) where T : IPleiadComponent
+        {
+            for (int i = 0; i < data.Count; i++)
+            {
+                _componentData[i] = data[i];
+            }
+        }
+        public void SetChunkData<T>(T[] data) where T : IPleiadComponent
+        {
+            for (int i = 0; i < _componentData.Capacity; i++)
+            {
+                if (data[i] != null)
+                {
+                    _componentData[i] = data[i];
+                }
+            }
+        }
+
         public void DEBUG_PrintEntities()
         {
             Console.WriteLine("---------------------");
@@ -119,7 +139,7 @@ namespace PleiadEntities
         }
 
         private readonly List<int> _enitityIDs;
-        private readonly List<IPleiadComponent> _componentData;
+        private List<IPleiadComponent> _componentData;
         private readonly Stack<int> _freeIndices;
     }
 
