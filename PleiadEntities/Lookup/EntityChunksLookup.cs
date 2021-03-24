@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using PleiadMisc;
+using System.Collections.Generic;
 
 namespace PleiadEntities
 {
@@ -16,7 +17,7 @@ namespace PleiadEntities
         /// <summary>
         /// Add Entity ID to lookup
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="entityID"></param>
         /// <param name="index"></param>
         public void AddIndex(int entityID, int index)
         {
@@ -30,12 +31,12 @@ namespace PleiadEntities
         /// </summary>
         /// <param name="entityID">Entity ID</param>
         /// <returns>SearchResult with the list of all chunks containing the entity</returns>
-        public SearchResult<HashSet<int>> GetIndices(int entityID)
+        public Result<HashSet<int>> GetIndices(int entityID)
         {
             if (_lookup.ContainsKey(entityID))
-                return new SearchResult<HashSet<int>>(_lookup[entityID]);
+                return Result<HashSet<int>>.Found(_lookup[entityID]);
             else
-                return new SearchResult<HashSet<int>>(false);
+                return Result<HashSet<int>>.NotFound;
         }
 
         public void RemoveIndex(int entityID, int index)

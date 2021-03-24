@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PleiadInput</name>
+    </assembly>
+    <members>
+        <member name="T:PleiadInput.Key">
+            <summary>
+            Keyboard keys
+            </summary>
+        </member>
+        <member name="T:PleiadInput.InputListener">
+            <summary>
+            Provides the methods to add the keys to the list of bound keys, calling KeyPress and KeyRelease events on them
+            </summary>
+        </member>
+        <member name="M:PleiadInput.InputListener.ClearConsole">
+            <summary>
+            Clears console screen
+            </summary>
+        </member>
+        <member name="T:PleiadInput.InputListener.KeyEvent">
+            <summary>
+            Delegate for key events
+            </summary>
+            <param name="key">Key</param>
+        </member>
+        <member name="E:PleiadInput.InputListener.KeyRelease">
+            <summary>
+            A key was pressed
+            </summary>
+        </member>
+        <member name="E:PleiadInput.InputListener.KeyPress">
+            <summary>
+            A key was released
+            </summary>
+        </member>
+        <member name="P:PleiadInput.InputListener.UseInputTable">
+            <summary>
+            Should the listener listen to the list of bound keys or to check each possible key (default=<see langword="true"/>)
+            </summary>
+        </member>
+        <member name="M:PleiadInput.InputListener.#ctor(System.Boolean)">
+            <summary>
+            Provides the methods to add the keys to the list of bound keys, calling KeyPress and KeyRelease events on them
+            </summary>
+        </member>
+        <member name="M:PleiadInput.InputListener.ListenTo(PleiadInput.Key)">
+            <summary>
+            Adds a new key to listen for
+            </summary>
+            <param name="key">Key to listen</param>
+        </member>
+        <member name="M:PleiadInput.InputListener.ListenTo(PleiadInput.Key[])">
+            <summary>
+            Adds a list of keys to listen for
+            </summary>
+            <param name="keys">List of keys</param>
+        </member>
+        <member name="M:PleiadInput.InputListener.StopListening(PleiadInput.Key[])">
+            <summary>
+            Removes keys from the bound keys
+            </summary>
+            <param name="keys">Keys to remove</param>
+        </member>
+        <member name="M:PleiadInput.InputListener.StopListening(System.Collections.Generic.List{PleiadInput.Key})">
+            <summary>
+            Removes keys from the bound keys
+            </summary>
+            <param name="keys">Keys to remove</param>
+        </member>
+        <member name="M:PleiadInput.InputListener.StopListening(PleiadInput.Key)">
+            <summary>
+            Removes the key from bound keys
+            </summary>
+            <param name="key">Key to remove</param>
+        </member>
+        <member name="M:PleiadInput.InputListener.ReadKeys">
+            <summary>
+            Checks for keypresses for registered keys
+            </summary>
+        </member>
+        <member name="M:PleiadInput.InputListener.WaitForInput(PleiadInput.Key[])">
+            <summary>
+            Waits for a key press
+            </summary>
+            <param name="keys">Keys to check</param>
+        </member>
+        <member name="M:PleiadInput.InputListener.WaitForInput(System.Collections.Generic.List{PleiadInput.Key})">
+            <summary>
+            Waits for a key press
+            </summary>
+            <param name="keys">Keys to check</param>
+        </member>
+        <member name="M:PleiadInput.InputListener.WaitForInput(PleiadInput.Key)">
+            <summary>
+            Waits for a key press
+            </summary>
+            <param name="key">Key to check</param>
+        </member>
+        <member name="T:PleiadInput.IRegisterInput">
+            <summary>
+            Required to add input checks to the system
+            </summary>
+        </member>
+        <member name="M:PleiadInput.IRegisterInput.InputRegistration(PleiadInput.InputListener@)">
+            <summary>
+            Register keys for listening
+            </summary>
+            <param name="listener">Input Listener</param>
+        </member>
+    </members>
+</doc>

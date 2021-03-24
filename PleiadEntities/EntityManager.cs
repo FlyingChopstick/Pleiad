@@ -1,6 +1,6 @@
-﻿using System;
+﻿using PleiadMisc;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace PleiadEntities
@@ -8,15 +8,33 @@ namespace PleiadEntities
     /// <summary>
     /// Provides control over Entities and Components
     /// </summary>
-    public class Entities
+    public class EntityManager
     {
-        private readonly List<EntityChunk> _chunks;             //store of all the chunks
-        private readonly IIndexLookup<Type> _chunkLUP;          //indices of type chunks
-        private readonly IIndexLookup<Type> _openTypeChunks;    //open chunks of each type
+        /// <summary>
+        /// All chunks
+        /// </summary>
+        private readonly List<EntityChunk> _chunks;
+        /// <summary>
+        /// Type - list of chunk indices lookup
+        /// </summary>
+        private readonly IIndexLookup<Type> _chunkLUP;
+        /// <summary>
+        /// Type - list of open chunk indices lookup
+        /// </summary>
+        private readonly IIndexLookup<Type> _openTypeChunks;
 
-        private readonly IIndexLookup<int> _entityChunks;                                   //what chunks contain the entity
-        private readonly Dictionary<int, Dictionary<Type, int>> _entityComponentStorage;    //where are entity components stored
-        private readonly Dictionary<int, HashSet<Type>> _entityComponents;                  //what components does entity contain
+        /// <summary>
+        /// Entity ID - list of chunks containing this entity lookup
+        /// </summary>
+        private readonly IIndexLookup<int> _entityChunks;
+        /// <summary>
+        /// Entity ID - [Dictionary of Component - chunk index]
+        /// </summary>
+        private readonly Dictionary<int, Dictionary<Type, int>> _entityComponentStorage;
+        /// <summary>
+        /// Entity ID - List of entity components
+        /// </summary>
+        private readonly Dictionary<int, HashSet<Type>> _entityComponents;
 
         /// <summary>
         /// Default size of an Entity Chunk
@@ -35,20 +53,38 @@ namespace PleiadEntities
                 _chunkSize = value;
             }
         }
-        public int EntityCount { get => _nextID; }
-        public int ChunkCount { get => _nextChunkIndex; }
+        /// <summary>
+        /// Total amount of entities 
+        /// </summary>
+        public int EntityCount { get; private set; }
+        /// <summary>
+        /// Total amount of chunks
+        /// </summary>
+        public int ChunkCount { get; private set; }
 
+        /// <summary>
+        /// Index for new chunk
+        /// </summary>
         private int _nextChunkIndex;
+        /// <summary>
+        /// Capacity of the new chunk
+        /// </summary>
         private int _chunkSize;
+        /// <summary>
+        /// ID of next new entity
+        /// </summary>
         private int _nextID;
 
 
 
-        public Entities()
+        public EntityManager()
         {
             _nextChunkIndex = 0;
             _nextID = 1;
             _chunkSize = DEFAULT_ENTITY_CHUNK_SIZE;
+
+            EntityCount = 0;
+            ChunkCount = 0;
 
             //INIT STORAGE
             //_openTypeChunks = new Dictionary<Type, Stack<int>>();
@@ -175,6 +211,7 @@ namespace PleiadEntities
         {
             //init storage
             int enID = _nextID++;
+            EntityCount++;
             _entityComponentStorage[enID] = new Dictionary<Type, int>();
             _entityComponents[enID] = new HashSet<Type>();
             //add each component
@@ -186,6 +223,9 @@ namespace PleiadEntities
 
                 int chunkIndex = GetComponentChunk(component);
                 _chunks[chunkIndex].AddEntity(enID);
+                if (_chunks[chunkIndex].IsFull)
+                    _openTypeChunks.RemoveIndex(component, chunkIndex);
+
                 AddComponent(enID, component, data);
             }
 
@@ -201,13 +241,14 @@ namespace PleiadEntities
             var entityChunks = _entityChunks.GetIndices(entity.ID);
             if (entityChunks.IsFound)
             {
-                foreach (var chunkIndex in entityChunks.Result)
+                foreach (var chunkIndex in entityChunks.Data)
                 {
                     _chunks[chunkIndex].RemoveEntity(entity.ID);
                 }
                 _entityChunks.RemoveKey(entity.ID);
                 _entityComponentStorage.Remove(entity.ID);
                 _entityComponents.Remove(entity.ID);
+                EntityCount--;
             }
         }
         /// <summary>
@@ -226,13 +267,13 @@ namespace PleiadEntities
             var componentChunks = _chunkLUP.GetIndices(component);
 
             //if there's no free component chunk
-            if (!componentChunks.IsFound || componentChunks.Result.Count == 0)
+            if (!componentChunks.IsFound || componentChunks.Data.Count == 0)
             {
                 //create new chunk
                 chunkIndex = GetComponentChunk(component);
             }
             else
-                chunkIndex = componentChunks.Result.First();
+                chunkIndex = componentChunks.Data.First();
 
             //set data
             _chunks[chunkIndex].SetComponentData(entityID, componentData);
@@ -280,10 +321,8 @@ namespace PleiadEntities
         /// <typeparam name="T">Component to retrieve</typeparam>
         /// <param name="entity">Target</param>
         /// <returns>Component data</returns>
-        public T GetComponentData<T>(Entity entity)
+        public Result<T> GetComponentData<T>(Entity entity)
         {
-            //ValidateEntity(entity);
-
             Type dataType = typeof(T);
 
             if (_entityComponentStorage.ContainsKey(entity.ID))
@@ -296,13 +335,14 @@ namespace PleiadEntities
                         var ipc = _chunks[index].GetComponentData(entity.ID);
 
                         if (ipc.IsFound)
-                            return (T)Convert.ChangeType((T)ipc.Result, dataType);
+                            return Result<T>.Found((T)Convert.ChangeType((T)ipc.Data, dataType));
                     }
                 }
             }
 
-            ThrowError(ErrorType.CompDoesNotExist, entity, dataType);
-            return default;
+            //ThrowError(ErrorType.CompDoesNotExist, entity, dataType);
+            //return default;
+            return Result<T>.NotFound;
         }
         /// <summary>
         /// Sets the data for the existing Component or attaches a new one
@@ -338,24 +378,90 @@ namespace PleiadEntities
         }
 
 
+        /// <summary>
+        /// Get a list of all chunk indices of selected component
+        /// </summary>
+        /// <param name="chunkType">Component</param>
+        /// <returns>HashSet of chunk indices</returns>
+        public Result<HashSet<int>> GetAllChunksOfType(Type chunkType)
+        {
+            return _chunkLUP.GetIndices(chunkType);
+        }
+        /// <summary>
+        /// Get all data from the chunk
+        /// </summary>
+        /// <param name="chunkIndex">Selected chunk</param>
+        /// <returns>List of IPleiadComponents</returns>
+        public Result<List<IPleiadComponent>> GetChunkData(int chunkIndex)
+        {
+            if (chunkIndex <= _chunks.Count && chunkIndex >= 0)
+            {
+                return Result<List<IPleiadComponent>>.Found(_chunks[chunkIndex].GetChunkData());
+            }
+            else
+                return Result<List<IPleiadComponent>>.NotFound;
+        }
+        /// <summary>
+        /// Set the data in the chunk
+        /// </summary>
+        /// <typeparam name="T">Component</typeparam>
+        /// <param name="chunkIndex">Selected chunk</param>
+        /// <param name="data">List of data</param>
+        public void SetChunkData<T>(int chunkIndex, List<T> data) where T : IPleiadComponent
+        {
+            if (chunkIndex <= _chunks.Count && chunkIndex >= 0
+                && _chunks[chunkIndex].ChunkType == typeof(T))
+            {
+                _chunks[chunkIndex].SetChunkData(data);
+            }
+        }
+        /// <summary>
+        /// Set the data in the chunk
+        /// </summary>
+        /// <typeparam name="T">Component</typeparam>
+        /// <param name="chunkIndex">Selected chunk</param>
+        /// <param name="data">List of data</param>
+        public void SetChunkData<T>(int chunkIndex, T[] data) where T : IPleiadComponent
+        {
+            if (chunkIndex <= _chunks.Count && chunkIndex >= 0
+                && _chunks[chunkIndex].ChunkType == typeof(T))
+            {
+                _chunks[chunkIndex].SetChunkData(data);
+            }
+        }
 
+
+
+        /// <summary>
+        /// Get the index of the existing open component chunk or create a new one
+        /// </summary>
+        /// <param name="chunkType">Compoenent</param>
+        /// <returns>Index of an open chunk</returns>
         private int GetComponentChunk(Type chunkType)
         {
             int chunkIndex;
 
             var openChunk = _openTypeChunks.GetIndices(chunkType);
-            if (openChunk.IsFound && openChunk.Result.Count == 0)
-                chunkIndex = openChunk.Result.First();
+            if (openChunk.IsFound && openChunk.Data.Count > 0)
+                chunkIndex = openChunk.Data.First();
             else
             {
-                var res = _chunkLUP.GetIndices(chunkType);
-                if (!res.IsFound || res.Result.Count == 0)
-                    chunkIndex = CreateComponentChunk(chunkType);
-                else
-                    chunkIndex = res.Result.First();
+                chunkIndex = CreateComponentChunk(chunkType);
+
+                //var res = _chunkLUP.GetIndices(chunkType);
+                //if (!res.IsFound || res.Data.Count == 0)
+                //    chunkIndex = CreateComponentChunk(chunkType);
+                //else
+                //    chunkIndex = res.Data.First();
             }
             return chunkIndex;
         }
+        /// <summary>
+        /// Create new component chunk, register it as open
+        /// </summary>
+        /// <param name="component">Component</param>
+        /// <param name="chunkSize">Size of the new chunk</param>
+        /// <returns>Index of the new chunk</returns>
         private int CreateComponentChunk(Type component, int chunkSize = -1)
         {
             if (chunkSize <= 0) chunkSize = DEFAULT_ENTITY_CHUNK_SIZE;
@@ -364,71 +470,68 @@ namespace PleiadEntities
             _chunkLUP.AddIndex(component, _nextChunkIndex);
             _openTypeChunks.AddIndex(component, _nextChunkIndex);
 
+            ChunkCount++;
             return _nextChunkIndex++;
         }
 
+        //private enum ErrorType
+        //{
+        //    IndexOutOfRange = 0,
+        //    CouldNotAddEntity = 1,
+        //    CouldNotRemoveEntity = 2,
+        //    CouldNotSetComp = 3,
+        //    CouldNotRemoveComp = 4,
+        //    CompDoesNotExist = 5,
+        //}
+        //private void ThrowError(ErrorType errorType, Entity entity, Type component = null)
+        //{
+        //    var st = new StackTrace(true);
+        //    var caller = st.GetFrame(1).GetMethod().Name;
+        //    var line = $"File: {st.GetFrame(1).GetFileName()}, line {st.GetFrame(1).GetFileLineNumber()}";
 
-        private enum ErrorType
-        {
-            IndexOutOfRange = 0,
-            CouldNotAddEntity = 1,
-            CouldNotRemoveEntity = 2,
-            CouldNotSetComp = 3,
-            CouldNotRemoveComp = 4,
-            CompDoesNotExist = 5,
-        }
-        private void ThrowError(ErrorType errorType, Entity entity, Type component = null)
-        {
-            var st = new StackTrace(true);
-            var caller = st.GetFrame(1).GetMethod().Name;
-            var line = $"File: {st.GetFrame(1).GetFileName()}, line {st.GetFrame(1).GetFileLineNumber()}";
+        //    switch (errorType)
+        //    {
+        //        case ErrorType.IndexOutOfRange:
+        //            {
+        //                Console.WriteLine($"Could not resolve the chunk index for Entity ID{entity.ID} in {caller}, {line}");
+        //                Console.WriteLine($"Stack trace: {st}");
+        //                throw new ArgumentException($"Could not resolve the chunk index for Entity ID{entity.ID} in {caller}, {line}");
+        //            }
+        //        case ErrorType.CouldNotAddEntity:
+        //            {
+        //                Console.WriteLine($"Could not add Entity ID{entity.ID} in {caller}, {line}");
+        //                Console.WriteLine($"Stack trace: {st}");
+        //                throw new ArgumentException($"Could not add Entity ID{entity.ID} in {caller}, {line}");
+        //            }
+        //        case ErrorType.CouldNotRemoveEntity:
+        //            {
+        //                Console.WriteLine($"Could not remove Entity ID{entity.ID} in {caller}, {line}");
+        //                Console.WriteLine($"Stack trace: {st}");
+        //                throw new ArgumentException($"Could not remove Entity ID{entity.ID} in {caller}, {line}");
+        //            }
+        //        case ErrorType.CouldNotSetComp:
+        //            {
+        //                Console.WriteLine($"Could not set the component for Entity ID{entity.ID} in {caller}, {line}");
+        //                Console.WriteLine($"Stack trace: {st}");
+        //                throw new ArgumentException($"Could not set the component for Entity ID{entity.ID} in {caller}, {line}");
+        //            }
+        //        case ErrorType.CouldNotRemoveComp:
+        //            {
+        //                Console.WriteLine($"Could not remove the component for Entity ID{entity.ID} in {caller}, {line}");
+        //                Console.WriteLine($"Stack trace: {st}");
+        //                throw new ArgumentException($"Could not remove the component for Entity ID{entity.ID} in {caller}, {line}");
+        //            }
+        //        case ErrorType.CompDoesNotExist:
+        //            {
+        //                Console.WriteLine($"There are no chunks of type {component} in {caller}, {line}");
+        //                Console.WriteLine($"Stack trace: {st}");
+        //                throw new ArgumentException($"There are no chunks of type {component} in {caller}, {line}");
+        //            }
 
-            switch (errorType)
-            {
-                case ErrorType.IndexOutOfRange:
-                    {
-                        Console.WriteLine($"Could not resolve the chunk index for Entity ID{entity.ID} in {caller}, {line}");
-                        Console.WriteLine($"Stack trace: {st}");
-                        throw new ArgumentException($"Could not resolve the chunk index for Entity ID{entity.ID} in {caller}, {line}");
-                    }
-                case ErrorType.CouldNotAddEntity:
-                    {
-                        Console.WriteLine($"Could not add Entity ID{entity.ID} in {caller}, {line}");
-                        Console.WriteLine($"Stack trace: {st}");
-                        throw new ArgumentException($"Could not add Entity ID{entity.ID} in {caller}, {line}");
-                    }
-                case ErrorType.CouldNotRemoveEntity:
-                    {
-                        Console.WriteLine($"Could not remove Entity ID{entity.ID} in {caller}, {line}");
-                        Console.WriteLine($"Stack trace: {st}");
-                        throw new ArgumentException($"Could not remove Entity ID{entity.ID} in {caller}, {line}");
-                    }
-                case ErrorType.CouldNotSetComp:
-                    {
-                        Console.WriteLine($"Could not set the component for Entity ID{entity.ID} in {caller}, {line}");
-                        Console.WriteLine($"Stack trace: {st}");
-                        throw new ArgumentException($"Could not set the component for Entity ID{entity.ID} in {caller}, {line}");
-                    }
-                case ErrorType.CouldNotRemoveComp:
-                    {
-                        Console.WriteLine($"Could not remove the component for Entity ID{entity.ID} in {caller}, {line}");
-                        Console.WriteLine($"Stack trace: {st}");
-                        throw new ArgumentException($"Could not remove the component for Entity ID{entity.ID} in {caller}, {line}");
-                    }
-                case ErrorType.CompDoesNotExist:
-                    {
-                        Console.WriteLine($"There are no chunks of type {component} in {caller}, {line}");
-                        Console.WriteLine($"Stack trace: {st}");
-                        throw new ArgumentException($"There are no chunks of type {component} in {caller}, {line}");
-                    }
-
-            }
-        }
+        //    }
+        //}
 
 
-        //private readonly Dictionary<Type, Stack<int>> _openTypeChunks;
-        //private readonly Dictionary<Type, List<IEntityChunk>> _componentChunks;
-        //private readonly Dictionary<Type, int> _currentChunk;
 
 
         #region DebugFunctions
@@ -452,6 +555,19 @@ namespace PleiadEntities
             //        chunk.DEBUG_PrintEntities();
             //    }
             //}
+        }
+        /// <summary>
+        /// Counts entities in all chunks
+        /// </summary>
+        /// <returns></returns>
+        public void DEBUG_CountEntitiesInChunks()
+        {
+            int total = 0;
+            foreach (var chunk in _chunks)
+            {
+                total += chunk.EntityCount;
+            }
+            Console.WriteLine($"Counted Entities in chunks: {total}");
         }
 #endif
         #endregion

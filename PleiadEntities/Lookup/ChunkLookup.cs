@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PleiadMisc;
+using System;
 using System.Collections.Generic;
 
 namespace PleiadEntities
@@ -31,12 +32,12 @@ namespace PleiadEntities
         /// </summary>
         /// <param name="chunkType">Type of chunk</param>
         /// <returns>SearchResult with the list of all chunks of this type</returns>
-        public SearchResult<HashSet<int>> GetIndices(Type chunkType)
+        public Result<HashSet<int>> GetIndices(Type chunkType)
         {
             if (_lookup.ContainsKey(chunkType))
-                return new SearchResult<HashSet<int>>(_lookup[chunkType]);
+                return Result<HashSet<int>>.Found(_lookup[chunkType]);
             else
-                return new SearchResult<HashSet<int>>(false);
+                return Result<HashSet<int>>.NotFound;
         }
 
         public void RemoveIndex(Type chunkType, int index)

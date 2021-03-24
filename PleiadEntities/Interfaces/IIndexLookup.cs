@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using PleiadMisc;
+using System.Collections.Generic;
 
 namespace PleiadEntities
 {
@@ -31,12 +32,12 @@ namespace PleiadEntities
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        SearchResult<HashSet<int>> GetIndices(T key);
+        Result<HashSet<int>> GetIndices(T key);
         /// <summary>
         /// How many indices does the key contain
         /// </summary>
         /// <param name="key">Key</param>
-        /// <returns>A number of indices the key contains or -1, if loookup does not contain the key</returns>
+        /// <returns>A number of indices the key contains or -1, if lookup does not contain the key</returns>
         int IndexCount(T key);
         /// <summary>
         /// Lookup Table

@@ -5,6 +5,9 @@ namespace PleiadExtensions
 {
     namespace Arrays
     {
+        /// <summary>
+        /// Extensions for arrays
+        /// </summary>
         public static class ArrayExtensions
         {
             /// <summary>

@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PleiadSystems</name>
+    </assembly>
+    <members>
+        <member name="M:PleiadSystems.IPleiadSystem.Cycle(System.Single)">
+            <summary>
+            Function to execute on every update
+            </summary>
+            <param name="dTime">Time since the last update</param>
+        </member>
+        <member name="M:PleiadSystems.SystemsManager.#ctor">
+            <summary>
+            Constructor, tries to load all Systems in the namespace and sets up initial values
+            </summary>
+        </member>
+        <member name="M:PleiadSystems.SystemsManager.Pause(PleiadInput.Key,System.Boolean)">
+            <summary>
+            Stops the execution and waits for the key press (default: <see cref="F:PleiadInput.Key.Enter"/>)
+            </summary>
+            <param name="key">Key to wait for</param>
+            <param name="showMessage">Should the message be displayed</param>
+        </member>
+        <member name="M:PleiadSystems.SystemsManager.WaitForInput(PleiadInput.Key[])">
+            <summary>
+            Waits for any of the keys
+            </summary>
+            <param name="keys">Keys to wait for</param>
+        </member>
+        <member name="M:PleiadSystems.SystemsManager.WaitForInput(PleiadInput.Key)">
+            <summary>
+            Waits for key press
+            </summary>
+            <param name="key">Key to wait for</param>
+        </member>
+        <member name="M:PleiadSystems.SystemsManager.Update">
+            <summary>
+            Function goes over each system in namespace and executes their Cycle()
+            </summary>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

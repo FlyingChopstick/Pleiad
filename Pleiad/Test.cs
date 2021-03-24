@@ -1,19 +1,14 @@
 ﻿using PleiadEntities;
 using PleiadExtensions.Files;
-using PleiadInput;
-using PleiadMisc.Dice;
 using PleiadSystems;
 using PleiadTasks;
-using PleiadWorld;
 using System;
-using System.Collections.Generic;
-using System.Media;
 
 namespace Pleiad
 {
-    public struct TestComponent : IPleiadComponent
+    public struct StringTestComponent : IPleiadComponent
     {
-        public string testValue;
+        public string text;
     }
     public struct IntTestComponent : IPleiadComponent
     {
@@ -38,12 +33,34 @@ namespace Pleiad
             value += dTime;
         }
     }
-    public struct TestTaskOn<T> : IPleiadTaskOn<TestComponent>
+
+    public struct ConsoleWriteTask : IPleiadTask
     {
-        public void RunOn(int i, ref TestComponent[] array)
+        public string message;
+        public void Run()
         {
-            var c = array[i].testValue;
-            array[i] = new TestComponent { testValue = $"goodbye {c}" };
+            Console.WriteLine(message);
+        }
+    }
+
+    public struct ReadAllStrings : IPleiadTaskOn<StringTestComponent>
+    {
+        public void RunOn(int i, ref StringTestComponent[] array)
+        {
+            if (array[i].text != null)
+            {
+                Console.WriteLine(array[i].text);
+                array[i] = new StringTestComponent { text = $"Modified {array[i].text}" };
+            }
+        }
+    }
+
+    public struct TestTaskOn<T> : IPleiadTaskOn<StringTestComponent>
+    {
+        public void RunOn(int i, ref StringTestComponent[] array)
+        {
+            var c = array[i].text;
+            array[i] = new StringTestComponent { text = $"goodbye {c}" };
         }
     }
 
@@ -57,17 +74,65 @@ namespace Pleiad
         }
     }
 
-    
 
 
 
-    public class TestSystem : IPleiadSystem
+
+    //public class FPS_Meter : IPleiadSystem
+    //{
+    //    public void Cycle(float dTime)
+    //    {
+    //        Console.WriteLine(1000.0f / dTime);
+    //    }
+    //}
+    public class AvgFPS_Meter : IPleiadSystem
     {
+        private float sum = 0.0f;
+        uint
+            frameCount = 0,
+            frameSpan = 60;
+        float
+            timePassed = 0.0f,
+            second = 1000.0f;
+
         public void Cycle(float dTime)
         {
-
+            if (timePassed >= second)
+            {
+                Console.WriteLine(sum / frameCount);
+                sum = 0.0f;
+                frameCount = 0;
+                timePassed = 0.0f;
+            }
+            else
+            {
+                frameCount++;
+            }
+            sum += 1000.0f / dTime;
+            timePassed += dTime;
         }
     }
+    //public class WindowCloseSystem : IPleiadSystem, IRegisterInput
+    //{
+    //    public void Cycle(float dTime)
+    //    {
+
+    //    }
+
+    //    public void InputRegistration(ref InputListener listener)
+    //    {
+    //        listener.ListenTo(Key.Escape);
+    //        listener.KeyPress += Listener_KeyPress;
+    //    }
+
+    //    private void Listener_KeyPress(Key key)
+    //    {
+    //        if (key == Key.Escape)
+    //        {
+    //            World.DefaultWorld.SystemsManager.CloseWindow();
+    //        }
+    //    }
+    //}
 
     public struct SoundComponent : IPleiadComponent
     {
@@ -78,7 +143,7 @@ namespace Pleiad
     //    private bool _started;
     //    readonly SoundPlayer player = new SoundPlayer();
     //    readonly Type soundComponent = typeof(SoundComponent);
-    //    readonly Entities em = World.DefaultWorld.EntityManager;
+    //    readonly EntityManager em = World.DefaultWorld.EntityManager;
 
     //    int die = 0;
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PleiadMisc;
+using System;
 using System.Collections.Generic;
 
 namespace PleiadEntities
@@ -26,7 +27,7 @@ namespace PleiadEntities
         /// </summary>
         bool IsFull { get; }
         /// <summary>
-        /// List of all chunk IDs
+        /// List of IDs of all entities in chunk
         /// </summary>
         IEnumerable<int> ChunkIDs { get; }
 
@@ -55,7 +56,7 @@ namespace PleiadEntities
         /// </summary>
         /// <param name="entityID">Entity to retrieve</param>
         /// <returns>IPleiadComponent containing the data</returns>
-        SearchResult<IPleiadComponent> GetComponentData(int entityID);
+        Result<IPleiadComponent> GetComponentData(int entityID);
         /// <summary>
         /// Try to set component data of the entity
         /// </summary>
@@ -65,6 +66,13 @@ namespace PleiadEntities
         bool SetComponentData(int entityID, IPleiadComponent componentData);
 
 
+#if DEBUG
+        #region DEBUG
+        /// <summary>
+        /// Prints all entities in the chunk
+        /// </summary>
         public void DEBUG_PrintEntities();
+        #endregion
+#endif
     }
 }
