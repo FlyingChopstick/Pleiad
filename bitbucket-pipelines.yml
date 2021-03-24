@@ -1,9 +1,5 @@
-#  Template .NET Core build
-
-#  This template allows you to validate your .NET Core package.
-#  The workflow allows running tests and code linting on the default branch.
-
-image: mcr.microsoft.com/dotnet/core/sdk:3.1
+# Build and test .NET 5
+image: mcr.microsoft.com/dotnet/sdk:5.0
 
 pipelines:
   default:
