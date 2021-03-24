@@ -1,5 +1,7 @@
 ﻿using PleiadEntities;
 using PleiadInput;
+using PleiadMisc;
+using PleiadRender.Abstractions;
 using PleiadSystems;
 using PleiadTasks;
 using PleiadWorld;
@@ -8,6 +10,12 @@ namespace Pleiad
 {
     class PleiadMain : IRegisterInput
     {
+        PShapeData psd = new()
+        {
+            Vertices = new float[] { 0.4f, 0.5f }
+        };
+        PSerialiser<PShapeData> serialiser = new();
+
         static void Main(string[] args)
         {
             EntityManager em = World.DefaultWorld.EntityManager;
@@ -38,9 +46,15 @@ namespace Pleiad
         }
         private void Listener_KeyPress(Key key)
         {
-            if (key == Key.Escape)
+            switch (key)
             {
-                World.DefaultWorld.SystemsManager.CloseWindow();
+                case Key.Escape:
+                    {
+                        World.DefaultWorld.SystemsManager.CloseWindow();
+                        break;
+                    }
+                default:
+                    break;
             }
         }
     }
