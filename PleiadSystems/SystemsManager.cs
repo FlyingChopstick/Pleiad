@@ -1,4 +1,5 @@
 ﻿using PleiadInput;
+using PleiadRender;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -19,6 +20,7 @@ namespace PleiadSystems
 
         private Dictionary<LoadOrder, HashSet<SystemData>> _loadOrder = new Dictionary<LoadOrder, HashSet<SystemData>>();
 
+        private PWindow _window = new PWindow();
 
         public float DeltaTime { get; private set; }
         public bool ShouldUpdate { get; set; }
@@ -52,8 +54,24 @@ namespace PleiadSystems
             {
                 Console.WriteLine($"Could not start: {e.Message}");
                 Console.WriteLine($"{e.StackTrace}");
-                throw e;
+                //throw e;
             }
+        }
+
+        public void CreateWindow()
+        {
+            _window.Create();
+            _window.Updated += Update;
+        }
+        public void RunWindow()
+        {
+            ShouldUpdate = true;
+            _window.Run();
+        }
+        public void CloseWindow()
+        {
+            ShouldUpdate = false;
+            _window.Close();
         }
 
         /// <summary>
@@ -214,30 +232,6 @@ namespace PleiadSystems
                     sys.SystemMethod.Invoke(sys.SystemObject, new object[] { DeltaTime });
                 }
             }
-
-
-
-
-            //foreach (var systemType in _systems.Keys)
-            //{
-            //    var system = _systems[systemType];
-
-
-            //    var objEn = system.Systems.Keys.GetEnumerator();
-            //    var methEn = system.Systems.Values.GetEnumerator();
-            //    //Using an iterator over objects and methods
-            //    while (objEn.MoveNext())
-            //    {
-            //        methEn.MoveNext();
-
-            //        var method = methEn.Current;
-            //        var summoner = objEn.Current;
-
-            //        //Invoke the Cycle()
-            //        method.Invoke(summoner, new object[] { DeltaTime });
-            //    }
-
-            //}
 
             _lastTime = _currentTime;
 

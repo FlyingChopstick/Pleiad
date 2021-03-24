@@ -1,7 +1,9 @@
 ﻿using PleiadEntities;
 using PleiadExtensions.Files;
+using PleiadInput;
 using PleiadSystems;
 using PleiadTasks;
+using PleiadWorld;
 using System;
 
 namespace Pleiad
@@ -82,7 +84,28 @@ namespace Pleiad
     {
         public void Cycle(float dTime)
         {
+            Console.WriteLine("Test");
+        }
+    }
+    public class WindowCloseSystem : IPleiadSystem, IRegisterInput
+    {
+        public void Cycle(float dTime)
+        {
 
+        }
+
+        public void InputRegistration(ref InputListener listener)
+        {
+            listener.ListenTo(Key.Escape);
+            listener.KeyPress += Listener_KeyPress;
+        }
+
+        private void Listener_KeyPress(Key key)
+        {
+            if (key == Key.Escape)
+            {
+                World.DefaultWorld.SystemsManager.CloseWindow();
+            }
         }
     }
 
