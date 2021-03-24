@@ -6,6 +6,10 @@
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>E:\VisualStudio\repos\PleiadCore\PleiadCore\PleiadTasks\PleiadTasks.xml</DocumentationFile>
+  </PropertyGroup>
+
 
 
 

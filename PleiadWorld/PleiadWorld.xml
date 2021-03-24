@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PleiadWorld</name>
+    </assembly>
+    <members>
+        <member name="T:PleiadWorld.World">
+            <summary>
+            Contains EntityManager and SystemsManager
+            </summary>
+        </member>
+        <member name="T:PleiadWorld.World.DefaultWorld">
+            <summary>
+            Default injection World, static
+            </summary>
+        </member>
+        <member name="M:PleiadWorld.World.DefaultWorld.CanUpdate">
+            <summary>
+            World Update
+            </summary>
+            <returns><see langword="true"/> if update was successful</returns>
+        </member>
+        <member name="P:PleiadWorld.World.DefaultWorld.EntityManager">
+            <summary>
+            Returns a reference to the Entity manager
+            </summary>
+        </member>
+        <member name="P:PleiadWorld.World.EntityManager">
+            <summary>
+            Returns a reference to the Entity manager
+            </summary>
+        </member>
+    </members>
+</doc>

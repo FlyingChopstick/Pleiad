@@ -165,7 +165,6 @@ namespace PleiadRender
             _gl.UseProgram(_shader);
 
             _gl.DrawElements(PrimitiveType.Triangles, (uint)Indices.Length, DrawElementsType.UnsignedInt, null);
-            //_gl.Flush();
         }
         private void OnUpdate(double obj)
         {
@@ -173,16 +172,6 @@ namespace PleiadRender
         }
         private void OnClose()
         {
-            //cleanup
-
-            //_gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
-            //_gl.DeleteBuffer(_vbo);
-            //_gl.BindVertexArray(0);
-            //_gl.DeleteVertexArray(_vao);
-            //_gl.DeleteProgram(_shader);
-            //_gl.DeleteBuffers(1, _vbo);
-            //_gl.DeleteVertexArrays(1, _vao);
-            _gl.Dispose();
             Closed?.Invoke();
         }
     }

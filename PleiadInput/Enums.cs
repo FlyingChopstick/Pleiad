@@ -1,7 +1,11 @@
 ﻿namespace PleiadInput
 {
+    /// <summary>
+    /// Keyboard keys
+    /// </summary>
     public enum Key
     {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         A = 65,
         Add = 107,
         Alt = 262144,
@@ -104,5 +108,6 @@
         X = 88,
         Y = 89,
         Z = 90
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

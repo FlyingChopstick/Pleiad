@@ -1,0 +1,427 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PleiadEntities</name>
+    </assembly>
+    <members>
+        <member name="T:ChunkDataPack">
+            <summary>
+            Datapack is used to get the data from the chunks
+            </summary>
+        </member>
+        <member name="M:ChunkDataPack.#ctor(System.Type)">
+            <summary>
+            Datapack is used to get the data from the chunks
+            </summary>
+        </member>
+        <member name="T:PleiadEntities.Entity">
+            <summary>
+            A container/reference containing Entity ID
+            </summary>
+        </member>
+        <member name="M:PleiadEntities.Entity.#ctor(System.Int32)">
+            <summary>
+            A container/reference containing Entity ID
+            </summary>
+        </member>
+        <member name="P:PleiadEntities.Entity.ID">
+            <summary>
+            Entity ID
+            </summary>
+        </member>
+        <member name="T:PleiadEntities.EntityChunk">
+            <summary>
+            Container storing entities of the same type
+            </summary>
+        </member>
+        <member name="M:PleiadEntities.EntityChunk.#ctor(System.Int32,System.Type,System.Int32)">
+            <summary>
+            Container storing entities of the same type
+            </summary>
+        </member>
+        <member name="T:PleiadEntities.EntityManager">
+            <summary>
+            Provides control over Entities and Components
+            </summary>
+        </member>
+        <member name="F:PleiadEntities.EntityManager._chunks">
+            <summary>
+            All chunks
+            </summary>
+        </member>
+        <member name="F:PleiadEntities.EntityManager._chunkLUP">
+            <summary>
+            Type - list of chunk indices lookup
+            </summary>
+        </member>
+        <member name="F:PleiadEntities.EntityManager._openTypeChunks">
+            <summary>
+            Type - list of open chunk indices lookup
+            </summary>
+        </member>
+        <member name="F:PleiadEntities.EntityManager._entityChunks">
+            <summary>
+            Entity ID - list of chunks containing this entity lookup
+            </summary>
+        </member>
+        <member name="F:PleiadEntities.EntityManager._entityComponentStorage">
+            <summary>
+            Entity ID - [Dictionary of Component - chunk index]
+            </summary>
+        </member>
+        <member name="F:PleiadEntities.EntityManager._entityComponents">
+            <summary>
+            Entity ID - List of entity components
+            </summary>
+        </member>
+        <member name="F:PleiadEntities.EntityManager.DEFAULT_ENTITY_CHUNK_SIZE">
+            <summary>
+            Default size of an Entity Chunk
+            </summary>
+        </member>
+        <member name="P:PleiadEntities.EntityManager.ChunkSize">
+            <summary>
+            Gets or sets the new Chunk capacity
+            </summary>
+            <exception cref="T:System.ArgumentOutOfRangeException"/>
+        </member>
+        <member name="P:PleiadEntities.EntityManager.EntityCount">
+            <summary>
+            Total amount of entities 
+            </summary>
+        </member>
+        <member name="P:PleiadEntities.EntityManager.ChunkCount">
+            <summary>
+            Total amount of chunks
+            </summary>
+        </member>
+        <member name="F:PleiadEntities.EntityManager._nextChunkIndex">
+            <summary>
+            Index for new chunk
+            </summary>
+        </member>
+        <member name="F:PleiadEntities.EntityManager._chunkSize">
+            <summary>
+            Capacity of the new chunk
+            </summary>
+        </member>
+        <member name="F:PleiadEntities.EntityManager._nextID">
+            <summary>
+            ID of next new entity
+            </summary>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.AddEntity">
+            <summary>
+            Adds an empty Entity
+            </summary>
+            <returns>Entity handle</returns>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.AddEntity(PleiadEntities.EntityTemplate)">
+            <summary>
+            Adds an Entity using a Template
+            </summary>
+            <param name="template">Entity template</param>
+            <returns>Entity handle</returns>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.AddEntity(System.Type[],PleiadEntities.IPleiadComponent[])">
+            <summary>
+            Adds an Entity using arrays of Component types and data
+            </summary>
+            <param name="components">Array of Component types</param>
+            <param name="componentData">Array of Component data</param>
+            <returns>Entity handle</returns>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.AddEntity(System.Type[])">
+            <summary>
+            Adds an Entity with Components and no data
+            </summary>
+            <param name="components">Array of Component types</param>
+            <returns>Entity handle</returns>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.RemoveEntity(PleiadEntities.Entity)">
+            <summary>
+            Removes the Entity
+            </summary>
+            <param name="entity">Target</param>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.AddComponent(PleiadEntities.Entity,System.Type,PleiadEntities.IPleiadComponent)">
+            <summary>
+            Adds a Component to the Entity
+            </summary>
+            <param name="entity">Target</param>
+            <param name="component">Component type</param>
+            <param name="componentData">Component data</param>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.RemoveComponent(PleiadEntities.Entity,System.Type)">
+            <summary>
+            Removes the Component from the Entity (if Entity has one)
+            </summary>
+            <param name="entity"></param>
+            <param name="component"></param>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.GetComponentData``1(PleiadEntities.Entity)">
+            <summary>
+            Gets the Component data for the specified component or default, if Entity doesn't have this Component
+            </summary>
+            <typeparam name="T">Component to retrieve</typeparam>
+            <param name="entity">Target</param>
+            <returns>Component data</returns>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.SetComponentData(PleiadEntities.Entity,System.Type,PleiadEntities.IPleiadComponent)">
+            <summary>
+            Sets the data for the existing Component or attaches a new one
+            </summary>
+            <param name="entity">Target</param>
+            <param name="component">Component type</param>
+            <param name="componentData">Component data</param>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.GetAllChunksOfType(System.Type)">
+            <summary>
+            Get a list of all chunk indices of selected component
+            </summary>
+            <param name="chunkType">Component</param>
+            <returns>HashSet of chunk indices</returns>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.GetChunkData(System.Int32)">
+            <summary>
+            Get all data from the chunk
+            </summary>
+            <param name="chunkIndex">Selected chunk</param>
+            <returns>List of IPleiadComponents</returns>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.SetChunkData``1(System.Int32,System.Collections.Generic.List{``0})">
+            <summary>
+            Set the data in the chunk
+            </summary>
+            <typeparam name="T">Component</typeparam>
+            <param name="chunkIndex">Selected chunk</param>
+            <param name="data">List of data</param>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.SetChunkData``1(System.Int32,``0[])">
+            <summary>
+            Set the data in the chunk
+            </summary>
+            <typeparam name="T">Component</typeparam>
+            <param name="chunkIndex">Selected chunk</param>
+            <param name="data">List of data</param>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.GetComponentChunk(System.Type)">
+            <summary>
+            Get the index of the existing open component chunk or create a new one
+            </summary>
+            <param name="chunkType">Compoenent</param>
+            <returns>Index of an open chunk</returns>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.CreateComponentChunk(System.Type,System.Int32)">
+            <summary>
+            Create new component chunk, register it as open
+            </summary>
+            <param name="component">Component</param>
+            <param name="chunkSize">Size of the new chunk</param>
+            <returns>Index of the new chunk</returns>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.DEBUG_PrintChunks(System.Boolean)">
+            <summary>
+            Prints existing chunks to the console
+            </summary>
+        </member>
+        <member name="M:PleiadEntities.EntityManager.DEBUG_CountEntitiesInChunks">
+            <summary>
+            Counts entities in all chunks
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:PleiadEntities.EntityTemplate">
+            <summary>
+            Template to create an entity
+            </summary>
+        </member>
+        <member name="P:PleiadEntities.EntityTemplate.Empty">
+            <summary>
+            Empty template
+            </summary>
+        </member>
+        <member name="M:PleiadEntities.EntityTemplate.#ctor(System.Type[],PleiadEntities.IPleiadComponent[],System.Boolean)">
+            <summary>
+            Template to create an entity
+            </summary>
+        </member>
+        <member name="P:PleiadEntities.IEntityChunk.ChunkID">
+            <summary>
+            Get Chunk ID
+            </summary>
+        </member>
+        <member name="P:PleiadEntities.IEntityChunk.ChunkType">
+            <summary>
+            Get Chunk Type
+            </summary>
+        </member>
+        <member name="P:PleiadEntities.IEntityChunk.EntityCount">
+            <summary>
+            Get how much entities does chunk contain
+            </summary>
+        </member>
+        <member name="P:PleiadEntities.IEntityChunk.Capacity">
+            <summary>
+            Maximum amount of entities in chunk
+            </summary>
+        </member>
+        <member name="P:PleiadEntities.IEntityChunk.IsFull">
+            <summary>
+            Whether the chunk is full or not
+            </summary>
+        </member>
+        <member name="P:PleiadEntities.IEntityChunk.ChunkIDs">
+            <summary>
+            List of IDs of all entities in chunk
+            </summary>
+        </member>
+        <member name="M:PleiadEntities.IEntityChunk.ContainsID(System.Int32)">
+            <summary>
+            Check if the chunk contains this entity
+            </summary>
+            <param name="entityID">Search for entity ID</param>
+            <returns><see langword="true"/> if chunk contains this entity</returns>
+        </member>
+        <member name="M:PleiadEntities.IEntityChunk.AddEntity(System.Int32,PleiadEntities.IPleiadComponent)">
+            <summary>
+            Try to add a new entity to the chunk
+            </summary>
+            <param name="entityID">New entity ID</param>
+            <param name="componentData">Component data of the new entity</param>
+            <returns>Index of the new entity or -1 if could not add new entity</returns>
+        </member>
+        <member name="M:PleiadEntities.IEntityChunk.RemoveEntity(System.Int32)">
+            <summary>
+            Try to remove entity from the chunk
+            </summary>
+            <param name="entityID">Entity to remove</param>
+            <returns><see langword="true"/> if the entity is deleted successfully, <see langword="false"/> otherwise</returns>
+        </member>
+        <member name="M:PleiadEntities.IEntityChunk.GetComponentData(System.Int32)">
+            <summary>
+            Returns the component data of the entity
+            </summary>
+            <param name="entityID">Entity to retrieve</param>
+            <returns>IPleiadComponent containing the data</returns>
+        </member>
+        <member name="M:PleiadEntities.IEntityChunk.SetComponentData(System.Int32,PleiadEntities.IPleiadComponent)">
+            <summary>
+            Try to set component data of the entity
+            </summary>
+            <param name="entityID">Entity ID to set</param>
+            <param name="componentData">New component data</param>
+            <returns><see langword="true"/> if the data is updated successfully, <see langword="false"/> otherwise</returns>
+        </member>
+        <member name="M:PleiadEntities.IEntityChunk.DEBUG_PrintEntities">
+            <summary>
+            Prints all entities in the chunk
+            </summary>
+        </member>
+        <member name="M:PleiadEntities.IIndexLookup`1.AddIndex(`0,System.Int32)">
+            <summary>
+            Add an index to the lookup
+            </summary>
+            <param name="key">Key</param>
+            <param name="index">Index</param>
+        </member>
+        <member name="M:PleiadEntities.IIndexLookup`1.FlushLookup">
+            <summary>
+            Clear the lookup table
+            </summary>
+        </member>
+        <member name="M:PleiadEntities.IIndexLookup`1.RemoveIndex(`0,System.Int32)">
+            <summary>
+            Remove index from the lookup
+            </summary>
+            <param name="key">Key</param>
+            <param name="index">Index to remove</param>
+        </member>
+        <member name="M:PleiadEntities.IIndexLookup`1.RemoveKey(`0)">
+            <summary>
+            Remove the key from the lookup
+            </summary>
+            <param name="key">Key to remove</param>
+        </member>
+        <member name="M:PleiadEntities.IIndexLookup`1.GetIndices(`0)">
+            <summary>
+            Get all indices from the key
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:PleiadEntities.IIndexLookup`1.IndexCount(`0)">
+            <summary>
+            How many indices does the key contain
+            </summary>
+            <param name="key">Key</param>
+            <returns>A number of indices the key contains or -1, if lookup does not contain the key</returns>
+        </member>
+        <member name="P:PleiadEntities.IIndexLookup`1.Lookup">
+            <summary>
+            Lookup Table
+            </summary>
+        </member>
+        <member name="T:PleiadEntities.IPleiadComponent">
+            <summary>
+            Tag interface for Components
+            </summary>
+        </member>
+        <member name="T:PleiadEntities.ChunkLookup">
+            <summary>
+            Lookup for Chunk type - indices of chunks of this type
+            </summary>
+        </member>
+        <member name="M:PleiadEntities.ChunkLookup.AddIndex(System.Type,System.Int32)">
+            <summary>
+            Add chunk index to the lookup
+            </summary>
+            <param name="chunkType">Type of chunk</param>
+            <param name="index">Index of chunk</param>
+        </member>
+        <member name="M:PleiadEntities.ChunkLookup.GetIndices(System.Type)">
+            <summary>
+            Get all chunks of specified type
+            </summary>
+            <param name="chunkType">Type of chunk</param>
+            <returns>SearchResult with the list of all chunks of this type</returns>
+        </member>
+        <member name="M:PleiadEntities.ChunkLookup.RemoveKey(System.Type)">
+            <summary>
+            Remove Type from the lookup
+            </summary>
+            <param name="chunkType"></param>
+        </member>
+        <member name="T:PleiadEntities.EntityChunksLookup">
+            <summary>
+            Lookup for Entity ID - indices of chunks containing this entity
+            </summary>
+        </member>
+        <member name="M:PleiadEntities.EntityChunksLookup.AddIndex(System.Int32,System.Int32)">
+            <summary>
+            Add Entity ID to lookup
+            </summary>
+            <param name="entityID"></param>
+            <param name="index"></param>
+        </member>
+        <member name="M:PleiadEntities.EntityChunksLookup.GetIndices(System.Int32)">
+            <summary>
+            Get indices of all chunks containing this entity
+            </summary>
+            <param name="entityID">Entity ID</param>
+            <returns>SearchResult with the list of all chunks containing the entity</returns>
+        </member>
+        <member name="M:PleiadEntities.EntityChunksLookup.RemoveKey(System.Int32)">
+            <summary>
+            Remove Entity ID from lookup
+            </summary>
+            <param name="entityID"></param>
+        </member>
+        <member name="T:Payload`1">
+            <summary>
+            Payload is used to set the data for the chunk
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+    </members>
+</doc>

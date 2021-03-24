@@ -7,6 +7,10 @@
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>E:\VisualStudio\repos\PleiadCore\PleiadCore\Pleiad\Pleiad.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Sounds\dice1.wav" />
     <None Remove="Sounds\dice2.wav" />

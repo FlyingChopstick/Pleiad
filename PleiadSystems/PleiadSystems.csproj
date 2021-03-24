@@ -5,6 +5,10 @@
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>E:\VisualStudio\repos\PleiadCore\PleiadCore\PleiadSystems\PleiadSystems.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="InputHandler - Copy" />
   </ItemGroup>

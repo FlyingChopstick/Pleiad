@@ -4,9 +4,18 @@ using System.Linq;
 
 namespace PleiadEntities
 {
+    /// <summary>
+    /// Template to create an entity
+    /// </summary>
     public struct EntityTemplate
     {
+        /// <summary>
+        /// Empty template
+        /// </summary>
         public static EntityTemplate Empty { get => new EntityTemplate(new Type[0], new IPleiadComponent[0]); }
+        /// <summary>
+        /// Template to create an entity
+        /// </summary>
         public EntityTemplate(Type[] components, IPleiadComponent[] componentData, bool isSorted = false)
         {
             if (components.Length != componentData.Length)

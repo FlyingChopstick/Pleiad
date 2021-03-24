@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PleiadMisc</name>
+    </assembly>
+    <members>
+        <member name="M:PleiadMisc.Dice.Roll.D4(System.Int32)">
+            <summary>
+            D4 roll
+            </summary>
+            <param name="dice">How many rolls</param>
+            <returns>Roll result</returns>
+        </member>
+        <member name="M:PleiadMisc.Dice.Roll.D6(System.Int32)">
+            <summary>
+            D6 roll
+            </summary>
+            <param name="dice">How many rolls</param>
+            <returns>Roll result</returns>
+        </member>
+        <member name="M:PleiadMisc.Dice.Roll.D8(System.Int32)">
+            <summary>
+            D8 roll
+            </summary>
+            <param name="dice">How many rolls</param>
+            <returns>Roll result</returns>
+        </member>
+        <member name="M:PleiadMisc.Dice.Roll.D10(System.Int32)">
+            <summary>
+            D10 roll
+            </summary>
+            <param name="dice">How many rolls</param>
+            <returns>Roll result</returns>
+        </member>
+        <member name="M:PleiadMisc.Dice.Roll.D12(System.Int32)">
+            <summary>
+            D12 roll
+            </summary>
+            <param name="dice">How many rolls</param>
+            <returns>Roll result</returns>
+        </member>
+        <member name="M:PleiadMisc.Dice.Roll.D20(System.Int32)">
+            <summary>
+            D20 roll
+            </summary>
+            <param name="dice">How many rolls</param>
+            <returns>Roll result</returns>
+        </member>
+        <member name="M:PleiadMisc.Dice.Roll.Custom(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Custom dice roll
+            </summary>
+            <param name="upper">Highest score</param>
+            <param name="lower">Lowest score</param>
+            <param name="dice">How many rolls</param>
+            <returns>Roll result</returns>
+        </member>
+        <member name="T:PleiadMisc.Result`1">
+            <summary>
+            Wrapper struct providing a way to check if result is found and to protect from accidental <see langword="null"/> values
+            </summary>
+            <typeparam name="T">Result type</typeparam>
+        </member>
+        <member name="P:PleiadMisc.Result`1.NotFound">
+            <summary>
+            Use that if result is not found
+            </summary>
+        </member>
+        <member name="M:PleiadMisc.Result`1.Found(`0)">
+            <summary>
+            Pack the result
+            </summary>
+            <param name="data"></param>
+        </member>
+        <member name="P:PleiadMisc.Result`1.IsFound">
+            <summary>
+            Was result found
+            </summary>
+        </member>
+        <member name="P:PleiadMisc.Result`1.Data">
+            <summary>
+            Result
+            </summary>
+        </member>
+    </members>
+</doc>
