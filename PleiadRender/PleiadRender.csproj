@@ -23,10 +23,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="glfw3.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Compile Include="IPWindowOptions.cs" />
   </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Silk.NET.Core" Version="2.2.0" />

@@ -20,7 +20,7 @@ namespace PleiadSystems
 
         private Dictionary<LoadOrder, HashSet<SystemData>> _loadOrder = new Dictionary<LoadOrder, HashSet<SystemData>>();
 
-        private PWindow _window = new PWindow();
+        private PWindow _window;
 
         public float DeltaTime { get; private set; }
         public bool ShouldUpdate { get; set; }
@@ -60,7 +60,17 @@ namespace PleiadSystems
 
         public void CreateWindow()
         {
-            _window.Create();
+            PWindowOptions options = new()
+            {
+                Title = "Rectangle",
+                Resolution = new()
+                {
+                    Width = 1366,
+                    Height = 768
+                },
+                VSync = false
+            };
+            _window = new PWindow(options);
             _window.Updated += Update;
         }
         public void RunWindow()
@@ -70,8 +80,12 @@ namespace PleiadSystems
         }
         public void CloseWindow()
         {
-            ShouldUpdate = false;
-            _window.Close();
+            if (!_window.IsClosing
+                && ShouldUpdate == true)
+            {
+                ShouldUpdate = false;
+                _window.Close();
+            }
         }
 
         /// <summary>

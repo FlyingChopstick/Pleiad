@@ -55,11 +55,19 @@ namespace PleiadInput
             UseInputTable = useInputTable;
         }
 
+        /// <summary>
+        /// Adds a new key to listen for
+        /// </summary>
+        /// <param name="key">Key to listen</param>
         public void ListenTo(Key key)
         {
             if (!_inputTable.Contains(key))
                 _inputTable.Add(key);
         }
+        /// <summary>
+        /// Adds a list of keys to listen for
+        /// </summary>
+        /// <param name="keys">List of keys</param>
         public void ListenTo(Key[] keys)
         {
             foreach (var key in keys)
@@ -74,6 +82,9 @@ namespace PleiadInput
                 _inputTable.Remove(key);
         }
 
+        /// <summary>
+        /// Checks for keypresses for registered keys
+        /// </summary>
         public void ReadKeys()
         {
             foreach (var key in _activeList)
@@ -81,16 +92,20 @@ namespace PleiadInput
                 CheckKey(key);
             }
         }
+        /// <summary>
+        /// Waits for a key press
+        /// </summary>
+        /// <param name="keys">Keys to check</param>
         public void WaitForInput(Key[] keys)
         {
             bool waiting = true;
             do
             {
-                foreach (var key in keys)
+                for (int i = 0; i < keys.Length; i++)
                 {
-                    if (!_keyState.ContainsKey(key)) _keyState[key] = false;
-                    CheckKey(key);
-                    if (_keyState[key])
+                    if (!_keyState.ContainsKey(keys[i])) _keyState[keys[i]] = false;
+                    CheckKey(keys[i]);
+                    if (_keyState[keys[i]])
                     {
                         waiting = false;
                         break;
@@ -98,34 +113,26 @@ namespace PleiadInput
                 }
             } while (waiting);
         }
+        /// <summary>
+        /// Waits for a key press
+        /// </summary>
+        /// <param name="keys">Keys to check</param>
         public void WaitForInput(List<Key> keys)
         {
-            bool waiting = true;
-            do
-            {
-                foreach (var key in keys)
-                {
-                    if (!_keyState.ContainsKey(key)) _keyState[key] = false;
-                    CheckKey(key);
-
-                    if (_keyState[key])
-                    {
-                        waiting = false;
-                        break;
-                    }
-                }
-            } while (waiting);
+            WaitForInput(keys.ToArray());
         }
+        /// <summary>
+        /// Waits for a key press
+        /// </summary>
+        /// <param name="key">Key to check</param>
         public void WaitForInput(Key key)
         {
             if (!_keyState.ContainsKey(key)) _keyState[key] = false;
-
             while (!_keyState[key])
             {
                 CheckKey(key);
             }
         }
-
 
         private void CheckKey(Key key)
         {

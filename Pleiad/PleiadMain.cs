@@ -31,19 +31,17 @@ namespace Pleiad
 
         }
 
+
         public void InputRegistration(ref InputListener listener)
         {
-            //listener should listen to this key
             listener.ListenTo(Key.Escape);
-            //function will handle the event
-            listener.KeyPress += Exit;
+            listener.KeyPress += Listener_KeyPress;
         }
-
-        private void Exit(Key key)
+        private void Listener_KeyPress(Key key)
         {
             if (key == Key.Escape)
             {
-                World.DefaultWorld.StopUpdate();
+                World.DefaultWorld.SystemsManager.CloseWindow();
             }
         }
     }

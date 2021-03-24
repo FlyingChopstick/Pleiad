@@ -1,5 +1,4 @@
-﻿using Silk.NET.Maths;
-using Silk.NET.OpenGL;
+﻿using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using System;
 
@@ -13,17 +12,11 @@ namespace PleiadRender
         public event UpdatedDelegate Updated;
         public event ClosedDelegate Closed;
 
+        public bool IsClosing => _window.IsClosing;
 
-        public PWindow()
+        public PWindow(IPWindowOptions options)
         {
-
-        }
-        public void Create()
-        {
-            var options = WindowOptions.Default;
-            options.Size = new Vector2D<int>(800, 600);
-            options.Title = "Test Window";
-            _window = Window.Create(options);
+            _window = Window.Create(options.SilkOptions);
 
             _window.Load += OnLoad;
             _window.Render += OnRender;
@@ -49,7 +42,7 @@ namespace PleiadRender
         private uint _shader;
 
         //Vertex shaders are run on each vertex.
-        private readonly string VertexShaderSource = @"
+        private static readonly string VertexShaderSource = @"
         #version 330 core //Using version GLSL version 3.3
         layout (location = 0) in vec4 vPos;
         
@@ -60,7 +53,7 @@ namespace PleiadRender
         ";
 
         //Fragment shaders are run on each fragment/pixel of the geometry.
-        private readonly string FragmentShaderSource = @"
+        private static readonly string FragmentShaderSource = @"
         #version 330 core
         out vec4 FragColor;
 
@@ -77,14 +70,16 @@ namespace PleiadRender
              0.5f,  0.5f, 0.0f,
              0.5f, -0.5f, 0.0f,
             -0.5f, -0.5f, 0.0f,
-            -0.5f,  0.5f, 0.5f
+            -0.5f,  0.5f, 0.5f,
+             0.0f,  1,0f, 0.0f
         };
 
         //Index data, uploaded to the EBO.
         private readonly uint[] Indices =
         {
             0, 1, 3,
-            1, 2, 3
+            1, 2, 3,
+            0, 3, 4
         };
 
         private unsafe void OnLoad()
@@ -127,20 +122,18 @@ namespace PleiadRender
             string infolog = _gl.GetShaderInfoLog(vShader);
             if (!string.IsNullOrWhiteSpace(infolog))
             {
-                Console.WriteLine($"Error compiling vertex shader");
-                Console.WriteLine(infolog);
+                Console.WriteLine($"Error compiling vertex shader\n{infolog}");
             }
 
             //fragment shader
-            uint fShader = _gl.CreateShader(ShaderType.VertexShader);
+            uint fShader = _gl.CreateShader(ShaderType.FragmentShader);
             _gl.ShaderSource(fShader, FragmentShaderSource);
             _gl.CompileShader(fShader);
             //check fShader
             infolog = _gl.GetShaderInfoLog(fShader);
             if (!string.IsNullOrWhiteSpace(infolog))
             {
-                Console.WriteLine($"Error compiling fragment shader");
-                Console.WriteLine(infolog);
+                Console.WriteLine($"Error compiling fragment shader\n{infolog}");
             }
 
             //merge shaders
@@ -172,6 +165,7 @@ namespace PleiadRender
             _gl.UseProgram(_shader);
 
             _gl.DrawElements(PrimitiveType.Triangles, (uint)Indices.Length, DrawElementsType.UnsignedInt, null);
+            //_gl.Flush();
         }
         private void OnUpdate(double obj)
         {
@@ -180,11 +174,15 @@ namespace PleiadRender
         private void OnClose()
         {
             //cleanup
-            _gl.DeleteBuffer(_vbo);
-            _gl.DeleteBuffer(_ebo);
-            _gl.DeleteVertexArray(_vao);
-            _gl.DeleteProgram(_shader);
 
+            //_gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
+            //_gl.DeleteBuffer(_vbo);
+            //_gl.BindVertexArray(0);
+            //_gl.DeleteVertexArray(_vao);
+            //_gl.DeleteProgram(_shader);
+            //_gl.DeleteBuffers(1, _vbo);
+            //_gl.DeleteVertexArrays(1, _vao);
+            _gl.Dispose();
             Closed?.Invoke();
         }
     }
