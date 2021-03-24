@@ -19,7 +19,8 @@ namespace PleiadExtensions
             /// </summary>
             public FileContract(string filename)
             {
-                if (!File.Exists(filename)) File.Create(filename);
+                //if (!File.Exists(filename)) File.Create(filename);
+                Exists = File.Exists(filename);
                 FileName = filename;
                 Locker = new object();
             }
@@ -27,6 +28,7 @@ namespace PleiadExtensions
             /// Filename
             /// </summary>
             public string FileName { get; }
+            public bool Exists { get; private set; }
             /// <summary>
             /// Locker object
             /// </summary>
@@ -50,6 +52,34 @@ namespace PleiadExtensions
                 }
             }
 
+
+            public void Create()
+            {
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                while (true)
+                {
+                    try
+                    {
+                        lock (Locker)
+                        {
+                            var fs = File.Create(FileName);
+                            Exists = true;
+                            fs.Close();
+
+                            return;
+                        }
+                    }
+                    catch (IOException)
+                    { }
+
+                    if (sw.ElapsedMilliseconds > _timeout)
+                        break;
+                    Thread.Sleep(5);
+                }
+                sw.Stop();
+                throw new TimeoutException($"Could not create file in {sw.ElapsedMilliseconds}ms");
+            }
             /// <summary>
             /// Read all lines from the file
             /// </summary>

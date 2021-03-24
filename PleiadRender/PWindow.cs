@@ -1,6 +1,6 @@
-﻿using Silk.NET.OpenGL;
+﻿using PleiadRender.Abstractions;
+using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
-using System;
 
 namespace PleiadRender
 {
@@ -36,32 +36,10 @@ namespace PleiadRender
         private IWindow _window;
         private GL _gl;
 
-        private uint _vbo;
-        private uint _ebo;
-        private uint _vao;
-        private uint _shader;
-
-        //Vertex shaders are run on each vertex.
-        private static readonly string VertexShaderSource = @"
-        #version 330 core //Using version GLSL version 3.3
-        layout (location = 0) in vec4 vPos;
-        
-        void main()
-        {
-            gl_Position = vec4(vPos.x, vPos.y, vPos.z, 1.0);
-        }
-        ";
-
-        //Fragment shaders are run on each fragment/pixel of the geometry.
-        private static readonly string FragmentShaderSource = @"
-        #version 330 core
-        out vec4 FragColor;
-
-        void main()
-        {
-            FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-        }
-        ";
+        private PBuffer _vbo;
+        private PBuffer _ebo;
+        private PProgram _shader;
+        private PVertexArray _vao;
 
         //Vertex data, uploaded to the VBO.
         private readonly float[] Vertices =
@@ -86,85 +64,47 @@ namespace PleiadRender
         {
             _gl = GL.GetApi(_window);
 
-            _vao = _gl.GenVertexArray();
-            _gl.BindVertexArray(_vao);
+            _vao = new PVertexArray(_gl);
+            _vao.Bind();
 
             //vertex buffer
-            _vbo = _gl.GenBuffer();
-            _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _vbo);
-            fixed (void* v = &Vertices[0])
-            {
-                //set buffer data
-                _gl.BufferData(
-                    BufferTargetARB.ArrayBuffer,
-                    (nuint)(Vertices.Length * sizeof(uint)),
-                    v,
-                    BufferUsageARB.StaticDraw);
-            }
-
+            _vbo = new(_gl, BufferType.Vertex);
+            _vbo.SetData(Vertices);
             //element buffer
-            _ebo = _gl.GenBuffer();
-            _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _ebo);
-            fixed (void* i = &Indices[0])
-            {
-                _gl.BufferData(
-                    BufferTargetARB.ElementArrayBuffer,
-                    (nuint)(Indices.Length * sizeof(uint)),
-                    i,
-                    BufferUsageARB.StaticDraw);
-            }
+            _ebo = new(_gl, BufferType.Element);
+            _ebo.SetData(Indices);
 
             //vertex shader
-            uint vShader = _gl.CreateShader(ShaderType.VertexShader);
-            _gl.ShaderSource(vShader, VertexShaderSource);
-            _gl.CompileShader(vShader);
-            //check vShader
-            string infolog = _gl.GetShaderInfoLog(vShader);
-            if (!string.IsNullOrWhiteSpace(infolog))
-            {
-                Console.WriteLine($"Error compiling vertex shader\n{infolog}");
-            }
-
+            PShader vShader = new(_gl, ShaderType.VertexShader);
+            vShader.ReadSourceFile(@"Shaders\vertex.vert");
+            vShader.Compile();
             //fragment shader
-            uint fShader = _gl.CreateShader(ShaderType.FragmentShader);
-            _gl.ShaderSource(fShader, FragmentShaderSource);
-            _gl.CompileShader(fShader);
-            //check fShader
-            infolog = _gl.GetShaderInfoLog(fShader);
-            if (!string.IsNullOrWhiteSpace(infolog))
-            {
-                Console.WriteLine($"Error compiling fragment shader\n{infolog}");
-            }
+            PShader fShader = new(_gl, ShaderType.FragmentShader);
+            fShader.ReadSourceFile(@"Shaders\fragment.frag");
+            fShader.Compile();
 
             //merge shaders
-            _shader = _gl.CreateProgram();
-            _gl.AttachShader(_shader, vShader);
-            _gl.AttachShader(_shader, fShader);
-            _gl.LinkProgram(_shader);
-            //check
-            _gl.GetProgram(_shader, GLEnum.LinkStatus, out var status);
-            if (status == 0)
-            {
-                Console.WriteLine($"Error linking shader {_gl.GetProgramInfoLog(_shader)}");
-            }
+            _shader = new PProgram(_gl);
+            _shader.AttachShader(vShader);
+            _shader.AttachShader(fShader);
+            _shader.Link();
+            _shader.Clean();
 
-            //cleanup
-            _gl.DetachShader(_shader, vShader);
-            _gl.DetachShader(_shader, fShader);
-            _gl.DeleteShader(vShader);
-            _gl.DeleteShader(fShader);
 
+            //stays as is
             _gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), null);
-            _gl.EnableVertexAttribArray(0);
+
+
+            _vao.Enable();
         }
-        private unsafe void OnRender(double obj)
+        private void OnRender(double obj)
         {
-            _gl.Clear((uint)ClearBufferMask.ColorBufferBit);
+            Clear();
 
-            _gl.BindVertexArray(_vao);
-            _gl.UseProgram(_shader);
+            _vao.Bind();
+            _shader.Use();
 
-            _gl.DrawElements(PrimitiveType.Triangles, (uint)Indices.Length, DrawElementsType.UnsignedInt, null);
+            Draw();
         }
         private void OnUpdate(double obj)
         {
@@ -173,6 +113,16 @@ namespace PleiadRender
         private void OnClose()
         {
             Closed?.Invoke();
+        }
+
+
+        private void Clear()
+        {
+            _gl.Clear((uint)ClearBufferMask.ColorBufferBit);
+        }
+        private unsafe void Draw()
+        {
+            _gl.DrawElements(PrimitiveType.Triangles, (uint)Indices.Length, DrawElementsType.UnsignedInt, null);
         }
     }
 }

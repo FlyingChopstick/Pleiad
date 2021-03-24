@@ -9,5 +9,10 @@
     <DocumentationFile></DocumentationFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PleiadExtensions\PleiadExtensions.csproj" />
+  </ItemGroup>
+
+
 
 </Project>
