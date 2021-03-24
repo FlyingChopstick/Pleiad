@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>E:\VisualStudio\repos\PleiadCore\PleiadCore\Pleiad\Pleiad.xml</DocumentationFile>
+    <DocumentationFile></DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
