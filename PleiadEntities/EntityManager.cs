@@ -102,10 +102,10 @@ namespace PleiadEntities
         /// Adds an empty Entity
         /// </summary>
         /// <returns>Entity handle</returns>
-        public Entity AddEntity()
-        {
-            return CreateEntity(EntityTemplate.Empty);
-        }
+        //public Entity AddEntity()
+        //{
+        //    return CreateEntity(EntityTemplate.Empty);
+        //}
         /// <summary>
         /// Adds an Entity using a Template
         /// </summary>
@@ -276,6 +276,7 @@ namespace PleiadEntities
                 chunkIndex = componentChunks.Data.First();
 
             //set data
+            _chunks[chunkIndex].AddEntity(entityID);
             _chunks[chunkIndex].SetComponentData(entityID, componentData);
             if (_chunks[chunkIndex].IsFull)
                 _openTypeChunks.RemoveIndex(component, chunkIndex);
