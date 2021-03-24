@@ -110,12 +110,6 @@
             ID of next new entity
             </summary>
         </member>
-        <member name="M:PleiadEntities.EntityManager.AddEntity">
-            <summary>
-            Adds an empty Entity
-            </summary>
-            <returns>Entity handle</returns>
-        </member>
         <member name="M:PleiadEntities.EntityManager.AddEntity(PleiadEntities.EntityTemplate)">
             <summary>
             Adds an Entity using a Template
