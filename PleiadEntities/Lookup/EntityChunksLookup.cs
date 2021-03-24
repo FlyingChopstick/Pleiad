@@ -17,7 +17,7 @@ namespace PleiadEntities
         /// <summary>
         /// Add Entity ID to lookup
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="entityID"></param>
         /// <param name="index"></param>
         public void AddIndex(int entityID, int index)
         {

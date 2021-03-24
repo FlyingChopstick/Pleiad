@@ -1,4 +1,5 @@
 ﻿using PleiadInput;
+using PleiadRender;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -19,6 +20,7 @@ namespace PleiadSystems
 
         private Dictionary<LoadOrder, HashSet<SystemData>> _loadOrder = new Dictionary<LoadOrder, HashSet<SystemData>>();
 
+        private PWindow _window;
 
         public float DeltaTime { get; private set; }
         public bool ShouldUpdate { get; set; }
@@ -52,7 +54,37 @@ namespace PleiadSystems
             {
                 Console.WriteLine($"Could not start: {e.Message}");
                 Console.WriteLine($"{e.StackTrace}");
-                throw e;
+                //throw e;
+            }
+        }
+
+        public void CreateWindow()
+        {
+            PWindowOptions options = new()
+            {
+                Title = "Rectangle",
+                Resolution = new()
+                {
+                    Width = 1366,
+                    Height = 768
+                },
+                VSync = false
+            };
+            _window = new PWindow(options);
+            _window.Updated += Update;
+        }
+        public void RunWindow()
+        {
+            ShouldUpdate = true;
+            _window.Run();
+        }
+        public void CloseWindow()
+        {
+            if (!_window.IsClosing
+                && ShouldUpdate == true)
+            {
+                ShouldUpdate = false;
+                _window.Close();
             }
         }
 
@@ -214,30 +246,6 @@ namespace PleiadSystems
                     sys.SystemMethod.Invoke(sys.SystemObject, new object[] { DeltaTime });
                 }
             }
-
-
-
-
-            //foreach (var systemType in _systems.Keys)
-            //{
-            //    var system = _systems[systemType];
-
-
-            //    var objEn = system.Systems.Keys.GetEnumerator();
-            //    var methEn = system.Systems.Values.GetEnumerator();
-            //    //Using an iterator over objects and methods
-            //    while (objEn.MoveNext())
-            //    {
-            //        methEn.MoveNext();
-
-            //        var method = methEn.Current;
-            //        var summoner = objEn.Current;
-
-            //        //Invoke the Cycle()
-            //        method.Invoke(summoner, new object[] { DeltaTime });
-            //    }
-
-            //}
 
             _lastTime = _currentTime;
 

@@ -4,8 +4,14 @@ using System.Collections.Generic;
 
 namespace PleiadEntities
 {
+    /// <summary>
+    /// Container storing entities of the same type
+    /// </summary>
     public class EntityChunk : IEntityChunk
     {
+        /// <summary>
+        /// Container storing entities of the same type
+        /// </summary>
         public EntityChunk(int chunkID, Type chunkType, int capacity)
         {
             ChunkID = chunkID;

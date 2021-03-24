@@ -78,13 +78,61 @@ namespace Pleiad
 
 
 
-    public class TestSystem : IPleiadSystem
+    //public class FPS_Meter : IPleiadSystem
+    //{
+    //    public void Cycle(float dTime)
+    //    {
+    //        Console.WriteLine(1000.0f / dTime);
+    //    }
+    //}
+    public class AvgFPS_Meter : IPleiadSystem
     {
+        private float sum = 0.0f;
+        uint
+            frameCount = 0,
+            frameSpan = 60;
+        float
+            timePassed = 0.0f,
+            second = 1000.0f;
+
         public void Cycle(float dTime)
         {
-
+            if (timePassed >= second)
+            {
+                Console.WriteLine(sum / frameCount);
+                sum = 0.0f;
+                frameCount = 0;
+                timePassed = 0.0f;
+            }
+            else
+            {
+                frameCount++;
+            }
+            sum += 1000.0f / dTime;
+            timePassed += dTime;
         }
     }
+    //public class WindowCloseSystem : IPleiadSystem, IRegisterInput
+    //{
+    //    public void Cycle(float dTime)
+    //    {
+
+    //    }
+
+    //    public void InputRegistration(ref InputListener listener)
+    //    {
+    //        listener.ListenTo(Key.Escape);
+    //        listener.KeyPress += Listener_KeyPress;
+    //    }
+
+    //    private void Listener_KeyPress(Key key)
+    //    {
+    //        if (key == Key.Escape)
+    //        {
+    //            World.DefaultWorld.SystemsManager.CloseWindow();
+    //        }
+    //    }
+    //}
 
     public struct SoundComponent : IPleiadComponent
     {

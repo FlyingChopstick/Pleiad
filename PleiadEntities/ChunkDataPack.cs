@@ -6,7 +6,6 @@ using System.Collections.Generic;
 /// <summary>
 /// Datapack is used to get the data from the chunks
 /// </summary>
-/// <typeparam name="T"></typeparam>
 public struct ChunkDataPack
 {
     //stores raw data from chunks
@@ -20,6 +19,9 @@ public struct ChunkDataPack
     public void Flush() => _storage.Clear();
     public Dictionary<int, List<IPleiadComponent>> Pack { get => _storage; }
 
+    /// <summary>
+    /// Datapack is used to get the data from the chunks
+    /// </summary>
     public ChunkDataPack(Type dataType)
     {
         DataType = dataType;
