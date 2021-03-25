@@ -10,6 +10,8 @@ namespace Pleiad
     {
         public string text;
     }
+
+    [Serializable]
     public struct IntTestComponent : IPleiadComponent
     {
         public int testValue;

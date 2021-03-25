@@ -29,7 +29,7 @@ namespace PleiadEntities
         /// <summary>
         /// List of IDs of all entities in chunk
         /// </summary>
-        IEnumerable<int> ChunkIDs { get; }
+        List<int> ChunkIDs { get; }
 
         /// <summary>
         /// Check if the chunk contains this entity

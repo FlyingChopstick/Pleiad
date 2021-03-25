@@ -1,7 +1,7 @@
 ﻿using PleiadEntities;
+using PleiadExtensions.Files;
 using PleiadInput;
 using PleiadMisc;
-using PleiadRender.Abstractions;
 using PleiadSystems;
 using PleiadTasks;
 using PleiadWorld;
@@ -10,11 +10,9 @@ namespace Pleiad
 {
     class PleiadMain : IRegisterInput
     {
-        PShapeData psd = new()
-        {
-            Vertices = new float[] { 0.4f, 0.5f }
-        };
-        PSerialiser<PShapeData> serialiser = new();
+        EntityChunk chunk = new(3, typeof(IntTestComponent), 10);
+        IPSerialiser<EntityChunk> serialiser = new PSerialiser<EntityChunk>();
+        FileContract saveFile = new(@"Models/chunk.save");
 
         static void Main(string[] args)
         {
@@ -42,15 +40,29 @@ namespace Pleiad
         public void InputRegistration(ref InputListener listener)
         {
             listener.ListenTo(Key.Escape);
+            listener.ListenTo(Key.S);
+            listener.ListenTo(Key.L);
             listener.KeyPress += Listener_KeyPress;
         }
-        private void Listener_KeyPress(Key key)
+        private async void Listener_KeyPress(Key key)
         {
             switch (key)
             {
                 case Key.Escape:
                     {
                         World.DefaultWorld.SystemsManager.CloseWindow();
+                        break;
+                    }
+                case Key.S:
+                    {
+                        chunk.AddEntity(2);
+                        chunk.SetComponentData(2, new IntTestComponent() { testValue = 10 });
+                        await serialiser.SerialiseAsync(chunk, saveFile);
+                        break;
+                    }
+                case Key.L:
+                    {
+                        var chunk_L = await serialiser.DeserialiseAsync(saveFile);
                         break;
                     }
                 default:
