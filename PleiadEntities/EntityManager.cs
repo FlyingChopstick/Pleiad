@@ -1,7 +1,12 @@
-﻿using PleiadMisc;
+﻿using PleiadEntities.Tools;
+using PleiadExtensions.Files;
+using PleiadMisc;
+using PleiadMisc.Serialisers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PleiadEntities
 {
@@ -10,6 +15,20 @@ namespace PleiadEntities
     /// </summary>
     public class EntityManager
     {
+        private void LoadExistingComponents()
+        {
+            var a = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => a.GetName().Name == "Pleiad").First();
+            __existingComponents = a.GetTypes()
+                .Where(t => typeof(IPleiadComponent).IsAssignableFrom(t)
+                            && !t.IsInterface
+                            && !t.IsAbstract).ToList();
+        }
+        /// <summary>
+        /// List of all components in Pleiad assembly
+        /// </summary>
+        private List<Type> __existingComponents;
+
         /// <summary>
         /// All chunks
         /// </summary>
@@ -23,18 +42,21 @@ namespace PleiadEntities
         /// </summary>
         private readonly IIndexLookup<Type> _openTypeChunks;
 
-        /// <summary>
-        /// Entity ID - list of chunks containing this entity lookup
-        /// </summary>
-        private readonly IIndexLookup<int> _entityChunks;
-        /// <summary>
-        /// Entity ID - [Dictionary of Component - chunk index]
-        /// </summary>
-        private readonly Dictionary<int, Dictionary<Type, int>> _entityComponentStorage;
-        /// <summary>
-        /// Entity ID - List of entity components
-        /// </summary>
-        private readonly Dictionary<int, HashSet<Type>> _entityComponents;
+
+        //TODO Create failsafes for situation when lookup can't find the entity
+        // 
+        ///// <summary>
+        ///// Entity ID - list of chunks containing this entity lookup
+        ///// </summary>
+        //private readonly IIndexLookup<int> _entityChunks;
+        ///// <summary>
+        ///// Entity ID - [Dictionary of Component - chunk index]
+        ///// </summary>
+        //private readonly Dictionary<int, Dictionary<Type, int>> _entityComponentStorage;
+        ///// <summary>
+        ///// Entity ID - List of entity components
+        ///// </summary>
+        //private readonly Dictionary<int, HashSet<Type>> _entityComponents;
 
         /// <summary>
         /// Default size of an Entity Chunk
@@ -53,6 +75,8 @@ namespace PleiadEntities
                 _chunkSize = value;
             }
         }
+        public int NextID { get => _nextID; }
+        public int NextChunkIndex { get => _nextChunkIndex; }
         /// <summary>
         /// Total amount of entities 
         /// </summary>
@@ -79,6 +103,9 @@ namespace PleiadEntities
 
         public EntityManager()
         {
+            LoadExistingComponents();
+
+
             _nextChunkIndex = 0;
             _nextID = 1;
             _chunkSize = DEFAULT_ENTITY_CHUNK_SIZE;
@@ -98,6 +125,54 @@ namespace PleiadEntities
             _entityComponentStorage = new Dictionary<int, Dictionary<Type, int>>();
             _entityComponents = new Dictionary<int, HashSet<Type>>();
         }
+
+        public EntityManager(ManagerSaveObject mso)
+        {
+            LoadExistingComponents();
+
+            _nextID = mso.NextID;
+            _nextChunkIndex = 0;
+            EntityCount = mso.EntityCount;
+            _chunkSize = mso.ChunkSize;
+
+            _chunks = new();
+            _chunkLUP = new ChunkLookup();
+            _openTypeChunks = new ChunkLookup();
+
+            for (int chIndex = 0; chIndex < mso.Chunks.Count; chIndex++)
+            {
+                LoadChunkSet(mso.Chunks[chIndex]);
+            }
+        }
+        private void LoadChunkSet(List<ChunkSaveObject> list)
+        {
+            if (list.Count == 0)
+            {
+                return;
+            }
+
+            Type setType = list[0].ChunkType;
+
+            if (!__existingComponents.Contains(setType))
+            {
+                return;
+            }
+
+            foreach (var chunkSO in list)
+            {
+                EntityChunk chunk = new(chunkSO);
+                _chunks.Add(chunk);
+                _chunkLUP.AddIndex(setType, _nextChunkIndex);
+                if (!chunk.IsFull)
+                {
+                    _openTypeChunks.AddIndex(setType, _nextChunkIndex);
+                }
+                ChunkCount++;
+                _nextChunkIndex++;
+            }
+        }
+
+
         /// <summary>
         /// Adds an empty Entity
         /// </summary>
@@ -106,6 +181,7 @@ namespace PleiadEntities
         //{
         //    return CreateEntity(EntityTemplate.Empty);
         //}
+
         /// <summary>
         /// Adds an Entity using a Template
         /// </summary>
@@ -115,25 +191,26 @@ namespace PleiadEntities
         {
             return CreateEntity(template);
         }
-        /// <summary>
-        /// Adds an Entity using arrays of Component types and data
-        /// </summary>
-        /// <param name="components">Array of Component types</param>
-        /// <param name="componentData">Array of Component data</param>
-        /// <returns>Entity handle</returns>
-        public Entity AddEntity(Type[] components, IPleiadComponent[] componentData)
-        {
-            return CreateEntity(new EntityTemplate(components, componentData));
-        }
-        /// <summary>
-        /// Adds an Entity with Components and no data
-        /// </summary>
-        /// <param name="components">Array of Component types</param>
-        /// <returns>Entity handle</returns>
-        public Entity AddEntity(Type[] components)
-        {
-            return CreateEntity(new EntityTemplate(components, new IPleiadComponent[components.Length]));
-        }
+
+        ///// <summary>
+        ///// Adds an Entity using arrays of Component types and data
+        ///// </summary>
+        ///// <param name="components">Array of Component types</param>
+        ///// <param name="componentData">Array of Component data</param>
+        ///// <returns>Entity handle</returns>
+        //public Entity AddEntity(Type[] components, IPleiadComponent[] componentData)
+        //{
+        //    return CreateEntity(new EntityTemplate(components, componentData));
+        //}
+        ///// <summary>
+        ///// Adds an Entity with Components and no data
+        ///// </summary>
+        ///// <param name="components">Array of Component types</param>
+        ///// <returns>Entity handle</returns>
+        //public Entity AddEntity(Type[] components)
+        //{
+        //    return CreateEntity(new EntityTemplate(components, new IPleiadComponent[components.Length]));
+        //}
 
         //public List<Entity> GetAllWith(List<Type> components)
         //{
@@ -276,7 +353,7 @@ namespace PleiadEntities
                 chunkIndex = componentChunks.Data.First();
 
             //set data
-            _chunks[chunkIndex].AddEntity(entityID);
+            //_chunks[chunkIndex].AddEntity(entityID);
             _chunks[chunkIndex].SetComponentData(entityID, componentData);
             if (_chunks[chunkIndex].IsFull)
                 _openTypeChunks.RemoveIndex(component, chunkIndex);
@@ -431,7 +508,124 @@ namespace PleiadEntities
             }
         }
 
+        //public List<Type> GetAllChunkTypes()
+        //{
+        //    return _chunkLUP.Keys;
+        //}
 
+        public List<List<ChunkSaveObject>> DumpAllChunks()
+        {
+            List<List<ChunkSaveObject>> chList = new();
+            var types = _chunkLUP.Keys;
+            foreach (var type in types)
+            {
+                chList.Add(DumpChunksOfType(type));
+            }
+
+
+            return chList;
+        }
+        private List<ChunkSaveObject> DumpChunksOfType(Type chunkType)
+        {
+            List<ChunkSaveObject> chList = new();
+            var chIndices = GetAllChunksOfType(chunkType);
+            if (chIndices.IsFound)
+            {
+                foreach (var index in chIndices.Data)
+                {
+                    chList.Add(new(_chunks[index]));
+                }
+            }
+
+            return chList;
+        }
+
+        public async Task SaveChunksAsync()
+        {
+            var types = _chunkLUP.Keys;
+            foreach (var type in types)
+            {
+                await SaveChunksOfTypeAsync(type);
+            }
+        }
+
+        private async Task SaveChunksOfTypeAsync(Type type)
+        {
+            var typeChIndex = GetAllChunksOfType(type);
+
+            if (typeChIndex.IsFound)
+            {
+                foreach (var index in typeChIndex.Data)
+                {
+                    //object chunk = _chunks[index].DumpChunkData();
+                    ChunkSaveObject chunkSave = new(_chunks[index]);
+
+                    PSerialiser pSerialiser = new();
+                    FileContract save = new($"Models/obj/{type}/ch{index}.save");
+
+                    await pSerialiser.SerialiseAsync(chunkSave, save);
+                }
+            }
+        }
+
+        public async Task LoadChunksAsync()
+        {
+            _chunks.Clear();
+            //var a = AppDomain.CurrentDomain.GetAssemblies()
+            //    .Where(a => a.GetName().Name == "Pleiad").First(); //.Where(a => a.GetName().Name == "Pleiad").First();
+            ////var l = a.GetTypes().Where(t => t.IsAssignableFrom(typeof(IPleiadComponent))).ToList();
+
+            //var compTypes = a.GetTypes().Where(t => typeof(IPleiadComponent).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract).ToList();
+
+            foreach (var type in __existingComponents)
+            {
+                await LoadChunksOfTypeAsync(type);
+            }
+        }
+
+        private async Task LoadChunksOfTypeAsync(Type type)
+        {
+            PSerialiser serialiser = new();
+            if (Directory.Exists($"Models/obj/{type}"))
+            {
+                var chunkSaveFiles = Directory.GetFiles($"Models/obj/{type}/");
+
+                foreach (var file in chunkSaveFiles)
+                {
+                    FileContract saveFile = new(file);
+
+                    ChunkSaveObject loadedChunk = (ChunkSaveObject)await serialiser.DeserialiseAsync(saveFile);
+
+                    _chunks.Add(new(loadedChunk));
+                    //var chunk_d = (List<object>)(await serialiser.DeserialiseAsync(saveFile));
+                    //List<IPleiadComponent> components = new List<IPleiadComponent>();
+
+                    //foreach (var comp in chunk_d)
+                    //{
+                    //    components.Add((IPleiadComponent)comp);
+                    //}
+
+                    //_chunks.Add()
+                }
+            }
+        }
+
+        //public List<Payload<T>> DumpComponentChunks<T>() where T : IPleiadComponent
+        //{
+        //    List<Payload<T>> output = new();
+        //    Type chunkType = typeof(T);
+        //    var indices = _chunkLUP.GetIndices(chunkType);
+
+        //    if (indices.IsFound)
+        //    {
+        //        for (int i = 0; i < indices.Data.Count; i++)
+        //        {
+        //            output.Add(new Payload<T>(_chunks[i]));
+        //        }
+        //    }
+
+        //    return output;
+        //}
 
         /// <summary>
         /// Get the index of the existing open component chunk or create a new one

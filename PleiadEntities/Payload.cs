@@ -1,27 +1,48 @@
-﻿using PleiadEntities;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json.Serialization;
 
-
-/// <summary>
-/// Payload is used to set the data for the chunk
-/// </summary>
-/// <typeparam name="T"></typeparam>
-public struct Payload<T> where T : IPleiadComponent
+namespace PleiadEntities
 {
-    public Payload(int chunkIndex, IPleiadComponent[] data)
+    [Serializable]
+    /// <summary>
+    /// Payload is used to set the data for the chunk
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class Payload<T> where T : IPleiadComponent
     {
-        ChunkIndex = chunkIndex;
-        Data = data;
-    }
-    public Payload(int chunkIndex, T[] data)
-    {
-        ChunkIndex = chunkIndex;
-        Data = new IPleiadComponent[data.Length];
-        for (int i = 0; i < data.Length; i++)
+        [JsonConstructor]
+        public Payload()
         {
-            Data[i] = data[i];
-        }
-    }
 
-    public int ChunkIndex { get; }
-    public IPleiadComponent[] Data;
+        }
+        public Payload(EntityChunk chunk)
+        {
+            ChunkId = chunk.ChunkID;
+            Capacity = chunk.Capacity;
+            //ComponentData = chunk.DumpChunkData();
+            IDs = chunk.ChunkIDs;
+        }
+
+        //public EntityChunk CreateChunk()
+        //{
+        //    EntityChunk ch = new(ChunkId, typeof(T), Capacity);
+        //    ch.SetChunkData(ComponentData);
+        //    ch.SetChunkIDs(IDs);
+        //    ch.EntityCount = IDs.Where(i => i != -1).Count();
+        //    ch.IsFull = ch.EntityCount == ch.Capacity;
+        //    return ch;
+        //}
+
+        [JsonInclude]
+        public int ChunkId { get; set; }
+        [JsonInclude]
+        public int Capacity { get; set; }
+        [JsonInclude]
+        public List<T> ComponentData { get; set; }
+        [JsonInclude]
+        public List<int> IDs { get; set; }
+
+    }
 }

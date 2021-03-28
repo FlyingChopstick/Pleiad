@@ -1,7 +1,7 @@
 ﻿using PleiadExtensions.Files;
 using System.Threading.Tasks;
 
-namespace PleiadMisc
+namespace PleiadMisc.Serialisers
 {
     public interface IPSerialiser<T>
     {

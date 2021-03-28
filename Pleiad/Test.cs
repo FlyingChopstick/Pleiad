@@ -3,9 +3,11 @@ using PleiadExtensions.Files;
 using PleiadSystems;
 using PleiadTasks;
 using System;
+using System.Text.Json.Serialization;
 
 namespace Pleiad
 {
+    [Serializable]
     public struct StringTestComponent : IPleiadComponent
     {
         public string text;
@@ -14,6 +16,7 @@ namespace Pleiad
     [Serializable]
     public struct IntTestComponent : IPleiadComponent
     {
+        [JsonInclude]
         public int testValue;
     }
     public struct FloatTestComponent : IPleiadComponent
