@@ -29,6 +29,7 @@ namespace PleiadEntities
         /// </summary>
         private List<Type> __existingComponents;
 
+
         /// <summary>
         /// All chunks
         /// </summary>
@@ -41,22 +42,18 @@ namespace PleiadEntities
         /// Type - list of open chunk indices lookup
         /// </summary>
         private readonly IIndexLookup<Type> _openTypeChunks;
-
-
-        //TODO Create failsafes for situation when lookup can't find the entity
-        // 
-        ///// <summary>
-        ///// Entity ID - list of chunks containing this entity lookup
-        ///// </summary>
-        //private readonly IIndexLookup<int> _entityChunks;
-        ///// <summary>
-        ///// Entity ID - [Dictionary of Component - chunk index]
-        ///// </summary>
-        //private readonly Dictionary<int, Dictionary<Type, int>> _entityComponentStorage;
-        ///// <summary>
-        ///// Entity ID - List of entity components
-        ///// </summary>
-        //private readonly Dictionary<int, HashSet<Type>> _entityComponents;
+        /// <summary>
+        /// Entity ID - list of chunks containing this entity lookup
+        /// </summary>
+        private IIndexLookup<int> _entityChunks;
+        /// <summary>
+        /// Entity ID - [Dictionary of Component - chunk index]
+        /// </summary>
+        private Dictionary<int, Dictionary<Type, int>> _entityComponentStorage;
+        /// <summary>
+        /// Entity ID - List of entity components
+        /// </summary>
+        private Dictionary<int, HashSet<Type>> _entityComponents;
 
         /// <summary>
         /// Default size of an Entity Chunk
@@ -170,7 +167,63 @@ namespace PleiadEntities
                 ChunkCount++;
                 _nextChunkIndex++;
             }
+
+            PopulateLookups();
         }
+        private void PopulateLookups()
+        {
+            _entityChunks = new EntityChunksLookup();
+            _entityComponents = new();
+            _entityComponentStorage = new();
+
+            //get all chunk types
+            foreach (var chType in _chunkLUP.Keys)
+            {
+                _populateForType(chType);
+            }
+        }
+        private void _populateForType(Type chType)
+        {
+            var typeChunks = _chunkLUP.GetIndices(chType);
+            //for each chunk of type
+            foreach (var chunkIndex in typeChunks.Data)
+            {
+                _populateForChIndex(chType, chunkIndex);
+            }
+        }
+        private void _populateForChIndex(Type chType, int chunkIndex)
+        {
+            var entities = _chunks[chunkIndex].ChunkIDs;
+
+            //for each entity of chunk
+            foreach (var entityID in entities)
+            {
+                if (entityID != -1)
+                {
+                    _populateForEntityId(chType, chunkIndex, entityID);
+                }
+            }
+        }
+        private void _populateForEntityId(Type chType, int chunkIndex, int entityID)
+        {
+            //add "entity id->chunk index" entry
+            _entityChunks.AddIndex(entityID, chunkIndex);
+
+            //add "entity id->component type" entry 
+            if (!_entityComponents.ContainsKey(entityID))
+            {
+                _entityComponents.Add(entityID, new HashSet<Type>());
+            }
+            _entityComponents[entityID].Add(chType);
+
+            //add "entity id->[compType->chIndex]" entry
+            if (!_entityComponentStorage.ContainsKey(entityID))
+            {
+                _entityComponentStorage.Add(entityID, new Dictionary<Type, int>());
+            }
+            _entityComponentStorage[entityID].Add(chType, chunkIndex);
+        }
+
 
 
         /// <summary>

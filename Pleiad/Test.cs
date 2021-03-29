@@ -100,7 +100,7 @@ namespace Pleiad
             timePassed = 0.0f,
             second = 1000.0f;
 
-        public void Cycle(float dTime)
+        public void Cycle(float dTime, EntityManager em)
         {
             if (timePassed >= second)
             {

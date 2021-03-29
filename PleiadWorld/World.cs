@@ -65,7 +65,7 @@ namespace PleiadWorld
         public World()
         {
             _em = new EntityManager();
-            _sm = new SystemsManager();
+            _sm = new SystemsManager(_em);
         }
 
         /// <summary>

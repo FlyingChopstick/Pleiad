@@ -1,4 +1,5 @@
-﻿using PleiadInput;
+﻿using PleiadEntities;
+using PleiadInput;
 using PleiadRender;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace PleiadSystems
         private readonly Dictionary<Type, HashSet<SystemData>> _systems;
         private static readonly InputListener _il = new InputListener();
         private readonly Stopwatch _sw;
-
+        private readonly EntityManager _em;
         private float _lastTime;
         private float _currentTime;
 
@@ -30,7 +31,7 @@ namespace PleiadSystems
         /// <summary>
         /// Constructor, tries to load all Systems in the namespace and sets up initial values
         /// </summary>
-        public SystemsManager()
+        public SystemsManager(EntityManager em)
         {
             try
             {
@@ -56,6 +57,7 @@ namespace PleiadSystems
                 Console.WriteLine($"{e.StackTrace}");
                 //throw e;
             }
+            _em = em;
         }
 
         public void CreateWindow()
@@ -243,7 +245,7 @@ namespace PleiadSystems
             {
                 foreach (var sys in _loadOrder[layer])
                 {
-                    sys.SystemMethod.Invoke(sys.SystemObject, new object[] { DeltaTime });
+                    sys.SystemMethod.Invoke(sys.SystemObject, new object[] { DeltaTime, _em });
                 }
             }
 
