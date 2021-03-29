@@ -3,9 +3,11 @@ using PleiadExtensions.Files;
 using PleiadSystems;
 using PleiadTasks;
 using System;
+using System.Text.Json.Serialization;
 
 namespace Pleiad
 {
+    [Serializable]
     public struct StringTestComponent : IPleiadComponent
     {
         public string text;
@@ -14,6 +16,7 @@ namespace Pleiad
     [Serializable]
     public struct IntTestComponent : IPleiadComponent
     {
+        [JsonInclude]
         public int testValue;
     }
     public struct FloatTestComponent : IPleiadComponent
@@ -97,7 +100,7 @@ namespace Pleiad
             timePassed = 0.0f,
             second = 1000.0f;
 
-        public void Cycle(float dTime)
+        public void Cycle(float dTime, ref EntityManager em)
         {
             if (timePassed >= second)
             {

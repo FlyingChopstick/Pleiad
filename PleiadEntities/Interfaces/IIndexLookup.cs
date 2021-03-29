@@ -43,5 +43,6 @@ namespace PleiadEntities
         /// Lookup Table
         /// </summary>
         Dictionary<T, HashSet<int>> Lookup { get; }
+        List<T> Keys { get; }
     }
 }

@@ -21,8 +21,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadInput", "PleiadInput\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadRender", "PleiadRender\PleiadRender.csproj", "{221B1AC2-B9A5-4F53-8E52-5623C7063494}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Tests", "Pleiad.Tests\Pleiad.Tests.csproj", "{5B04C977-6BCE-4536-A084-87B537DA0EE4}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{56FF792A-8B73-4DC7-8D45-AFC5D6041540}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -108,14 +106,6 @@ Global
 		{221B1AC2-B9A5-4F53-8E52-5623C7063494}.Release|Any CPU.Build.0 = Release|Any CPU
 		{221B1AC2-B9A5-4F53-8E52-5623C7063494}.Release|x64.ActiveCfg = Release|x64
 		{221B1AC2-B9A5-4F53-8E52-5623C7063494}.Release|x64.Build.0 = Release|x64
-		{5B04C977-6BCE-4536-A084-87B537DA0EE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5B04C977-6BCE-4536-A084-87B537DA0EE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5B04C977-6BCE-4536-A084-87B537DA0EE4}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{5B04C977-6BCE-4536-A084-87B537DA0EE4}.Debug|x64.Build.0 = Debug|Any CPU
-		{5B04C977-6BCE-4536-A084-87B537DA0EE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5B04C977-6BCE-4536-A084-87B537DA0EE4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5B04C977-6BCE-4536-A084-87B537DA0EE4}.Release|x64.ActiveCfg = Release|Any CPU
-		{5B04C977-6BCE-4536-A084-87B537DA0EE4}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

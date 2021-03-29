@@ -1,4 +1,6 @@
-﻿namespace PleiadSystems
+﻿using PleiadEntities;
+
+namespace PleiadSystems
 {
     public interface IPleiadSystem
     {
@@ -6,6 +8,6 @@
         /// Function to execute on every update
         /// </summary>
         /// <param name="dTime">Time since the last update</param>
-        void Cycle(float dTime);
+        void Cycle(float dTime, ref EntityManager em);
     }
 }

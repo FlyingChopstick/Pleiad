@@ -1,5 +1,6 @@
 ﻿using PleiadMisc;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PleiadEntities
 {
@@ -69,7 +70,7 @@ namespace PleiadEntities
         }
 
         public Dictionary<int, HashSet<int>> Lookup { get => _lookup; }
-
+        public List<int> Keys { get => _lookup.Keys.ToList(); }
 
         private readonly Dictionary<int, HashSet<int>> _lookup;
     }

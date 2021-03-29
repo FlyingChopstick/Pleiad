@@ -1,24 +1,102 @@
 ﻿using PleiadEntities;
 using PleiadExtensions.Files;
 using PleiadInput;
-using PleiadMisc;
+using PleiadMisc.Serialisers;
 using PleiadSystems;
 using PleiadTasks;
 using PleiadWorld;
+using System;
 
 namespace Pleiad
 {
+
+
+
     class PleiadMain : IRegisterInput
     {
-        EntityChunk chunk = new(3, typeof(IntTestComponent), 10);
-        IPSerialiser<EntityChunk> serialiser = new PSerialiser<EntityChunk>();
+        static EntityChunk chunk = new(3, typeof(IntTestComponent), 10);
+        PSerialiser serialiser = new PSerialiser();
         FileContract saveFile = new(@"Models/chunk.save");
 
-        static void Main(string[] args)
+        static async System.Threading.Tasks.Task Main(string[] args)
         {
-            EntityManager em = World.DefaultWorld.EntityManager;
+            World newWorld = new();
+
+            EntityManager em = newWorld.EntityManager;
             Tasks.EntityManager = em;
-            SystemsManager sm = World.DefaultWorld.SystemsManager;
+            SystemsManager sm = newWorld.SystemsManager;
+
+            var template = new EntityTemplate(
+                    new Type[] { typeof(IntTestComponent) },
+                    new IPleiadComponent[]
+                    {
+                        new IntTestComponent()
+                        {
+                            testValue = 26
+                        }
+                    }
+                    );
+            var template2 = new EntityTemplate(
+                    new Type[] { typeof(StringTestComponent) },
+                    new IPleiadComponent[]
+                    {
+                        new StringTestComponent()
+                        {
+                            text = "text"
+                        }
+                    }
+                    );
+            em.AddEntity(template);
+
+            //await em.SaveChunksAsync();
+            //await em.LoadChunksAsync();
+
+            //var state = newWorld.SaveManagerState();
+
+            FileContract saveFile = new($"Models/manager.save");
+
+            var state = await newWorld.SerialiseManagerAsync(saveFile);
+
+            em.AddEntity(template2);
+
+            await newWorld.DeserialiseManagerAsync(saveFile);
+
+            em = newWorld.EntityManager;
+
+            //em = newWorld.LoadManagerState(state);
+
+            //var newEm = World.DefaultWorld.EntityManager;
+
+            //string input = Console.ReadLine();
+            //Entity startEntity;
+            //if (input == "n")
+            //{
+            //    startEntity = em.AddEntity(template);
+            //}
+            //else
+            //{
+            //    if (input == "l")
+            //    {
+            //        startEntity = new(1);
+            //        await em.LoadChunksAsync();
+            //        var ch = em.GetAllChunksOfType(typeof(IntTestComponent));
+            //    }
+            //    else
+            //    {
+            //        startEntity = new Entity(-1);
+            //    }
+            //}
+
+            //var gcd = em.GetComponentData<IntTestComponent>(startEntity);
+
+
+
+
+
+
+            ////await em.SaveChunksOfTypeAsync(typeof(IntTestComponent));
+            //await em.SaveChunksAsync();
+            //await em.LoadChunksAsync();
 
             sm.CreateWindow();
             sm.RunWindow();
@@ -50,19 +128,24 @@ namespace Pleiad
             {
                 case Key.Escape:
                     {
-                        World.DefaultWorld.SystemsManager.CloseWindow();
+                        //World.DefaultWorld.SystemsManager.CloseWindow();
                         break;
                     }
                 case Key.S:
                     {
-                        chunk.AddEntity(2);
-                        chunk.SetComponentData(2, new IntTestComponent() { testValue = 10 });
-                        await serialiser.SerialiseAsync(chunk, saveFile);
+                        //Payload<IntTestComponent> payload = new(chunk);
+
+                        //await payloadManager.SaveAsync(payload, saveFile);
+                        //chunk.AddEntity(2);
+                        //chunk.SetComponentData(2, new IntTestComponent() { testValue = 10 });
+                        //await serialiser.SerialiseAsync(chunk, saveFile);
+
                         break;
                     }
                 case Key.L:
                     {
-                        var chunk_L = await serialiser.DeserialiseAsync(saveFile);
+                        //var data = await payloadManager.LoadAsync(saveFile);
+                        //EntityChunk newChunk = data.CreateChunk();
                         break;
                     }
                 default:
