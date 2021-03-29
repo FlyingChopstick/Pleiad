@@ -2,7 +2,7 @@
 using System;
 using Xunit;
 
-namespace Pleiad.Tests
+namespace Pleiad
 {
 
     public class EntitiesTests
