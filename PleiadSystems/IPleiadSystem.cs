@@ -8,6 +8,6 @@ namespace PleiadSystems
         /// Function to execute on every update
         /// </summary>
         /// <param name="dTime">Time since the last update</param>
-        void Cycle(float dTime, EntityManager em);
+        void Cycle(float dTime, ref EntityManager em);
     }
 }

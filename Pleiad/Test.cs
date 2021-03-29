@@ -100,7 +100,7 @@ namespace Pleiad
             timePassed = 0.0f,
             second = 1000.0f;
 
-        public void Cycle(float dTime, EntityManager em)
+        public void Cycle(float dTime, ref EntityManager em)
         {
             if (timePassed >= second)
             {
@@ -115,6 +115,8 @@ namespace Pleiad
             }
             sum += 1000.0f / dTime;
             timePassed += dTime;
+
+            em.RemoveEntity(new Entity(1));
         }
     }
     //public class WindowCloseSystem : IPleiadSystem, IRegisterInput
