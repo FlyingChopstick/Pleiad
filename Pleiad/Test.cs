@@ -115,8 +115,6 @@ namespace Pleiad
             }
             sum += 1000.0f / dTime;
             timePassed += dTime;
-
-            em.RemoveEntity(new Entity(1));
         }
     }
     //public class WindowCloseSystem : IPleiadSystem, IRegisterInput
