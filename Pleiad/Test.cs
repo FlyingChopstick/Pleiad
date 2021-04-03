@@ -1,96 +1,17 @@
 ﻿using PleiadEntities;
-using PleiadExtensions.Files;
+using PleiadInput;
 using PleiadSystems;
-using PleiadTasks;
 using System;
-using System.Text.Json.Serialization;
 
 namespace Pleiad
 {
-    [Serializable]
-    public struct StringTestComponent : IPleiadComponent
-    {
-        public string text;
-    }
 
-    [Serializable]
-    public struct IntTestComponent : IPleiadComponent
-    {
-        [JsonInclude]
-        public int testValue;
-    }
-    public struct FloatTestComponent : IPleiadComponent
-    {
-        public float testValue;
-    }
+    //Системы могут работать вместе, 
+    //но лучше не стоит, потому что обе выводят в консоль, будет ничего не понять
 
 
-
-    public struct TestTask : IPleiadTask
-    {
-        public float dTime;
-        public int num;
-        public float value;
-
-        public void Run()
-        {
-            Console.WriteLine(num);
-            value += dTime;
-        }
-    }
-
-    public struct ConsoleWriteTask : IPleiadTask
-    {
-        public string message;
-        public void Run()
-        {
-            Console.WriteLine(message);
-        }
-    }
-
-    public struct ReadAllStrings : IPleiadTaskOn<StringTestComponent>
-    {
-        public void RunOn(int i, ref StringTestComponent[] array)
-        {
-            if (array[i].text != null)
-            {
-                Console.WriteLine(array[i].text);
-                array[i] = new StringTestComponent { text = $"Modified {array[i].text}" };
-            }
-        }
-    }
-
-    public struct TestTaskOn<T> : IPleiadTaskOn<StringTestComponent>
-    {
-        public void RunOn(int i, ref StringTestComponent[] array)
-        {
-            var c = array[i].text;
-            array[i] = new StringTestComponent { text = $"goodbye {c}" };
-        }
-    }
-
-    public struct TextWriteTask : IPleiadTask
-    {
-        public FileContract file;
-        public string message;
-        public void Run()
-        {
-            file.Write(message);
-        }
-    }
-
-
-
-
-
-    //public class FPS_Meter : IPleiadSystem
-    //{
-    //    public void Cycle(float dTime)
-    //    {
-    //        Console.WriteLine(1000.0f / dTime);
-    //    }
-    //}
-    public class AvgFPS_Meter : IPleiadSystem
+    //Счётчик фпс, выключен, разкомментить интерфейс, чтобы включить
+    public class AvgFPS_Meter// : IPleiadSystem
     {
         private float sum = 0.0f;
         uint
@@ -117,6 +38,147 @@ namespace Pleiad
             timePassed += dTime;
         }
     }
+
+    //Чтение клавиатуры, чтобы выключить, закомментить оба интерфейса
+    public class TextWriter : IPleiadSystem, IRegisterInput
+    {
+        private static string _word;
+        private static bool _isKeyAdded = false;
+
+        public void Cycle(float dTime, ref EntityManager em)
+        {
+            if (_isKeyAdded)
+            {
+                Console.Clear();
+                Console.WriteLine(_word);
+
+                _isKeyAdded = false;
+            }
+        }
+
+        public void InputRegistration(ref InputListener listener)
+        {
+            listener.ListenAlphabet();
+            listener.ListenTo(Key.Space);
+            listener.ListenTo(Key.Backspace);
+
+            listener.KeyRelease += Listener_KeyRelease;
+        }
+
+        private void Listener_KeyRelease(Key key)
+        {
+            switch (key)
+            {
+                case Key.Space:
+                    {
+                        _word += " ";
+                        break;
+                    }
+                case Key.Backspace:
+                    {
+                        if (_word.Length > 0)
+                        {
+                            _word = _word.Remove(_word.Length - 1);
+                        }
+                        break;
+                    }
+
+                default:
+                    {
+                        _word += key;
+                        break;
+                    }
+            }
+
+            _isKeyAdded = true;
+        }
+    }
+
+
+    [Serializable]
+    public struct StringTestComponent : IPleiadComponent
+    {
+        public string text;
+    }
+
+    [Serializable]
+    public struct IntTestComponent : IPleiadComponent
+    {
+        public int testValue;
+    }
+
+    public struct FloatTestComponent : IPleiadComponent
+    {
+        public float testValue;
+    }
+
+    public struct SoundComponent : IPleiadComponent
+    {
+        public string[] files;
+    }
+
+    //public struct TestTask : IPleiadTask
+    //{
+    //    public float dTime;
+    //    public int num;
+    //    public float value;
+
+    //    public void Run()
+    //    {
+    //        Console.WriteLine(num);
+    //        value += dTime;
+    //    }
+    //}
+
+    //public struct ConsoleWriteTask : IPleiadTask
+    //{
+    //    public string message;
+    //    public void Run()
+    //    {
+    //        Console.WriteLine(message);
+    //    }
+    //}
+
+    //public struct ReadAllStrings : IPleiadTaskOn<StringTestComponent>
+    //{
+    //    public void RunOn(int i, ref StringTestComponent[] array)
+    //    {
+    //        if (array[i].text != null)
+    //        {
+    //            Console.WriteLine(array[i].text);
+    //            array[i] = new StringTestComponent { text = $"Modified {array[i].text}" };
+    //        }
+    //    }
+    //}
+
+    //public struct TestTaskOn<T> : IPleiadTaskOn<StringTestComponent>
+    //{
+    //    public void RunOn(int i, ref StringTestComponent[] array)
+    //    {
+    //        var c = array[i].text;
+    //        array[i] = new StringTestComponent { text = $"goodbye {c}" };
+    //    }
+    //}
+
+    //public struct TextWriteTask : IPleiadTask
+    //{
+    //    public FileContract file;
+    //    public string message;
+    //    public void Run()
+    //    {
+    //        file.Write(message);
+    //    }
+    //}
+
+    //public class FPS_Meter : IPleiadSystem
+    //{
+    //    public void Cycle(float dTime)
+    //    {
+    //        Console.WriteLine(1000.0f / dTime);
+    //    }
+    //}
+
+
     //public class WindowCloseSystem : IPleiadSystem, IRegisterInput
     //{
     //    public void Cycle(float dTime)
@@ -139,10 +201,6 @@ namespace Pleiad
     //    }
     //}
 
-    public struct SoundComponent : IPleiadComponent
-    {
-        public string[] files;
-    }
     //public class DiceGame// : IPleiadSystem, IRegisterInput
     //{
     //    private bool _started;

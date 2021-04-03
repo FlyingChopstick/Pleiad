@@ -1,7 +1,6 @@
 ﻿using PleiadEntities;
-using PleiadExtensions.Files;
 using PleiadInput;
-using PleiadMisc.Serialisers;
+using PleiadMisc.Files;
 using PleiadSystems;
 using PleiadTasks;
 using PleiadWorld;
@@ -9,15 +8,15 @@ using System;
 
 namespace Pleiad
 {
+    //Документации пока нет, пиши в лс
+
+    //World содержит в себе EntityManager и SystemsManager
+    //SystemsManager содержит окно (PWindow)
+    //Система чтения клавиатуры находится в Pleiad/Test.cs
 
 
-
-    class PleiadMain : IRegisterInput
+    class PleiadMain// : IRegisterInput
     {
-        static EntityChunk chunk = new(3, typeof(IntTestComponent), 10);
-        PSerialiser serialiser = new PSerialiser();
-        FileContract saveFile = new(@"Models/chunk.save");
-
         static async System.Threading.Tasks.Task Main(string[] args)
         {
             World newWorld = new();
@@ -48,73 +47,40 @@ namespace Pleiad
                     );
             em.AddEntity(template);
 
-            //await em.SaveChunksAsync();
-            //await em.LoadChunksAsync();
 
-            //var state = newWorld.SaveManagerState();
-
+            //serialisation
+            //save file
             FileContract saveFile = new($"Models/manager.save");
-
+            //saved manager state (debug)
             var state = await newWorld.SerialiseManagerAsync(saveFile);
-
+            //add entity AFTER save
             em.AddEntity(template2);
 
+            //deserialisation
             await newWorld.DeserialiseManagerAsync(saveFile);
-
+            //update manager handle
+            //it shouldn't contain the added entity
             em = newWorld.EntityManager;
 
-            //em = newWorld.LoadManagerState(state);
 
-            //var newEm = World.DefaultWorld.EntityManager;
+            Console.Clear();
 
-            //string input = Console.ReadLine();
-            //Entity startEntity;
-            //if (input == "n")
-            //{
-            //    startEntity = em.AddEntity(template);
-            //}
-            //else
-            //{
-            //    if (input == "l")
-            //    {
-            //        startEntity = new(1);
-            //        await em.LoadChunksAsync();
-            //        var ch = em.GetAllChunksOfType(typeof(IntTestComponent));
-            //    }
-            //    else
-            //    {
-            //        startEntity = new Entity(-1);
-            //    }
-            //}
-
-            //var gcd = em.GetComponentData<IntTestComponent>(startEntity);
-
-
-
-
-
-
-            ////await em.SaveChunksOfTypeAsync(typeof(IntTestComponent));
-            //await em.SaveChunksAsync();
-            //await em.LoadChunksAsync();
-
+            //create opengl window
             sm.CreateWindow();
             sm.RunWindow();
+
+            //default update cycle (deprecated)
             //while (sm.ShouldUpdate)
             //{
 
             //}
 
-            ////Same as the cycle below
+            ////Same as the cycle (deprecated)
             ////World.DefaultWorld.StartUpdate();
-            //while (World.DefaultWorld.CanUpdate())
-            //{
-
-            //    World.DefaultWorld.EntityManager.DEBUG_PrintChunks();
-            //}
         }
 
 
+        //Использовалось для проверки сериализации и закрытия окна, сейчас выключено
         public void InputRegistration(ref InputListener listener)
         {
             listener.ListenTo(Key.Escape);
