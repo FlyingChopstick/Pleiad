@@ -10,7 +10,7 @@
         Add = 107,
         Alt = 262144,
         B = 66,
-        Back = 8,
+        Backspace = 8,
         C = 67,
         CapsLock = 20,
         Control = 131072,

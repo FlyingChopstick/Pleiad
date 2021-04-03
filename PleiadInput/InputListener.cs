@@ -41,6 +41,10 @@ namespace PleiadInput
         private readonly HashSet<Key> _inputTable;
         private readonly Dictionary<Key, bool> _keyState;
 
+        public static readonly Key[] AlphabetKeys = { Key.A, Key.B, Key.C, Key.D, Key.E, Key.F, Key.G, Key.H, Key.I, Key.J, Key.K, Key.L, Key.M, Key.N, Key.O, Key.P, Key.Q, Key.R, Key.S, Key.T, Key.U, Key.V, Key.W, Key.X, Key.Y, Key.Z };
+
+
+
         private bool _useInputTable = true;
         /// <summary>
         /// Should the listener listen to the list of bound keys or to check each possible key (default=<see langword="true"/>)
@@ -97,6 +101,23 @@ namespace PleiadInput
                 ListenTo(key);
             }
         }
+
+        public void ListenAlphabet()
+        {
+            for (int i = 0; i < AlphabetKeys.Length; i++)
+            {
+                _inputTable.Add(AlphabetKeys[i]);
+            }
+        }
+
+        public void ListenAll()
+        {
+            foreach (var key in Enum.GetValues(typeof(Key)).Cast<Key>())
+            {
+                _inputTable.Add(key);
+            }
+        }
+
         /// <summary>
         /// Removes keys from the bound keys
         /// </summary>
