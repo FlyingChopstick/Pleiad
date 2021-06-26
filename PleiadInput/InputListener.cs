@@ -49,10 +49,10 @@ namespace PleiadInput
             _allKeys = Enum.GetValues(typeof(Key)).Cast<Key>().ToList();
             _keyState = new Dictionary<Key, bool>();
 
-            UseInputTable = useInputTable;
             _inputTable = new List<Key>();
-
             UseInputTable = useInputTable;
+
+            //UseInputTable = useInputTable;
         }
 
         public void ListenTo(Key key)

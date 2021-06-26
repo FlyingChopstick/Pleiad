@@ -1,8 +1,8 @@
-﻿using PleiadEntities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using static PleiadEntities.Entities;
+using PleiadEntities;
+using PleiadEntities.Model;
 
 namespace PleiadTasks
 {
@@ -25,18 +25,18 @@ namespace PleiadTasks
 
             T[] chunkData = dataPack.GetConvertedData();
             int[] chunkSizes = new int[dataPack.ChunkSizes.Keys.Count];
-            int[] chunkIndices = dataPack.GetChunkIndices();
+            ChunkIndex[] chunkIndices = dataPack.GetChunkIndices();
 
             //Run the action for each type chunk
             for (int i = 0; i < chunkIndices.Length; i++)
             {
-                int chIndex = chunkIndices[i];
+                ChunkIndex chIndex = new(chunkIndices[i]);
                 chunkSizes[i] = dataPack.ChunkSizes[chIndex];
                 int currentChSize = chunkSizes[chIndex];
                 _taskOnQueue.Add(Task.Run(() =>
                 {
                     //List<T> newData = new List<T>();
-                    T[] newData = new T[currentChSize];  
+                    T[] newData = new T[currentChSize];
                     for (int j = 0; j < currentChSize; j++)
                     {
                         handle.ActionOn(j, ref chunkData);

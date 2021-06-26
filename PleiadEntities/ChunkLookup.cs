@@ -1,8 +1,9 @@
-﻿using PleiadExtensions.Arrays;
-using PleiadMisc.Comparers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using PleiadEntities.Model;
+using PleiadExtensions.Arrays;
+using PleiadMisc.Comparers;
 
 namespace PleiadEntities
 {
@@ -10,10 +11,10 @@ namespace PleiadEntities
     {
         public ChunkLookup()
         {
-            _layout = new Dictionary<Type[], Dictionary<Type, List<int>>>(new TypeArrayComparer());
+            _layout = new(new TypeArrayComparer());
         }
 
-        private readonly Dictionary<Type[], Dictionary<Type, List<int>>> _layout;
+        private readonly Dictionary<Type[], Dictionary<Type, List<ChunkIndex>>> _layout;
 
         /// <summary>
         /// Adds a new chunk index of some template
@@ -21,15 +22,15 @@ namespace PleiadEntities
         /// <param name="template">Chunk Template</param>
         /// <param name="component">Subtype</param>
         /// <param name="index">Chunk index</param>
-        public void AddIndex(Type[] template, Type component, int index)
+        public void AddIndex(Type[] template, Type component, ChunkIndex index)
         {
             if (!_layout.ContainsKey(template))
             {
-                _layout[template] = new Dictionary<Type, List<int>>();
+                _layout[template] = new();
             }
             if (!_layout[template].ContainsKey(component))
             {
-                _layout[template][component] = new List<int>();
+                _layout[template][component] = new();
             }
             if (!_layout[template][component].Contains(index))
             {
@@ -42,7 +43,7 @@ namespace PleiadEntities
         /// <param name="template">Chunk template</param>
         /// <param name="component">Subtype</param>
         /// <param name="index">Chunk index</param>
-        public void RemoveIndex(Type[] template, Type component, int index)
+        public void RemoveIndex(Type[] template, Type component, ChunkIndex index)
         {
             if (_layout.ContainsKey(template) && _layout[template].ContainsKey(component))
                 _layout[template][component].Remove(index);
@@ -52,13 +53,13 @@ namespace PleiadEntities
         /// </summary>
         /// <param name="query">Template query</param>
         /// <returns>A dictionary of chunk indices or default</returns>
-        public Dictionary<Type, List<int>> GetIndices(Type[] query)
+        public Dictionary<Type, List<ChunkIndex>> GetIndices(Type[] query)
         {
             foreach (var template in _layout.Keys)
             {
                 if (query.IsSubsetOf(template))
                 {
-                    Dictionary<Type, List<int>> result = new Dictionary<Type, List<int>>();
+                    var result = new Dictionary<Type, List<ChunkIndex>>();
 
                     foreach (var type in query)
                     {
@@ -72,7 +73,7 @@ namespace PleiadEntities
 
             return default;
         }
-        public int[] GetIndices(Type query)
+        public ChunkIndex[] GetIndices(Type query)
         {
             foreach (var template in _layout.Keys)
             {
@@ -90,7 +91,7 @@ namespace PleiadEntities
         /// <param name="template">Chunk template</param>
         /// <param name="component">Subtype</param>
         /// <returns>A list of Chunk indices or default</returns>
-        public int[] GetIndices(Type[] template, Type component)
+        public ChunkIndex[] GetIndices(Type[] template, Type component)
         {
             if (_layout.ContainsKey(template) && _layout[template].ContainsKey(component))
                 return _layout[template][component].ToArray();

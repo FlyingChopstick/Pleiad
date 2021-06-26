@@ -5,6 +5,9 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
+
+
+
   <ItemGroup>
     <ProjectReference Include="..\PleiadExtensions\PleiadExtensions.csproj" />
     <ProjectReference Include="..\PleiadMisc\PleiadMisc.csproj" />

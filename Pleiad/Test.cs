@@ -58,7 +58,7 @@ namespace Pleiad
         }
     }
 
-    public class TextWriter : IPleiadSystem
+    public class TextWriter
     {
         TextWriteTask task = new TextWriteTask 
         { 

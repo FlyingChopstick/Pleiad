@@ -1,4 +1,5 @@
 ﻿using PleiadEntities;
+using PleiadEntities.Model;
 using System;
 using System.Collections.Generic;
 
@@ -8,13 +9,13 @@ using System.Collections.Generic;
 /// <typeparam name="T"></typeparam>
 public struct DataPack<T> where T : IPleiadComponent
 {
-    public DataPack(int[] indices, Dictionary<int, int> chunkSizes, IPleiadComponent[] data)
+    public DataPack(ChunkIndex[] indices, Dictionary<ChunkIndex, int> chunkSizes, IPleiadComponent[] data)
     {
         _chunkIndices = indices;
         ChunkSizes = chunkSizes;
         _dataRaw = data;
     }
-    public DataPack(int[] indices, Dictionary<int, int> chunkSizes, T[] data)
+    public DataPack(ChunkIndex[] indices, Dictionary<ChunkIndex, int> chunkSizes, T[] data)
     {
         _chunkIndices = indices;
         ChunkSizes = chunkSizes;
@@ -41,9 +42,9 @@ public struct DataPack<T> where T : IPleiadComponent
     {
         return _dataRaw;
     }
-    public int[] GetChunkIndices() { return _chunkIndices; }
-    public readonly Dictionary<int, int> ChunkSizes { get; }
+    public ChunkIndex[] GetChunkIndices() { return _chunkIndices; }
+    public readonly Dictionary<ChunkIndex, int> ChunkSizes { get; }
 
-    private readonly int[] _chunkIndices;
+    private readonly ChunkIndex[] _chunkIndices;
     private readonly IPleiadComponent[] _dataRaw;
 }
