@@ -1,207 +1,82 @@
-﻿using PleiadEntities;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using PleiadEntities;
+using PleiadEntities.Model;
 
 namespace PleiadTasks
 {
-    /// <summary>
-    /// Manages creating, starting and completing threaded tasks
-    /// </summary>
     public static class Tasks
     {
+        private static readonly List<Task> _taskQueue = new List<Task>();
+        private static readonly List<Task> _taskOnQueue = new List<Task>();
+        private static Entities _em;
+        public static Entities EntityManager { set => _em = value; }
 
-        /// <summary>
-        /// Entity manager that is used
-        /// </summary>
-        public static EntityManager EntityManager { get; set; }
-        /// <summary>
-        /// Amount of queued tasks;
-        /// </summary>
-        public static int QueuedTasksCount { get => _tasks.Count; }
+        public static void SetEntityManager(ref Entities entityManager) => _em = entityManager;
 
-
-
-        /// <summary>
-        /// Sets a new task
-        /// </summary>
-        /// <param name="handle">Handle for task</param>
-        public static void SetTask(ref TaskHandle handle)
+        public static void SetTask(TaskHandle handle)
         {
-            handle.Task = new Task(handle.Action, handle.Source.Token);
-            _tasks.Add(handle.Task);
-            handle.Task.Start();
+            _taskQueue.Add(Task.Run(handle.Action, handle.Token));
         }
-        /// <summary>
-        /// Sets a new task on component chunks
-        /// </summary>
-        /// <param name="handle">Handle for task</param>
-        public static void SetTaskOn<T>(ref TaskOnHandle<T> handle) where T : IPleiadComponent
+        public static void SetTask<T>(TaskOnHandle<T> handle) where T : IPleiadComponent
         {
-            if (handle.Tasks.Count == 0)
+            var dataPack = _em.GetTypeData<T>();
+
+            T[] chunkData = dataPack.GetConvertedData();
+            int[] chunkSizes = new int[dataPack.ChunkSizes.Keys.Count];
+            ChunkIndex[] chunkIndices = dataPack.GetChunkIndices();
+
+            //Run the action for each type chunk
+            for (int i = 0; i < chunkIndices.Length; i++)
             {
-                // get all component chunks
-
-                //local copy of the handle
-                var handleCopy = handle;
-                Type componentType = typeof(T);
-                var componentChunks = EntityManager.GetAllChunksOfType(componentType);
-                if (componentChunks.IsFound)
+                ChunkIndex chIndex = new(chunkIndices[i]);
+                chunkSizes[i] = dataPack.ChunkSizes[chIndex];
+                int currentChSize = chunkSizes[chIndex];
+                _taskOnQueue.Add(Task.Run(() =>
                 {
-                    List<Task> taskList = new List<Task>(componentChunks.Data.Count);
-                    // set tasks on individual chunks
-                    foreach (var chunkIndex in componentChunks.Data)
+                    //List<T> newData = new List<T>();
+                    T[] newData = new T[currentChSize];
+                    for (int j = 0; j < currentChSize; j++)
                     {
-                        //get chunk data
-                        var chunkData = EntityManager.GetChunkData(chunkIndex);
-                        if (chunkData.IsFound && chunkData.Data.Count > 0)
-                        {
-                            T[] chunkDataArr = new T[chunkData.Data.Count];
-                            List<int> entityIndices = new List<int>();
-                            for (int i = 0; i < chunkData.Data.Count; i++)
-                            {
-                                if (chunkData.Data[i] != default)
-                                {
-                                    chunkDataArr[i] = (T)Convert.ChangeType((T)chunkData.Data[i], componentType);
-                                    entityIndices.Add(i);
-                                }
-                            }
-
-                            //launch & store tasks
-                            var newTask = Task.Run(() =>
-                            {
-                                for (int i = 0; i < entityIndices.Count; i++)
-                                {
-                                    //execute action on chunk data
-                                    handleCopy.ActionOn(entityIndices[i], ref chunkDataArr);
-                                }
-                                //update chunk data
-                                EntityManager.SetChunkData(chunkIndex, chunkDataArr);
-                            }, handle.Source.Token);
-
-                            taskList.Add(newTask);
-                            handle.Tasks.Add(newTask);
-                        }
+                        handle.ActionOn(j, ref chunkData);
+                        newData[j] = chunkData[j];
                     }
-                }
+
+                    //var a = newData.ToArray();
+                    Payload<T> payload = new Payload<T>(chIndex, newData);
+                    _em.SetTypeDataAt(payload);
+                }, handle.Token));
             }
-
         }
 
-        /// <summary>
-        /// Wait for previous task to finish and start next
-        /// </summary>
-        /// <param name="previous">This task must complete</param>
-        /// <param name="next">Next task to run</param>
-        public static void ChainTasks(ref TaskHandle previous, ref TaskHandle next)
-        {
-            WaitHandle(ref previous);
-            SetTask(ref next);
-        }
-        /// <summary>
-        /// Wait for previous task to finish and start next
-        /// </summary>
-        /// <param name="previous">This task must complete</param>
-        /// <param name="next">Next task to run</param>
-        public static void ChainTasks<T>(ref TaskOnHandle<T> previous, ref TaskHandle next) where T : IPleiadComponent
-        {
-            WaitHandle(ref previous);
-            SetTask(ref next);
-        }
-        /// <summary>
-        /// Wait for previous task to finish and start next
-        /// </summary>
-        /// <param name="previous">This task must complete</param>
-        /// <param name="next">Next task to run</param>
-        public static void ChainTasks<T>(ref TaskHandle previous, ref TaskOnHandle<T> next) where T : IPleiadComponent
-        {
-            WaitHandle(ref previous);
-            SetTaskOn(ref next);
-        }
-        /// <summary>
-        /// Wait for previous task to finish and start next
-        /// </summary>
-        /// <param name="previous">This task must complete</param>
-        /// <param name="next">Next task to run</param>
-        public static void ChainTasks<T>(ref TaskOnHandle<T> previous, ref TaskOnHandle<T> next) where T : IPleiadComponent
-        {
-            WaitHandle(ref previous);
-            SetTaskOn(ref next);
-        }
-
-        /// <summary>
-        /// Wait for all tasks to complete
-        /// </summary>
         public static void CompleteTasks()
         {
-            Task.WaitAll(_tasks.ToArray());
-            _tasks.Clear();
-        }
-
-
-        /// <summary>
-        /// Wait for that task to complete
-        /// </summary>
-        /// <param name="handle">Handle for task</param>
-        private static void WaitHandle(ref TaskHandle handle)
-        {
-            if (handle != default)
+            try
             {
-                if (handle.Task == default)
-                    SetTask(ref handle);
-                handle.Task.Wait();
+                int count = _taskQueue.Count + _taskOnQueue.Count;
+
+                Task.WaitAll(_taskQueue.ToArray());
+                Console.WriteLine($"{_taskQueue.Count} simple tasks completed");
+                Task.WaitAll(_taskOnQueue.ToArray());
+                Console.WriteLine($"{_taskOnQueue.Count} tasks on arrays completed");
+
+                _taskQueue.Clear();
+                _taskOnQueue.Clear();
+            }
+            catch (AggregateException ae)
+            {
+                if (ae.InnerException.GetType() == typeof(TaskCanceledException))
+                {
+                    Console.WriteLine("A task was canceled.");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Could not complete Tasks! {e.Message}");
+                Console.WriteLine(e.StackTrace);
+                throw e;
             }
         }
-        /// <summary>
-        /// Wait for that task to complete
-        /// </summary>
-        /// <param name="handle">Handle for task</param>
-        private static void WaitHandle<T>(ref TaskOnHandle<T> handle) where T : IPleiadComponent
-        {
-            if (handle != default)
-            {
-                if (handle.Tasks.Count == 0)
-                    SetTaskOn(ref handle);
-
-                Task.WaitAll(handle.Tasks.ToArray());
-            }
-        }
-
-        /// <summary>
-        /// List of all set tasks
-        /// </summary>
-        private static readonly HashSet<Task> _tasks = new HashSet<Task>();
-
-
-        #region DEBUG
-        private static List<float> DEBUG_ts = new List<float>();
-        private static List<float> DEBUG_tf = new List<float>();
-        private static readonly System.Diagnostics.Stopwatch DEBUG_sw = new System.Diagnostics.Stopwatch();
-
-        public static void DEBUG_StartTime()
-        {
-            DEBUG_sw.Start();
-        }
-        public static void DEBUG_TaskStart()
-        {
-            DEBUG_ts.Add(DEBUG_sw.ElapsedMilliseconds);
-        }
-        public static void DEBUG_TaskFinish()
-        {
-            DEBUG_tf.Add(DEBUG_sw.ElapsedMilliseconds);
-        }
-        public static void DEBUG_StopTime()
-        {
-            DEBUG_sw.Stop();
-            DEBUG_sw.Reset();
-            for (int i = 0; i < DEBUG_ts.Count; i++)
-            {
-                Console.WriteLine($"Task started: {DEBUG_ts[i]}");
-                Console.WriteLine($"Task finished: {DEBUG_tf[i]}");
-            }
-            Console.WriteLine($"Total: {DEBUG_sw.ElapsedMilliseconds}");
-        }
-        #endregion
     }
 }

@@ -5,14 +5,8 @@ using System.Runtime.InteropServices;
 
 namespace PleiadInput
 {
-    /// <summary>
-    /// Provides the methods to add the keys to the list of bound keys, calling KeyPress and KeyRelease events on them
-    /// </summary>
     public class InputListener
     {
-        /// <summary>
-        /// Clears console screen
-        /// </summary>
         public static void ClearConsole()
         {
             Console.Clear();
@@ -21,34 +15,16 @@ namespace PleiadInput
             Console.Clear();
         }
 
-        /// <summary>
-        /// Delegate for key events
-        /// </summary>
-        /// <param name="key">Key</param>
-        public delegate void KeyEvent(Key key);
-        /// <summary>
-        /// A key was pressed
-        /// </summary>
         public event KeyEvent KeyRelease;
-        /// <summary>
-        /// A key was released
-        /// </summary>
         public event KeyEvent KeyPress;
 
 
-        private IEnumerable<Key> _activeList;
-        private readonly IEnumerable<Key> _allKeys;
-        private readonly HashSet<Key> _inputTable;
+        private List<Key> _activeList;
+        private readonly List<Key> _allKeys;
+        private readonly List<Key> _inputTable;
         private readonly Dictionary<Key, bool> _keyState;
 
-        public static readonly Key[] AlphabetKeys = { Key.A, Key.B, Key.C, Key.D, Key.E, Key.F, Key.G, Key.H, Key.I, Key.J, Key.K, Key.L, Key.M, Key.N, Key.O, Key.P, Key.Q, Key.R, Key.S, Key.T, Key.U, Key.V, Key.W, Key.X, Key.Y, Key.Z };
-
-
-
         private bool _useInputTable = true;
-        /// <summary>
-        /// Should the listener listen to the list of bound keys or to check each possible key (default=<see langword="true"/>)
-        /// </summary>
         public bool UseInputTable
         {
             get => _useInputTable;
@@ -68,87 +44,36 @@ namespace PleiadInput
             }
         }
 
-        /// <summary>
-        /// Provides the methods to add the keys to the list of bound keys, calling KeyPress and KeyRelease events on them
-        /// </summary>
         public InputListener(bool useInputTable = true)
         {
             _allKeys = Enum.GetValues(typeof(Key)).Cast<Key>().ToList();
             _keyState = new Dictionary<Key, bool>();
 
+            _inputTable = new List<Key>();
             UseInputTable = useInputTable;
-            _inputTable = new HashSet<Key>();
 
-            UseInputTable = useInputTable;
+            //UseInputTable = useInputTable;
         }
 
-        /// <summary>
-        /// Adds a new key to listen for
-        /// </summary>
-        /// <param name="key">Key to listen</param>
         public void ListenTo(Key key)
         {
-            _inputTable.Add(key);
+            if (!_inputTable.Contains(key))
+                _inputTable.Add(key);
         }
-        /// <summary>
-        /// Adds a list of keys to listen for
-        /// </summary>
-        /// <param name="keys">List of keys</param>
         public void ListenTo(Key[] keys)
         {
             foreach (var key in keys)
             {
-                ListenTo(key);
+                if (!_inputTable.Contains(key))
+                    _inputTable.Add(key);
             }
         }
-
-        public void ListenAlphabet()
-        {
-            for (int i = 0; i < AlphabetKeys.Length; i++)
-            {
-                _inputTable.Add(AlphabetKeys[i]);
-            }
-        }
-
-        public void ListenAll()
-        {
-            foreach (var key in Enum.GetValues(typeof(Key)).Cast<Key>())
-            {
-                _inputTable.Add(key);
-            }
-        }
-
-        /// <summary>
-        /// Removes keys from the bound keys
-        /// </summary>
-        /// <param name="keys">Keys to remove</param>
-        public void StopListening(Key[] keys)
-        {
-            foreach (var key in keys)
-            {
-                StopListening(key);
-            }
-        }
-        /// <summary>
-        /// Removes keys from the bound keys
-        /// </summary>
-        /// <param name="keys">Keys to remove</param>
-        public void StopListening(List<Key> keys)
-        {
-            StopListening(keys.ToArray());
-        }
-        /// <summary>
-        /// Removes the key from bound keys
-        /// </summary>
-        /// <param name="key">Key to remove</param>
         public void StopListening(Key key)
         {
-            _inputTable.Remove(key);
+            if (_inputTable.Contains(key))
+                _inputTable.Remove(key);
         }
 
-        /// <summary>
-        /// Checks for keypresses for registered keys
-        /// </summary>
         public void ReadKeys()
         {
             foreach (var key in _activeList)
@@ -156,20 +81,16 @@ namespace PleiadInput
                 CheckKey(key);
             }
         }
-        /// <summary>
-        /// Waits for a key press
-        /// </summary>
-        /// <param name="keys">Keys to check</param>
         public void WaitForInput(Key[] keys)
         {
             bool waiting = true;
             do
             {
-                for (int i = 0; i < keys.Length; i++)
+                foreach (var key in keys)
                 {
-                    if (!_keyState.ContainsKey(keys[i])) _keyState[keys[i]] = false;
-                    CheckKey(keys[i]);
-                    if (_keyState[keys[i]])
+                    if (!_keyState.ContainsKey(key)) _keyState[key] = false;
+                    CheckKey(key);
+                    if (_keyState[key])
                     {
                         waiting = false;
                         break;
@@ -177,26 +98,34 @@ namespace PleiadInput
                 }
             } while (waiting);
         }
-        /// <summary>
-        /// Waits for a key press
-        /// </summary>
-        /// <param name="keys">Keys to check</param>
         public void WaitForInput(List<Key> keys)
         {
-            WaitForInput(keys.ToArray());
+            bool waiting = true;
+            do
+            {
+                foreach (var key in keys)
+                {
+                    if (!_keyState.ContainsKey(key)) _keyState[key] = false;
+                    CheckKey(key);
+
+                    if (_keyState[key])
+                    {
+                        waiting = false;
+                        break;
+                    }
+                }
+            } while (waiting);
         }
-        /// <summary>
-        /// Waits for a key press
-        /// </summary>
-        /// <param name="key">Key to check</param>
         public void WaitForInput(Key key)
         {
             if (!_keyState.ContainsKey(key)) _keyState[key] = false;
+
             while (!_keyState[key])
             {
                 CheckKey(key);
             }
         }
+
 
         private void CheckKey(Key key)
         {

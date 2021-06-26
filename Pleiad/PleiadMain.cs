@@ -1,121 +1,86 @@
-﻿using PleiadEntities;
+﻿using System;
+using PleiadEntities;
 using PleiadInput;
-using PleiadMisc.Files;
-using PleiadSystems;
 using PleiadTasks;
 using PleiadWorld;
-using System;
 
 namespace Pleiad
 {
-    //Документации пока нет, пиши в лс
-
-    //World содержит в себе EntityManager и SystemsManager
-    //SystemsManager содержит окно (PWindow)
-    //Система чтения клавиатуры находится в Pleiad/Test.cs
-
-
-    class PleiadMain// : IRegisterInput
+    class PleiadMain : IRegisterInput
     {
-        static async System.Threading.Tasks.Task Main(string[] args)
+        static void Main(string[] args)
         {
-            World newWorld = new();
-
-            EntityManager em = newWorld.EntityManager;
+            Entities em = World.DefaultWorld.EntityManager;
             Tasks.EntityManager = em;
-            SystemsManager sm = newWorld.SystemsManager;
 
-            var template = new EntityTemplate(
-                    new Type[] { typeof(IntTestComponent) },
-                    new IPleiadComponent[]
+
+
+            EntityTemplate template1 = new EntityTemplate
+                (
+                new Type[]
+                {
+                    typeof(TestComponent),
+                    typeof(IntTestComponent)
+                },
+                new IPleiadComponent[]
+                {
+                    new TestComponent(),
+                    new IntTestComponent() { testValue = 13}
+                });
+
+            EntityTemplate template2 = new EntityTemplate
+                (
+                new Type[]
+                {
+                    typeof(TestComponent)
+                },
+                new IPleiadComponent[]
+                {
+                    new TestComponent() { testValue = "hello" }
+                });
+
+
+            EntityTemplate soundTemplate = new EntityTemplate(
+                new Type[]
+                {
+                    typeof(SoundComponent)
+                },
+                new IPleiadComponent[]
+                {
+                    new SoundComponent
+                    { files = new string[]
                     {
-                        new IntTestComponent()
-                        {
-                            testValue = 26
-                        }
+                        @"Sounds\dice1.wav",
+                        @"Sounds\dice2.wav",
+                        @"Sounds\dice3.wav",
+                        @"Sounds\dice4.wav",
+                        @"Sounds\dice5.wav",
+                        @"Sounds\dice6.wav"
                     }
-                    );
-            var template2 = new EntityTemplate(
-                    new Type[] { typeof(StringTestComponent) },
-                    new IPleiadComponent[]
-                    {
-                        new StringTestComponent()
-                        {
-                            text = "text"
-                        }
                     }
-                    );
-            em.AddEntity(template);
+                });
 
 
-            //serialisation
-            //save file
-            FileContract saveFile = new($"Models/manager.save");
-            //saved manager state (debug)
-            var state = await newWorld.SerialiseManagerAsync(saveFile);
-            //add entity AFTER save
-            em.AddEntity(template2);
+            while (World.DefaultWorld.CanUpdate())
+            {
 
-            //deserialisation
-            await newWorld.DeserialiseManagerAsync(saveFile);
-            //update manager handle
-            //it shouldn't contain the added entity
-            em = newWorld.EntityManager;
+            }
 
-
-            Console.Clear();
-
-            //create opengl window
-            sm.CreateWindow();
-            sm.RunWindow();
-
-            //default update cycle (deprecated)
-            //while (sm.ShouldUpdate)
-            //{
-
-            //}
-
-            ////Same as the cycle (deprecated)
-            ////World.DefaultWorld.StartUpdate();
         }
 
-
-        //Использовалось для проверки сериализации и закрытия окна, сейчас выключено
         public void InputRegistration(ref InputListener listener)
         {
+            //listener should listen to this key
             listener.ListenTo(Key.Escape);
-            listener.ListenTo(Key.S);
-            listener.ListenTo(Key.L);
-            listener.KeyPress += Listener_KeyPress;
+            //function will handle the event
+            listener.KeyRelease += Exit;
         }
-        private async void Listener_KeyPress(Key key)
+
+        private void Exit(Key key)
         {
-            switch (key)
+            if (key == Key.Escape)
             {
-                case Key.Escape:
-                    {
-                        //World.DefaultWorld.SystemsManager.CloseWindow();
-                        break;
-                    }
-                case Key.S:
-                    {
-                        //Payload<IntTestComponent> payload = new(chunk);
-
-                        //await payloadManager.SaveAsync(payload, saveFile);
-                        //chunk.AddEntity(2);
-                        //chunk.SetComponentData(2, new IntTestComponent() { testValue = 10 });
-                        //await serialiser.SerialiseAsync(chunk, saveFile);
-
-                        break;
-                    }
-                case Key.L:
-                    {
-                        //var data = await payloadManager.LoadAsync(saveFile);
-                        //EntityChunk newChunk = data.CreateChunk();
-                        break;
-                    }
-                default:
-                    break;
+                World.DefaultWorld.StopUpdate();
             }
         }
     }

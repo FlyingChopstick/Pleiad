@@ -1,247 +1,149 @@
-﻿using PleiadEntities.Tools;
-using PleiadMisc;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using PleiadEntities.Model;
 
 namespace PleiadEntities
 {
-    [Serializable]
-    /// <summary>
-    /// Container storing entities of the same type
-    /// </summary>
-    public class EntityChunk : IEntityChunk
+    internal class EntityChunk
     {
-        private EntityChunk()
+        public EntityChunk(ChunkIndex chunkIndex, int chunkSize, Type chunkType)
         {
-        }
-
-        /// <summary>
-        /// Container storing entities of the same type
-        /// </summary>
-        public EntityChunk(int chunkID, Type chunkType, int capacity)
-        {
-            ChunkID = chunkID;
-            ChunkType = chunkType;
-            Capacity = capacity;
+            ChunkIndex = chunkIndex;
+            Capacity = chunkSize;
             EntityCount = 0;
+            ChunkType = chunkType;
             IsFull = false;
 
-            ChunkIDs = new List<int>(capacity);
-            ComponentData = new List<IPleiadComponent>(capacity);
-            _freeIndices = new Stack<int>();
-
-            for (int i = 0; i < capacity; i++)
-            {
-                ChunkIDs.Add(-1);
-                ComponentData.Add(default);
-                _freeIndices.Push(capacity - 1 - i);
-            }
+            Entities = new(chunkSize);
+            _componentData = new(chunkSize);
         }
-
-        public EntityChunk(ChunkSaveObject save)
+        public int AddEntity(Entity entity, IPleiadComponent componentData)
         {
-            ChunkID = save.ChunkID;
-            Capacity = save.Capacity;
-            EntityCount = save.EntityCount;
-            IsFull = EntityCount >= Capacity;
-            ChunkIDs = save.IDs;
-            ComponentData = save.ChunkData;
-            ChunkType = save.ChunkType;
-
-            _freeIndices = new(Capacity);
-            for (int i = ChunkIDs.Count - 1; i >= 0; i--)
+            int chunkId = -1;
+            for (int i = 0; i < Entities.Count; i++)
             {
-                if (ChunkIDs[i] == -1)
+                if (Entities[i] == entity)
                 {
-                    _freeIndices.Push(i);
+                    chunkId = i;
                 }
             }
-        }
-        //protected EntityChunk(SerializationInfo info, StreamingContext context)
-        //{
-        //    ChunkID = (int)info.GetValue("chunkId", typeof(int));
-        //    string typeName = (string)info.GetValue("chunkType", typeof(string));
-        //    var a = AppDomain.CurrentDomain.GetAssemblies().Where(a => a.GetName().Name == "Pleiad").First();
-        //    _chunkType = a.GetType(typeName);
 
-        //    if (ChunkType is null)
-        //    {
-        //        throw new SerializationException("Could not get chunk type on deserialisation");
-        //    }
-
-        //    EntityCount = (int)info.GetValue("entityCount", typeof(int));
-        //    Capacity = (int)info.GetValue("capacity", typeof(int));
-        //    IsFull = (bool)info.GetValue("isFull", typeof(bool));
-        //    ChunkIDs = (List<int>)info.GetValue("entityIDs", typeof(List<int>));
-
-        //    _componentData = (List<IPleiadComponent>)info.GetValue("componentData", typeof(List<IPleiadComponent>));
-        //    _freeIndices = (Stack<int>)info.GetValue("freeIndices", typeof(Stack<int>));
-        //}
-        //public void GetObjectData(SerializationInfo info, StreamingContext context)
-        //{
-        //    info.AddValue("chunkId", ChunkID, typeof(int));
-        //    //info.AddValue("chunkType", ChunkType.FullName, typeof(string));
-        //    info.AddValue("entityCount", EntityCount, typeof(int));
-        //    info.AddValue("capacity", Capacity, typeof(int));
-        //    info.AddValue("isFull", IsFull, typeof(bool));
-        //    info.AddValue("entityIDs", ChunkIDs, typeof(List<int>));
-        //    info.AddValue("componentData", _componentData, typeof(List<IPleiadComponent>));
-        //    info.AddValue("freeIndices", _freeIndices, typeof(Stack<int>));
-        //}
-
-        public int ChunkID { get; private set; }
-
-        //[NonSerialized]
-        //private Type _chunkType;
-        public Type ChunkType { get; private set; }
-        public int EntityCount { get; private set; }
-        public int Capacity { get; private set; }
-        public bool IsFull { get; private set; }
-
-        public List<IPleiadComponent> ComponentData { get; private set; }
-
-        public List<int> ChunkIDs { get; private set; }// => _enitityIDs;
-
-        public int AddEntity(int entityID, IPleiadComponent componentData)
-        {
-            if (_freeIndices.Count > 0)
+            if (chunkId != -1)
             {
-                int slot = _freeIndices.Pop();
-                ChunkIDs[slot] = entityID;
-                ComponentData[slot] = componentData;
-
-                if (_freeIndices.Count == 0)
-                    IsFull = true;
-
-                return slot;
-            }
-            else
-                return -1;
-        }
-        public int AddEntity(int entityID)
-        {
-            if (_freeIndices.Count > 0)
-            {
-                int slot = _freeIndices.Pop();
-                ChunkIDs[slot] = entityID;
-                if (_freeIndices.Count == 0)
-                    IsFull = true;
-
-                EntityCount++;
-                return slot;
-            }
-            else
-                return -1;
-        }
-
-        public bool ContainsID(int entityID) => ChunkIDs.Contains(entityID);
-
-        public Result<IPleiadComponent> GetComponentData(int entityID)
-        {
-            int slot = ChunkIDs.IndexOf(entityID);
-            if (slot != -1)
-            {
-                return Result<IPleiadComponent>.Found(ComponentData[slot]);
+                _componentData[chunkId] = componentData;
+                return chunkId;
             }
 
-            return Result<IPleiadComponent>.NotFound;
+            EntityCount++;
+            Entities.Add(entity);
+            _componentData.Add(componentData);
+            IsFull = EntityCount >= Capacity;
+            return Entities.IndexOf(entity);
         }
 
-        public bool RemoveEntity(int entityID)
+        public bool RemoveEntity(Entity entity)
         {
-            int slot = ChunkIDs.IndexOf(entityID);
-            if (slot != -1)
+            if (ContainsEntity(entity))
             {
-                ChunkIDs[slot] = -1;
-                ComponentData[slot] = default;
-                EntityCount--;
+                int index = Entities.IndexOf(entity);
+                Entities.RemoveAt(index);
+                _componentData.RemoveAt(index);
+                return true;
             }
 
             return false;
         }
 
-        public bool SetComponentData(int entityID, IPleiadComponent componentData)
+        public void SetComponentData(Entity entity, IPleiadComponent componentData)
         {
-            int slot = ChunkIDs.IndexOf(entityID);
-            if (slot == -1)
+            if (ContainsEntity(entity))
             {
-                if (_freeIndices.Count > 0)
-                {
-                    slot = _freeIndices.Pop();
-                    ChunkIDs[slot] = entityID;
-                }
-                else
-                    return false;
+                int index = Entities.IndexOf(entity);
+                _componentData[index] = componentData;
             }
-
-            ComponentData[slot] = componentData;
-            return true;
-        }
-
-        public List<IPleiadComponent> GetChunkData() => ComponentData;
-        public List<object> DumpChunkData()
-        {
-            Type dataType = ChunkType;
-            List<object> dump = new List<object>(ComponentData.Count);
-
-            for (int i = 0; i < ComponentData.Count; i++)
+            else
             {
-                if (ComponentData[i] is not null)
-                {
-                    dump.Add(ComponentData[i]);//(object)Convert.ChangeType((object)_componentData[i], dataType));
-                }
-                else
-                {
-                    dump.Add(default);
-                }
-            }
-
-            return dump;
-        }
-
-        public void SetChunkData<T>(List<T> data) where T : IPleiadComponent
-        {
-            for (int i = 0; i < data.Count; i++)
-            {
-                ComponentData[i] = data[i];
+                AddEntity(entity, componentData);
             }
         }
-        public void SetChunkData<T>(T[] data) where T : IPleiadComponent
+        public T GetComponentData<T>(Entity entity) where T : IPleiadComponent
         {
-            for (int i = 0; i < ComponentData.Capacity; i++)
+            if (ContainsEntity(entity))
             {
-                if (data[i] != null)
+                int index = Entities.IndexOf(entity);
+
+                IPleiadComponent temp = _componentData[index];
+
+                return (T)Convert.ChangeType(temp, ChunkType);
+            }
+            return default;
+        }
+
+        public List<IPleiadComponent> GetAllData()
+        {
+            //List<T> output = new List<T>(_componentData.Count);
+            //foreach (var data in _componentData)
+            //{
+            //    output.Add((T)Convert.ChangeType(data, ChunkType));
+            //}
+            return _componentData;
+        }
+        public void SetAllData<T>(T[] newData) where T : IPleiadComponent
+        {
+            if (newData.Length == _componentData.Count)
+            {
+                for (int i = 0; i < _componentData.Count; i++)
                 {
-                    ComponentData[i] = data[i];
+                    _componentData[i] = newData[i];
                 }
             }
+            else
+                throw new ArgumentException($"Can't set all: new data size is not equal to Entity count in chunk {ChunkType}:{ChunkIndex}");
         }
-        public void SetChunkIDs(List<int> ids)
+        public void SetDataAt<T>(T[] newData, int start = 0) where T : IPleiadComponent
         {
-            ChunkIDs = ids;
+            if (newData.Length != 0)
+            {
+                for (int i = start; i < _componentData.Count; i++)
+                {
+                    _componentData[i] = newData[i];
+                }
+            }
+            //if (newData.Length == _componentData.Count)
+            //{
+
+            //}
+            //else
+            //    throw new ArgumentException($"Can't set all: new data size is not equal to Entity count in chunk {ChunkType}:{ChunkIndex}");
         }
 
-        //private readonly List<int> ChunkIDs;
-        //private List<IPleiadComponent> ComponentData;
-        private readonly Stack<int> _freeIndices;
+        public bool ContainsEntity(Entity entity) => Entities.Contains(entity);
 
+
+
+        public Type ChunkType { get; }
+        public ChunkIndex ChunkIndex { get; private set; }
+        public int EntityCount { get; private set; }
+        public int Capacity { get; private set; }
+        public bool IsFull { get; private set; }
+        public List<Entity> Entities { get; private set; }
+        private readonly List<IPleiadComponent> _componentData;
+
+        #region DebugFunctions
 #if DEBUG
-        #region
         public void DEBUG_PrintEntities()
         {
             Console.WriteLine("---------------------");
-            Console.WriteLine($"Chunk {ChunkID}");
+            Console.WriteLine($"Chunk {ChunkIndex}");
             Console.WriteLine($"Type: {ChunkType}");
-            Console.WriteLine($"Entities [{EntityCount}]:");
-            for (int i = 0; i < ChunkIDs.Count; i++)
+            Console.WriteLine("Entities:");
+            for (int i = 0; i < Entities.Count; i++)
             {
-                Console.WriteLine($"- Entity Index {i}, ID{ChunkIDs[i]}");
+                Console.WriteLine($"- Entity Index {i}, ID{Entities[i]}");
             }
             Console.WriteLine("---------------------");
         }
-
-
-        #endregion
 #endif
+        #endregion
     }
 }

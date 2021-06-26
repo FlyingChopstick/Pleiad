@@ -1,23 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <Platforms>AnyCPU;x64</Platforms>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile></DocumentationFile>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="InputHandler - Copy" />
   </ItemGroup>
 
-
   <ItemGroup>
     <ProjectReference Include="..\PleiadEntities\PleiadEntities.csproj" />
     <ProjectReference Include="..\PleiadInput\PleiadInput.csproj" />
-    <ProjectReference Include="..\PleiadRender\PleiadRender.csproj" />
     <ProjectReference Include="..\PleiadTasks\PleiadTasks.csproj" />
   </ItemGroup>
 
