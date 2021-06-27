@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
 using PleiadEntities;
+using PleiadExtensions.Files;
 using PleiadInput;
 using PleiadTasks;
 using PleiadWorld;
@@ -8,7 +10,7 @@ namespace Pleiad
 {
     class PleiadMain : IRegisterInput
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Entities em = World.DefaultWorld.EntityManager;
             Tasks.EntityManager = em;
