@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Pleiad.Render.ControlEvents;
+using Pleiad.Render.Shaders;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 
-namespace Pleiad.Render
+namespace Pleiad.Render.Windows
 {
     public class PWindow : IDisposable
     {
@@ -61,7 +62,8 @@ namespace Pleiad.Render
         private uint _vbo;
         private uint _ebo;
         private uint _vao;
-        private uint _shader;
+        //private uint _shader;
+        private MergedShader _shader;
         private bool _disposedValue;
 
         //Vertex shaders are run on each vertex.
@@ -147,49 +149,52 @@ namespace Pleiad.Render
             }
 
             //vertex shader
-            uint vShader = _gl.CreateShader(ShaderType.VertexShader);
-            _gl.ShaderSource(vShader, VertexShaderSource);
-            _gl.CompileShader(vShader);
-            //check vShader
-            string infolog = _gl.GetShaderInfoLog(vShader);
-            if (!string.IsNullOrWhiteSpace(infolog))
-            {
-                Console.WriteLine($"Error compiling vertex shader\n{infolog}");
-            }
+            PShader vertexShader = new(ShaderType.VertexShader, VertexShaderSource, _gl);
+            vertexShader.Compile();
+            //uint vShader = _gl.CreateShader(ShaderType.VertexShader);
+            //_gl.ShaderSource(vShader, VertexShaderSource);
+            //_gl.CompileShader(vShader);
+            ////check vShader
+            //string infolog = _gl.GetShaderInfoLog(vShader);
+            //if (!string.IsNullOrWhiteSpace(infolog))
+            //{
+            //    Console.WriteLine($"Error compiling vertex shader\n{infolog}");
+            //}
 
             //fragment shader
-            uint fShader = _gl.CreateShader(ShaderType.FragmentShader);
-            _gl.ShaderSource(fShader, FragmentShaderSource);
-            _gl.CompileShader(fShader);
-            //check fShader
-            infolog = _gl.GetShaderInfoLog(fShader);
-            if (!string.IsNullOrWhiteSpace(infolog))
-            {
-                Console.WriteLine($"Error compiling fragment shader\n{infolog}");
-            }
+            PShader fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource, _gl);
+            fragmentShader.Compile();
+            //uint fShader = _gl.CreateShader(ShaderType.FragmentShader);
+            //_gl.ShaderSource(fShader, FragmentShaderSource);
+            //_gl.CompileShader(fShader);
+            ////check fShader
+            //infolog = _gl.GetShaderInfoLog(fShader);
+            //if (!string.IsNullOrWhiteSpace(infolog))
+            //{
+            //    Console.WriteLine($"Error compiling fragment shader\n{infolog}");
+            //}
 
             //merge shaders
-            _shader = _gl.CreateProgram();
-            _gl.AttachShader(_shader, vShader);
-            _gl.AttachShader(_shader, fShader);
-            _gl.LinkProgram(_shader);
-            //check
-            _gl.GetProgram(_shader, GLEnum.LinkStatus, out var status);
-            if (status == 0)
-            {
-                Console.WriteLine($"Error linking shader {_gl.GetProgramInfoLog(_shader)}");
-            }
+            _shader = new(vertexShader, fragmentShader, _gl);
+            //_shader = _gl.CreateProgram();
+            //_gl.AttachShader(_shader, vShader);
+            //_gl.AttachShader(_shader, fShader);
+            //_gl.LinkProgram(_shader);
+            ////check
+            //_gl.GetProgram(_shader, GLEnum.LinkStatus, out var status);
+            //if (status == 0)
+            //{
+            //    Console.WriteLine($"Error linking shader {_gl.GetProgramInfoLog(_shader)}");
+            //}
 
-            //cleanup
-            _gl.DetachShader(_shader, vShader);
-            _gl.DetachShader(_shader, fShader);
-            _gl.DeleteShader(vShader);
-            _gl.DeleteShader(fShader);
+            ////cleanup
+            //_gl.DetachShader(_shader, vShader);
+            //_gl.DetachShader(_shader, fShader);
+            //_gl.DeleteShader(vShader);
+            //_gl.DeleteShader(fShader);
 
             _gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), null);
             _gl.EnableVertexAttribArray(0);
-
-
         }
 
 
