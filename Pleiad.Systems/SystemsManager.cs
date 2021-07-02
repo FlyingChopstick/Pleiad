@@ -1,9 +1,10 @@
-﻿using Pleiad.Input;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Pleiad.Input;
+using Pleiad.Render;
 
 namespace Pleiad.Systems
 {
@@ -15,6 +16,9 @@ namespace Pleiad.Systems
 
         private float _lastTime;
         private float _currentTime;
+
+
+        private PWindow _window;
 
         public float DeltaTime { get; private set; }
         public bool ShouldUpdate { get; set; }
@@ -51,6 +55,40 @@ namespace Pleiad.Systems
                 throw e;
             }
         }
+
+
+        public void CreateWindow()
+        {
+            PWindowOptions options = new()
+            {
+                Title = "Test Rectangle",
+                Resolution = new()
+                {
+                    Width = 1366,
+                    Height = 768
+                },
+                VSync = false
+            };
+
+            _window = new(options);
+            _window.Updated += Update;
+        }
+        public void RunWindow()
+        {
+            ShouldUpdate = true;
+            _window.Run();
+        }
+        public void CloseWindow()
+        {
+            if (_window is not null
+                && !_window.IsClosing
+                && ShouldUpdate)
+            {
+                ShouldUpdate = false;
+                _window.Close();
+            }
+        }
+
 
         /// <summary>
         /// Stops the execution and waits for the key press (default: <see cref="Key.Enter"/>)

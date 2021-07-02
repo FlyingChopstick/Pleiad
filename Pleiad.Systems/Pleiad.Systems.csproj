@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Pleiad.Entities\Pleiad.Entities.csproj" />
     <ProjectReference Include="..\Pleiad.Input\Pleiad.Input.csproj" />
+    <ProjectReference Include="..\Pleiad.Render\Pleiad.Render.csproj" />
     <ProjectReference Include="..\Pleiad.Tasks\Pleiad.Tasks.csproj" />
   </ItemGroup>
 
