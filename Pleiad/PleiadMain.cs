@@ -4,16 +4,19 @@ using Pleiad.Entities;
 using Pleiad.Input;
 using Pleiad.Tasks;
 using Pleiad.Worlds;
+using Silk.NET.Input;
 
 namespace Pleiad
 {
     class PleiadMain : IRegisterInput
     {
+        static World activeWorld;
+
         static async Task Main(string[] args)
         {
-            World testWorld = new();
-            EntityManager em = testWorld.EntityManager;
-            var systemsManager = testWorld.SystemsManager;
+            activeWorld = new();
+            EntityManager em = activeWorld.EntityManager;
+            var systemsManager = activeWorld.SystemsManager;
 
             TaskManager.EntityManager = em;
 
@@ -65,30 +68,28 @@ namespace Pleiad
                 });
 
             systemsManager.CreateWindow();
+            systemsManager.AttachWindow();
+
             systemsManager.RunWindow();
-            systemsManager.CloseWindow();
 
 
-            while (testWorld.CanUpdate)
-            {
+            //while (activeWorld.CanUpdate)
+            //{
 
-            }
+            //}
 
         }
 
         public void InputRegistration(ref InputListener listener)
         {
-            //listener should listen to this key
-            listener.ListenTo(Key.Escape);
-            //function will handle the event
-            listener.KeyRelease += Exit;
+            listener.KeyboardEvents.OnKeyDown += KeyboardEvents_OnKeyDown;
         }
 
-        private void Exit(Key key)
+        private void KeyboardEvents_OnKeyDown(IKeyboard keyboard, Key key, int code)
         {
             if (key == Key.Escape)
             {
-                World.DefaultWorld.StopUpdate();
+                activeWorld.SystemsManager.CloseWindow();
             }
         }
     }

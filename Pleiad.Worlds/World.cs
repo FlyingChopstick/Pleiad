@@ -58,7 +58,7 @@ namespace Pleiad.Worlds
         }
 
 
-        public float DeltaTime { get => _sm.DeltaTime; }
+        //public float DeltaTime { get => _sm.DeltaTime; }
 
         /// <summary>
         /// Returns a reference to the Entity manager
@@ -67,14 +67,14 @@ namespace Pleiad.Worlds
         public ref SystemsManager SystemsManager { get => ref _sm; }
 
 
-        public bool CanUpdate => _sm.Update();
-        public void StartUpdate()
-        {
-            while (_sm.ShouldUpdate)
-            {
-                _sm.Update();
-            }
-        }
+        //public bool CanUpdate => _sm.Update();
+        //public void StartUpdate()
+        //{
+        //    while (_sm.ShouldUpdate)
+        //    {
+        //        _sm.Update();
+        //    }
+        //}
         public void StopUpdate()
         {
             _sm.ShouldUpdate = false;

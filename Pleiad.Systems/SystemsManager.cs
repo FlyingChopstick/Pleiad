@@ -23,7 +23,7 @@ namespace Pleiad.Systems
         public float DeltaTime { get; private set; }
         public bool ShouldUpdate { get; set; }
 
-        public bool UseInputTable { get => _il.UseInputTable; set { _il.UseInputTable = value; } }
+        //public bool UseInputTable { get => _il.UseInputTable; set { _il.UseInputTable = value; } }
 
         /// <summary>
         /// Constructor, tries to load all Systems in the namespace and sets up initial values
@@ -35,7 +35,7 @@ namespace Pleiad.Systems
                 _systems = new Dictionary<Type, SystemPack>();
 
                 LoadSystems();
-                RegisterInput();
+                //RegisterInput();
 
                 //Pause();
 
@@ -44,7 +44,7 @@ namespace Pleiad.Systems
                 _sw.Start();
                 _lastTime = 0;
                 _currentTime = 0;
-                DeltaTime = 0;
+                //DeltaTime = 0;
 
                 ShouldUpdate = true;
             }
@@ -73,6 +73,11 @@ namespace Pleiad.Systems
             _window = new(options);
             _window.Updated += Update;
         }
+        public void AttachWindow()
+        {
+            _il.AttachToWindow(_window);
+            RegisterInput();
+        }
         public void RunWindow()
         {
             ShouldUpdate = true;
@@ -90,40 +95,40 @@ namespace Pleiad.Systems
         }
 
 
-        /// <summary>
-        /// Stops the execution and waits for the key press (default: <see cref="Key.Enter"/>)
-        /// </summary>
-        /// <param name="key">Key to wait for</param>
-        /// <param name="showMessage">Should the message be displayed</param>
-        public static void Pause(Key key = Key.Enter, bool showMessage = true)
-        {
-            if (showMessage)
-            {
-                Console.WriteLine($"Press {key} to continue");
-            }
+        ///// <summary>
+        ///// Stops the execution and waits for the key press (default: <see cref="Key.Enter"/>)
+        ///// </summary>
+        ///// <param name="key">Key to wait for</param>
+        ///// <param name="showMessage">Should the message be displayed</param>
+        //public static void Pause(Key key = Key.Enter, bool showMessage = true)
+        //{
+        //    if (showMessage)
+        //    {
+        //        Console.WriteLine($"Press {key} to continue");
+        //    }
 
-            //need to temporarily disable InputTable to prevent the key not being found
-            bool uit = _il.UseInputTable;
-            _il.UseInputTable = false;
-            _il.WaitForInput(key);
-            _il.UseInputTable = uit;
-        }
-        /// <summary>
-        /// Waits for any of the keys
-        /// </summary>
-        /// <param name="keys">Keys to wait for</param>
-        public static void WaitForInput(Key[] keys)
-        {
-            _il.WaitForInput(keys);
-        }
-        /// <summary>
-        /// Waits for key press
-        /// </summary>
-        /// <param name="key">Key to wait for</param>
-        public static void WaitForInput(Key key)
-        {
-            _il.WaitForInput(key);
-        }
+        //    //need to temporarily disable InputTable to prevent the key not being found
+        //    bool uit = _il.UseInputTable;
+        //    _il.UseInputTable = false;
+        //    _il.WaitForInput(key);
+        //    _il.UseInputTable = uit;
+        //}
+        ///// <summary>
+        ///// Waits for any of the keys
+        ///// </summary>
+        ///// <param name="keys">Keys to wait for</param>
+        //public static void WaitForInput(Key[] keys)
+        //{
+        //    _il.WaitForInput(keys);
+        //}
+        ///// <summary>
+        ///// Waits for key press
+        ///// </summary>
+        ///// <param name="key">Key to wait for</param>
+        //public static void WaitForInput(Key key)
+        //{
+        //    _il.WaitForInput(key);
+        //}
 
 
 
@@ -203,13 +208,13 @@ namespace Pleiad.Systems
         /// Function goes over each system in namespace and executes their Cycle()
         /// </summary>
         /// <returns></returns>
-        public bool Update()
+        public bool Update(double deltaTime)
         {
-            _il.ReadKeys();
+            //_il.ReadKeys();
 
             //Update the time
-            _currentTime = (float)_sw.Elapsed.TotalMilliseconds;
-            DeltaTime = _currentTime - _lastTime;
+            //_currentTime = (float)_sw.Elapsed.TotalMilliseconds;
+            //DeltaTime = _currentTime - _lastTime;
 
             foreach (var systemType in _systems.Keys)
             {
@@ -227,7 +232,7 @@ namespace Pleiad.Systems
                     var summoner = objEn.Current;
 
                     //Invoke the Cycle()
-                    method.Invoke(summoner, new object[] { DeltaTime });
+                    method.Invoke(summoner, new object[] { deltaTime });
                 }
 
             }
