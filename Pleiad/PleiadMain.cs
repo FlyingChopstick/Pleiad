@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Pleiad.Entities;
-using Pleiad.Extensions.Files;
 using Pleiad.Input;
 using Pleiad.Tasks;
 using Pleiad.Worlds;
@@ -14,6 +13,8 @@ namespace Pleiad
         {
             World testWorld = new();
             EntityManager em = testWorld.EntityManager;
+            var systemsManager = testWorld.SystemsManager;
+
             TaskManager.EntityManager = em;
 
 
@@ -63,11 +64,12 @@ namespace Pleiad
                     }
                 });
 
+            systemsManager.CreateWindow();
+            systemsManager.RunWindow();
+            systemsManager.CloseWindow();
 
-            
 
-
-            while (World.DefaultWorld.CanUpdate())
+            while (testWorld.CanUpdate)
             {
 
             }
