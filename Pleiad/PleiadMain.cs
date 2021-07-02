@@ -12,7 +12,8 @@ namespace Pleiad
     {
         static async Task Main(string[] args)
         {
-            EntityManager em = World.DefaultWorld.EntityManager;
+            World testWorld = new();
+            EntityManager em = testWorld.EntityManager;
             TaskManager.EntityManager = em;
 
 
@@ -61,6 +62,9 @@ namespace Pleiad
                     }
                     }
                 });
+
+
+            
 
 
             while (World.DefaultWorld.CanUpdate())
