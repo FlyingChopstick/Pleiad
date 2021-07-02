@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Pleiad.Render.Buffers;
 using Pleiad.Render.ControlEvents;
 using Pleiad.Render.Shaders;
 using Silk.NET.Input;
@@ -59,8 +60,8 @@ namespace Pleiad.Render.Windows
         private IInputContext _input;
         private GL _gl;
 
-        private uint _vbo;
-        private uint _ebo;
+        private VertexBuffer _vbo;
+        private ElementBuffer _ebo;
         private uint _vao;
         //private uint _shader;
         private MergedShader _shader;
@@ -124,29 +125,35 @@ namespace Pleiad.Render.Windows
             _gl.BindVertexArray(_vao);
 
             //vertex buffer
-            _vbo = _gl.GenBuffer();
-            _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _vbo);
-            fixed (void* v = &Vertices[0])
-            {
-                //set buffer data
-                _gl.BufferData(
-                    BufferTargetARB.ArrayBuffer,
-                    (nuint)(Vertices.Length * sizeof(uint)),
-                    v,
-                    BufferUsageARB.StaticDraw);
-            }
+            _vbo = new(BufferTargetARB.ArrayBuffer, BufferUsageARB.StaticDraw, _gl);
+            _vbo.Vertices = Vertices;
+            _vbo.Bind();
+            //_vbo = _gl.GenBuffer();
+            //_gl.BindBuffer(BufferTargetARB.ArrayBuffer, _vbo);
+            //fixed (void* v = &Vertices[0])
+            //{
+            //    //set buffer data
+            //    _gl.BufferData(
+            //        BufferTargetARB.ArrayBuffer,
+            //        (nuint)(Vertices.Length * sizeof(uint)),
+            //        v,
+            //        BufferUsageARB.StaticDraw);
+            //}
 
             //element buffer
-            _ebo = _gl.GenBuffer();
-            _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _ebo);
-            fixed (void* i = &Indices[0])
-            {
-                _gl.BufferData(
-                    BufferTargetARB.ElementArrayBuffer,
-                    (nuint)(Indices.Length * sizeof(uint)),
-                    i,
-                    BufferUsageARB.StaticDraw);
-            }
+            _ebo = new(BufferTargetARB.ElementArrayBuffer, BufferUsageARB.StaticDraw, _gl);
+            _ebo.Indices = Indices;
+            _ebo.Bind();
+            //_ebo = _gl.GenBuffer();
+            //_gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _ebo);
+            //fixed (void* i = &Indices[0])
+            //{
+            //    _gl.BufferData(
+            //        BufferTargetARB.ElementArrayBuffer,
+            //        (nuint)(Indices.Length * sizeof(uint)),
+            //        i,
+            //        BufferUsageARB.StaticDraw);
+            //}
 
             //vertex shader
             PShader vertexShader = new(ShaderType.VertexShader, VertexShaderSource, _gl);
