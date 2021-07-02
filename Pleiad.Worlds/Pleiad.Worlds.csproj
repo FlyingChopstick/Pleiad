@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <AssemblyName>Pleiad.Worlds</AssemblyName>
+    <RootNamespace>Pleiad.Worlds</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Pleiad.Entities\Pleiad.Entities.csproj" />
+    <ProjectReference Include="..\Pleiad.Systems\Pleiad.Systems.csproj" />
+    <ProjectReference Include="..\Pleiad.Tasks\Pleiad.Tasks.csproj" />
+  </ItemGroup>
+
+</Project>

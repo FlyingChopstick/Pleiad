@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
-using PleiadEntities;
-using PleiadExtensions.Files;
-using PleiadInput;
-using PleiadTasks;
-using PleiadWorld;
+using Pleiad.Entities;
+using Pleiad.Extensions.Files;
+using Pleiad.Input;
+using Pleiad.Tasks;
+using Pleiad.Worlds;
 
 namespace Pleiad
 {
@@ -12,8 +12,8 @@ namespace Pleiad
     {
         static async Task Main(string[] args)
         {
-            Entities em = World.DefaultWorld.EntityManager;
-            Tasks.EntityManager = em;
+            EntityManager em = World.DefaultWorld.EntityManager;
+            TaskManager.EntityManager = em;
 
 
 

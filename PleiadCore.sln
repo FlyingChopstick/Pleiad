@@ -5,19 +5,19 @@ VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad", "Pleiad\Pleiad.csproj", "{0F461A15-C2B7-47DA-B673-9FE1A438C99A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadEntities", "PleiadEntities\PleiadEntities.csproj", "{655F2891-4730-4A05-A64D-217C6C9CCCC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Entities", "Pleiad.Entities\Pleiad.Entities.csproj", "{655F2891-4730-4A05-A64D-217C6C9CCCC7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadExtensions", "PleiadExtensions\PleiadExtensions.csproj", "{FB5B0090-EA5A-4D61-8DF7-1208E2F63922}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Extensions", "Pleiad.Extensions\Pleiad.Extensions.csproj", "{FB5B0090-EA5A-4D61-8DF7-1208E2F63922}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadMisc", "PleiadMisc\PleiadMisc.csproj", "{F8BC0178-08DA-4223-BB20-ABFFC017BCAD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Misc", "Pleiad.Misc\Pleiad.Misc.csproj", "{F8BC0178-08DA-4223-BB20-ABFFC017BCAD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadSystems", "PleiadSystems\PleiadSystems.csproj", "{5BA37964-FF33-4358-8937-1C6B3D4BBCAB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Systems", "Pleiad.Systems\Pleiad.Systems.csproj", "{5BA37964-FF33-4358-8937-1C6B3D4BBCAB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadWorld", "PleiadWorld\PleiadWorld.csproj", "{C73E622A-3B4F-4EAD-BC99-AB303E88B910}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Worlds", "Pleiad.Worlds\Pleiad.Worlds.csproj", "{C73E622A-3B4F-4EAD-BC99-AB303E88B910}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PleiadTasks", "PleiadTasks\PleiadTasks.csproj", "{BA42782F-1699-4B84-ADDA-1D051AFF274B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Tasks", "Pleiad.Tasks\Pleiad.Tasks.csproj", "{BA42782F-1699-4B84-ADDA-1D051AFF274B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PleiadInput", "PleiadInput\PleiadInput.csproj", "{33E5D97E-2752-466A-A596-EF6486538F28}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pleiad.Input", "Pleiad.Input\Pleiad.Input.csproj", "{33E5D97E-2752-466A-A596-EF6486538F28}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

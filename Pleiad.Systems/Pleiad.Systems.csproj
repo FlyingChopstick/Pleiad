@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <AssemblyName>Pleiad.Systems</AssemblyName>
-    <RootNamespace>Pleiad.Systems</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Pleiad.Entities\Pleiad.Entities.csproj" />
     <ProjectReference Include="..\Pleiad.Input\Pleiad.Input.csproj" />
-    <ProjectReference Include="..\PleiadTasks\PleiadTasks.csproj" />
+    <ProjectReference Include="..\Pleiad.Tasks\Pleiad.Tasks.csproj" />
   </ItemGroup>
 
 </Project>

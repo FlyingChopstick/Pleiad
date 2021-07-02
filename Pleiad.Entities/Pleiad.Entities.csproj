@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <RootNamespace>Pleiad.Entities</RootNamespace>
+    <AssemblyName>Pleiad.Entities</AssemblyName>
+  </PropertyGroup>
+
+
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\Pleiad.Extensions\Pleiad.Extensions.csproj" />
+    <ProjectReference Include="..\Pleiad.Misc\Pleiad.Misc.csproj" />
+  </ItemGroup>
+
+</Project>

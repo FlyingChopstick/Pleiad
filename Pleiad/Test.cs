@@ -1,10 +1,10 @@
-﻿using PleiadEntities;
-using PleiadExtensions.Files;
-using PleiadInput;
-using PleiadMisc.Dice;
-using PleiadSystems;
-using PleiadTasks;
-using PleiadWorld;
+﻿using Pleiad.Entities;
+using Pleiad.Extensions.Files;
+using Pleiad.Input;
+using Pleiad.Misc.Dice;
+using Pleiad.Systems;
+using Pleiad.Tasks;
+using Pleiad.Worlds;
 using System;
 using System.Collections.Generic;
 using System.Media;
@@ -70,7 +70,7 @@ namespace Pleiad
         public void Cycle(float dTime)
         {
             handle = new TaskHandle(task);
-            Tasks.SetTask(handle);
+            TaskManager.SetTask(handle);
         }
     }
 
@@ -84,7 +84,7 @@ namespace Pleiad
         private bool _started;
         readonly SoundPlayer player = new SoundPlayer();
         readonly Type soundComponent = typeof(SoundComponent);
-        readonly Entities em = World.DefaultWorld.EntityManager;
+        readonly EntityManager em = World.DefaultWorld.EntityManager;
 
         int die = 0;
 

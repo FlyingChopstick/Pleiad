@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PleiadWorld\PleiadWorld.csproj" />
+    <ProjectReference Include="..\Pleiad.Worlds\Pleiad.Worlds.csproj" />
   </ItemGroup>
 
 </Project>
