@@ -1,7 +1,7 @@
 ﻿using Silk.NET.Windowing;
 
 
-namespace Pleiad.Render
+namespace Pleiad.Render.Windows
 {
     public struct WindowResolution
     {

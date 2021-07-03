@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using Pleiad.Render.Arrays;
+using Pleiad.Render.Buffers;
 using Pleiad.Render.ControlEvents;
+using Pleiad.Render.Models;
+using Pleiad.Render.Shaders;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 
-namespace Pleiad.Render
+namespace Pleiad.Render.Windows
 {
     public class PWindow : IDisposable
     {
@@ -37,11 +41,12 @@ namespace Pleiad.Render
         public void Close()
         {
             _gl.BindBuffer(GLEnum.ArrayBuffer, 0);
-            _gl.BindVertexArray(0);
-            _gl.UseProgram(0);
-            _gl.DeleteBuffer(_vbo);
-            _gl.DeleteVertexArray(_vao);
-            _gl.DeleteProgram(_shader);
+
+            _vao.Unbind();
+            _shader.Delete();
+            _vbo.Delete();
+            _vao.Delete();
+
 
             _window.Close();
             Closed?.Invoke();
@@ -58,10 +63,11 @@ namespace Pleiad.Render
         private IInputContext _input;
         private GL _gl;
 
-        private uint _vbo;
-        private uint _ebo;
-        private uint _vao;
-        private uint _shader;
+        private VertexBuffer _vbo;
+        private ElementBuffer _ebo;
+        private PVertexArray _vao;
+        private MergedShader _shader;
+
         private bool _disposedValue;
 
         //Vertex shaders are run on each vertex.
@@ -86,23 +92,25 @@ namespace Pleiad.Render
         }
         ";
 
-        //Vertex data, uploaded to the VBO.
-        private readonly float[] Vertices =
+        private readonly PMesh _mesh = new()
         {
-            //X    Y      Z
-             0.5f,  0.5f, 0.0f,
-             0.5f, -0.5f, 0.0f,
-            -0.5f, -0.5f, 0.0f,
-            -0.5f,  0.5f, 0.5f,
-             0.0f,  1,0f, 0.0f
-        };
-
-        //Index data, uploaded to the EBO.
-        private readonly uint[] Indices =
-        {
-            0, 1, 3,
-            1, 2, 3,
-            0, 3, 4
+            //Vertex data, uploaded to the VBO.
+            Vertices = new float[]
+            {
+                //X    Y      Z
+                 0.5f,  0.5f, 0.0f,
+                 0.5f, -0.5f, 0.0f,
+                -0.5f, -0.5f, 0.0f,
+                -0.5f,  0.5f, 0.5f,
+                 0.0f,  1,0f, 0.0f
+            },
+            //Index data, uploaded to the EBO.
+            Indices = new uint[]
+            {
+                0, 1, 3,
+                1, 2, 3,
+                0, 3, 4
+            }
         };
 
         private unsafe void OnLoad()
@@ -110,7 +118,7 @@ namespace Pleiad.Render
             _input = _window.CreateInput();
             _input.ConnectionChanged += ConnectInput;
 
-            ConnectDevices(_input.Gamepads);
+            //ConnectDevices(_input.Gamepads);
             ConnectDevices(_input.Keyboards);
             ConnectDevices(_input.Mice);
 
@@ -118,78 +126,26 @@ namespace Pleiad.Render
 
             _gl = GL.GetApi(_window);
 
-            _vao = _gl.GenVertexArray();
-            _gl.BindVertexArray(_vao);
+            _vao = new(_gl);
+            _vao.Bind();
 
             //vertex buffer
-            _vbo = _gl.GenBuffer();
-            _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _vbo);
-            fixed (void* v = &Vertices[0])
-            {
-                //set buffer data
-                _gl.BufferData(
-                    BufferTargetARB.ArrayBuffer,
-                    (nuint)(Vertices.Length * sizeof(uint)),
-                    v,
-                    BufferUsageARB.StaticDraw);
-            }
+            _vbo = _mesh.GenerateVertexBuffer(BufferUsageARB.StaticDraw, _gl);
+            _vbo.Bind();
 
             //element buffer
-            _ebo = _gl.GenBuffer();
-            _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _ebo);
-            fixed (void* i = &Indices[0])
-            {
-                _gl.BufferData(
-                    BufferTargetARB.ElementArrayBuffer,
-                    (nuint)(Indices.Length * sizeof(uint)),
-                    i,
-                    BufferUsageARB.StaticDraw);
-            }
+            _ebo = _mesh.GenerateElementBuffer(BufferUsageARB.StaticDraw, _gl);
+            _ebo.Bind();
 
             //vertex shader
-            uint vShader = _gl.CreateShader(ShaderType.VertexShader);
-            _gl.ShaderSource(vShader, VertexShaderSource);
-            _gl.CompileShader(vShader);
-            //check vShader
-            string infolog = _gl.GetShaderInfoLog(vShader);
-            if (!string.IsNullOrWhiteSpace(infolog))
-            {
-                Console.WriteLine($"Error compiling vertex shader\n{infolog}");
-            }
-
+            PShader vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
             //fragment shader
-            uint fShader = _gl.CreateShader(ShaderType.FragmentShader);
-            _gl.ShaderSource(fShader, FragmentShaderSource);
-            _gl.CompileShader(fShader);
-            //check fShader
-            infolog = _gl.GetShaderInfoLog(fShader);
-            if (!string.IsNullOrWhiteSpace(infolog))
-            {
-                Console.WriteLine($"Error compiling fragment shader\n{infolog}");
-            }
-
+            PShader fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
             //merge shaders
-            _shader = _gl.CreateProgram();
-            _gl.AttachShader(_shader, vShader);
-            _gl.AttachShader(_shader, fShader);
-            _gl.LinkProgram(_shader);
-            //check
-            _gl.GetProgram(_shader, GLEnum.LinkStatus, out var status);
-            if (status == 0)
-            {
-                Console.WriteLine($"Error linking shader {_gl.GetProgramInfoLog(_shader)}");
-            }
-
-            //cleanup
-            _gl.DetachShader(_shader, vShader);
-            _gl.DetachShader(_shader, fShader);
-            _gl.DeleteShader(vShader);
-            _gl.DeleteShader(fShader);
+            _shader = new(vertexShader, fragmentShader, _gl);
 
             _gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), null);
             _gl.EnableVertexAttribArray(0);
-
-
         }
 
 
@@ -299,10 +255,11 @@ namespace Pleiad.Render
         {
             _gl.Clear((uint)ClearBufferMask.ColorBufferBit);
 
-            _gl.BindVertexArray(_vao);
-            _gl.UseProgram(_shader);
+            _vao.Bind();
 
-            _gl.DrawElements(PrimitiveType.Triangles, (uint)Indices.Length, DrawElementsType.UnsignedInt, null);
+            _shader.Use();
+
+            _gl.DrawElements(PrimitiveType.Triangles, (uint)_mesh.Indices.Length, DrawElementsType.UnsignedInt, null);
         }
         private void OnUpdate(double deltaTime)
         {
