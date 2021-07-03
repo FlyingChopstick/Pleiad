@@ -2,9 +2,9 @@
 
 namespace Pleiad.Misc.Models
 {
-    public class BufferHandle : ValueClass<uint>
+    public class VertexArrayHandle : ValueClass<uint>
     {
-        public BufferHandle(uint handle)
+        public VertexArrayHandle(uint handle)
         {
             Value = handle;
         }

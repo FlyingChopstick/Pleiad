@@ -7,9 +7,7 @@ namespace Pleiad.Render.Buffers
     {
         public ElementBuffer(BufferTargetARB bufferTarget, BufferUsageARB bufferUsage, GL api)
         {
-
             _gl = api;
-            Handle = new(_gl.GenBuffer());
             BufferTarget = bufferTarget;
             BufferUsage = bufferUsage;
         }
@@ -19,6 +17,7 @@ namespace Pleiad.Render.Buffers
         }
         public unsafe void Bind()
         {
+            Handle = new(_gl.GenBuffer());
             _gl.BindBuffer(BufferTarget, Handle);
             fixed (void* v = &Indices[0])
             {
