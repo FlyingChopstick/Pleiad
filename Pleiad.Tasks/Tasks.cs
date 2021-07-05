@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Pleiad.Entities;
+using Pleiad.Entities.Components;
 using Pleiad.Entities.Model;
 
 namespace Pleiad.Tasks

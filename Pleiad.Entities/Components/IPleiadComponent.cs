@@ -1,4 +1,4 @@
-﻿namespace Pleiad.Entities
+﻿namespace Pleiad.Entities.Components
 {
     /// <summary>
     /// Tag interface for Components
