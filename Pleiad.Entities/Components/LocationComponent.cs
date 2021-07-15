@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 
 namespace Pleiad.Entities.Components
 {
@@ -11,7 +7,6 @@ namespace Pleiad.Entities.Components
     /// </summary>
     public struct LocationComponent : IPleiadComponent
     {
-        public float X;
-        public float Y;
+        public Vector2 location;
     }
 }
