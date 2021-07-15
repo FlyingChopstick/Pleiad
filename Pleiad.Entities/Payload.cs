@@ -1,5 +1,5 @@
 ﻿using Pleiad.Entities;
-
+using Pleiad.Entities.Components;
 
 /// <summary>
 /// Payload is used to set the data for the chunk

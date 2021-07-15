@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Pleiad.Entities.Components;
 using Pleiad.Entities.Model;
 
 namespace Pleiad.Entities

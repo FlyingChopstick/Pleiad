@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Pleiad.Entities;
+using Pleiad.Entities.Components;
 using Pleiad.Input;
 using Pleiad.Tasks;
 using Pleiad.Worlds;
