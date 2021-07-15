@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Pleiad.Misc.Models;
+﻿using Pleiad.Misc.Models;
 using Silk.NET.OpenGL;
 
 namespace Pleiad.Render.Arrays
 {
-    public class PVertexArray
+    public struct PVertexArray
     {
         public PVertexArray(GL api)
         {

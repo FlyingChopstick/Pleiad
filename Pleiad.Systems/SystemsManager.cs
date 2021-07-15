@@ -134,9 +134,13 @@ namespace Pleiad.Systems
 
         private void LoadSystems()
         {
+            var pleiadNsName = nameof(Pleiad);
+            var systemPostfix = "System";
+
+
             Console.WriteLine("Loading Systems");
             List<Type> sysInterfaces = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
-                .Where(x => x.IsInterface && x.Name.Contains("Pleiad") && x.Name.Contains("System")).ToList();
+                .Where(x => x.IsInterface && x.Name.Contains(pleiadNsName) && x.Name.Contains(systemPostfix)).ToList();
 
             foreach (var ISys in sysInterfaces)
             {

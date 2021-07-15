@@ -3,7 +3,7 @@ using Silk.NET.OpenGL;
 
 namespace Pleiad.Render.Shaders
 {
-    public class PShader : IShader
+    public struct PShader : IShader
     {
         public PShader(ShaderType type, string source)
         {
