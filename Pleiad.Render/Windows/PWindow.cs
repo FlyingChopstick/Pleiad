@@ -24,16 +24,21 @@ namespace Pleiad.Render.Windows
         public PWindow(IPWindowOptions options)
         {
             _window = Window.Create(options.SilkOptions);
+            UpdateDimensions();
 
             _window.Load += OnLoad;
             _window.Render += OnRender;
             _window.Update += OnUpdate;
             _window.Closing += OnClose;
+            _window.Resize += OnResize;
 
             MouseEvents = new();
             GamepadEvents = new();
             KeyboardEvents = new();
         }
+
+
+
         public void Run()
         {
             _window.Run();
@@ -54,6 +59,8 @@ namespace Pleiad.Render.Windows
         }
 
 
+        public int Width { get; private set; }
+        public int Height { get; private set; }
         public MouseEvents MouseEvents { get; }
         public GamepadEvents GamepadEvents { get; }
         public KeyboardEvents KeyboardEvents { get; }
@@ -150,14 +157,14 @@ namespace Pleiad.Render.Windows
             _gl.Clear((uint)ClearBufferMask.ColorBufferBit);
 
 
-            _sprite.Transform(new()
-            {
-                Position = new(0.5f, 0.0f, 0.0f)
-            });
-            _sprite.Transform(new()
-            {
-                Rotation = Quaternion.CreateFromAxisAngle(new Vector3(0.0f, 0.0f, 1.0f), PTransform.DegreesToRadians(45.0f))
-            });
+            //_sprite.Transform(new()
+            //{
+            //    Position = new(0.5f, 0.0f, 0.0f)
+            //});
+            //_sprite.Transform(new()
+            //{
+            //    Rotation = Quaternion.CreateFromAxisAngle(new Vector3(0.0f, 0.0f, 1.0f), PTransform.DegreesToRadians(45.0f))
+            //});
             //_sprite.Transform(new()
             //{
             //    Scale = 0.5f
@@ -169,9 +176,10 @@ namespace Pleiad.Render.Windows
             //var diff = (float)(_window.Time * 100);
             //var model = Matrix4x4.CreateRotationY(PTransform.DegreesToRadians(diff))
             //    * Matrix4x4.CreateRotationX(PTransform.DegreesToRadians(diff));
-            var model = Matrix4x4.Identity;
+            var model = Matrix4x4.CreateTranslation(_sprite.Position);
             var view = Matrix4x4.CreateLookAt(CameraPosition, CameraTarget, CameraUp);
-            var projection = Matrix4x4.CreatePerspectiveFieldOfView(PTransform.DegreesToRadians(45.0f), 800 / 600, 0.1f, 100.0f);
+            //var projection = Matrix4x4.CreatePerspectiveFieldOfView(PTransform.DegreesToRadians(45.0f), Width / Height, 0.1f, 100.0f);
+            var projection = Matrix4x4.CreateOrthographicOffCenter(-1.0f * Width / Height, 1.0f * Width / Height, -1.0f, 1.0f, 0.1f, 100.0f);
 
             _shader.SetUniform("uModel", model);
             _shader.SetUniform("uView", view);
@@ -284,6 +292,15 @@ namespace Pleiad.Render.Windows
 
 
 
+        private void OnResize(Silk.NET.Maths.Vector2D<int> obj)
+        {
+            UpdateDimensions();
+        }
+        private void UpdateDimensions()
+        {
+            Width = _window.Size.X;
+            Height = _window.Size.Y;
+        }
         private void OnUpdate(double deltaTime)
         {
             Updated?.Invoke(deltaTime);

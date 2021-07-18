@@ -17,10 +17,10 @@ namespace Pleiad.Render.Models
             Vertices = new float[]
             { 
                 // X      Y      Z      U     V
+                -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
                 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
                 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
                 -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-                -0.5f,  0.5f, 0.0f, 0.0f, 1.0f
             },
             Indices = new uint[]
             {

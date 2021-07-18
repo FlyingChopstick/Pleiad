@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Pleiad.Render.Arrays;
 using Pleiad.Render.Shaders;
 using Silk.NET.OpenGL;
@@ -16,6 +17,8 @@ namespace Pleiad.Render.Models
         private PBufferObject<uint> _ebo;
         private PVertexArrayObject<float, uint> _vao;
         private Queue<PTransform> _transforms = new();
+
+        public Vector3 Position { get; set; } = new(0.0f);
 
 
         public PSprite(GL api, PMesh<float, uint> mesh, PTexture texture, PShader shader)

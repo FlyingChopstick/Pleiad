@@ -64,8 +64,8 @@ namespace Pleiad.Systems
                 Title = "Test Rectangle",
                 Resolution = new()
                 {
-                    Width = 800,
-                    Height = 600
+                    Width = 1280,
+                    Height = 720
                 },
                 VSync = false
             };
