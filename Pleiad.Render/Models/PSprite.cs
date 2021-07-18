@@ -38,10 +38,38 @@ namespace Pleiad.Render.Models
             _vao.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, 5, 0);
             _vao.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, 5, 3);
         }
+
+        public void Translate(Vector2 newPosition)
+        {
+            Transform(new()
+            {
+                Position = new(newPosition, 0.0f)
+            });
+        }
+        public void Rotate(float degrees)
+        {
+            RotateRadians(PTransform.DegreesToRadians(degrees));
+        }
+        public void RotateRadians(float radians)
+        {
+            Transform(new()
+            {
+                Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, radians)
+            });
+        }
+        public void Scale(float scale)
+        {
+            Transform(new()
+            {
+                Scale = scale
+            });
+        }
         public void Transform(PTransform transform)
         {
             _transforms.Enqueue(transform);
         }
+
+
         public unsafe void Draw()
         {
             _vao.Bind();
@@ -49,15 +77,23 @@ namespace Pleiad.Render.Models
             _texture.Bind();
             _shader.SetUniform("uTexture0", 0);
 
-            if (_transforms.Count != 0)
+
+            while (_transforms.Count > 0)
             {
-                ApplyTransforms();
+                _shader.SetUniform("uModel", _transforms.Dequeue().ViewMatrix);
             }
-            else
-            {
-                DrawElements();
-            }
+            DrawElements();
+
+            //if (_transforms.Count != 0)
+            //{
+            //    ApplyTransforms();
+            //}
+            //else
+            //{
+            //    DrawElements();
+            //}
         }
+
 
         private unsafe void ApplyTransforms()
         {
@@ -67,7 +103,6 @@ namespace Pleiad.Render.Models
                 DrawElements();
             }
         }
-
         private unsafe void DrawElements()
         {
             _gl.DrawElements(
