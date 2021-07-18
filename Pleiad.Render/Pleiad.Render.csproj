@@ -14,9 +14,11 @@
 
   <ItemGroup>
     <PackageReference Include="Silk.NET" Version="2.5.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Pleiad.Extensions\Pleiad.Extensions.csproj" />
     <ProjectReference Include="..\Pleiad.Misc\Pleiad.Misc.csproj" />
   </ItemGroup>
 

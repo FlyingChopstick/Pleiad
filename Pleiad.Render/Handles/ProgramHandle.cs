@@ -1,6 +1,6 @@
 ﻿using Pleiad.Misc.Core;
 
-namespace Pleiad.Misc.Models
+namespace Pleiad.Render.Handles
 {
     public class ProgramHandle : ValueClass<uint>
     {

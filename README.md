@@ -9,7 +9,7 @@ Pleiad is an ECS framework for 2D game development written in .NET 5 and up
 
 ## Tools
 
-Pleiad offers all the tools required for game development, sucha as:
+Pleiad offers all the tools required for game development, such as:
 - Entity Manager, for creating and deleting entities. It also manages addition, removal and manipulation of entity data components
 - Systems to manipulate entity component data
 - Input Manager tied to the active window for user input processing

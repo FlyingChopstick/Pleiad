@@ -1,4 +1,4 @@
-﻿using Pleiad.Misc.Models;
+﻿using Pleiad.Render.Handles;
 using Silk.NET.OpenGL;
 
 namespace Pleiad.Render.Interfaces

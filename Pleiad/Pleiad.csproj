@@ -7,15 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Shaders\shader.frag" />
+    <None Remove="Shaders\shader.vert" />
     <None Remove="Sounds\dice1.wav" />
     <None Remove="Sounds\dice2.wav" />
     <None Remove="Sounds\dice3.wav" />
     <None Remove="Sounds\dice4.wav" />
     <None Remove="Sounds\dice5.wav" />
     <None Remove="Sounds\dice6.wav" />
+    <None Remove="Textures\texture.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Shaders\shader.frag">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\shader.vert">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Sounds\dice1.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -33,6 +42,9 @@
     </Content>
     <Content Include="Sounds\dice6.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Textures\texture.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 

@@ -49,6 +49,25 @@ namespace Pleiad.Extensions
             }
 
 
+            public static string[] ReadLines(this FileContract contract)
+            {
+                if (_lock.TryEnterReadLock(_timeout))
+                {
+                    string[] content = Array.Empty<string>();
+                    try
+                    {
+                        content = File.ReadAllLines(contract.FileName).ToArray();
+                    }
+                    catch { }
+                    finally
+                    {
+                        _lock.ExitReadLock();
+                    }
+
+                    return content;
+                }
+                else throw GetFileAccessException(contract.FileName, FileAccess.Read);
+            }
             /// <summary>
             /// Reads the content of a file
             /// </summary>
@@ -58,22 +77,7 @@ namespace Pleiad.Extensions
             {
                 return await Task.Run(() =>
                 {
-                    if (_lock.TryEnterReadLock(_timeout))
-                    {
-                        string[] content = Array.Empty<string>();
-                        try
-                        {
-                            content = File.ReadAllLines(contract.FileName).ToArray();
-                        }
-                        catch { }
-                        finally
-                        {
-                            _lock.ExitReadLock();
-                        }
-
-                        return content;
-                    }
-                    else throw GetFileAccessException(contract.FileName, FileAccess.Read);
+                    return ReadLines(contract);
                 });
             }
             /// <summary>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Pleiad.Render.Arrays;
-using Pleiad.Render.Buffers;
+using Pleiad.Extensions.Files;
 using Pleiad.Render.ControlEvents;
 using Pleiad.Render.Models;
 using Pleiad.Render.Shaders;
@@ -11,7 +10,7 @@ using Silk.NET.Windowing;
 
 namespace Pleiad.Render.Windows
 {
-    public class PWindow : IDisposable
+    public sealed class PWindow : IDisposable
     {
         public delegate bool UpdatedDelegate(double deltaTime);
         public delegate void ClosedDelegate();
@@ -42,10 +41,11 @@ namespace Pleiad.Render.Windows
         {
             _gl.BindBuffer(GLEnum.ArrayBuffer, 0);
 
-            _vao.Unbind();
-            _shader.Delete();
-            _vbo.Delete();
-            _vao.Delete();
+            _sprite.Dispose();
+            //_vao.Unbind();
+            //_shader.Delete();
+            //_vbo.Delete();
+            //_vao.Delete();
 
 
             _window.Close();
@@ -63,56 +63,56 @@ namespace Pleiad.Render.Windows
         private IInputContext _input;
         private GL _gl;
 
-        private VertexBuffer _vbo;
-        private ElementBuffer _ebo;
-        private PVertexArray _vao;
-        private MergedShader _shader;
+        //private PVertexBufferObject _vbo;
+        //private PElementBufferObject _ebo;
+        //private PVertexArrayObject<float, uint> _vao;
+        //private PShader _shader;
 
-        private bool _disposedValue;
 
-        //Vertex shaders are run on each vertex.
-        private static readonly string VertexShaderSource = @"
-        #version 330 core //Using version GLSL version 3.3
-        layout (location = 0) in vec4 vPos;
-        
-        void main()
-        {
-            gl_Position = vec4(vPos.x, vPos.y, vPos.z, 1.0);
-        }
-        ";
+        ////Vertex shaders are run on each vertex.
+        //private static readonly string VertexShaderSource = @"
+        //#version 330 core //Using version GLSL version 3.3
+        //layout (location = 0) in vec4 vPos;
 
-        //Fragment shaders are run on each fragment/pixel of the geometry.
-        private static readonly string FragmentShaderSource = @"
-        #version 330 core
-        out vec4 FragColor;
+        //void main()
+        //{
+        //    gl_Position = vec4(vPos.x, vPos.y, vPos.z, 1.0);
+        //}
+        //";
 
-        void main()
-        {
-            FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-        }
-        ";
+        ////Fragment shaders are run on each fragment/pixel of the geometry.
+        //private static readonly string FragmentShaderSource = @"
+        //#version 330 core
+        //out vec4 FragColor;
 
-        private readonly PMesh _mesh = new()
-        {
-            //Vertex data, uploaded to the VBO.
-            Vertices = new float[]
-            {
-                //X    Y      Z
-                 0.5f,  0.5f, 0.0f,
-                 0.5f, -0.5f, 0.0f,
-                -0.5f, -0.5f, 0.0f,
-                -0.5f,  0.5f, 0.5f,
-                 0.0f,  1,0f, 0.0f
-            },
-            //Index data, uploaded to the EBO.
-            Indices = new uint[]
-            {
-                0, 1, 3,
-                1, 2, 3,
-                0, 3, 4
-            }
-        };
+        //void main()
+        //{
+        //    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+        //}
+        //";
 
+        //private readonly PMesh _mesh = new()
+        //{
+        //    //Vertex data, uploaded to the VBO.
+        //    Vertices = new float[]
+        //    {
+        //        //X    Y      Z
+        //         0.5f,  0.5f, 0.0f,
+        //         0.5f, -0.5f, 0.0f,
+        //        -0.5f, -0.5f, 0.0f,
+        //        -0.5f,  0.5f, 0.5f,
+        //         0.0f,  1,0f, 0.0f
+        //    },
+        //    //Index data, uploaded to the EBO.
+        //    Indices = new uint[]
+        //    {
+        //        0, 1, 3,
+        //        1, 2, 3,
+        //        0, 3, 4
+        //    }
+        //};
+
+        PSprite _sprite;
         private unsafe void OnLoad()
         {
             _input = _window.CreateInput();
@@ -126,26 +126,38 @@ namespace Pleiad.Render.Windows
 
             _gl = GL.GetApi(_window);
 
-            _vao = new(_gl);
-            _vao.Bind();
-
-            //vertex buffer
-            _vbo = _mesh.GenerateVertexBuffer(BufferUsageARB.StaticDraw, _gl);
-            _vbo.Bind();
-
-            //element buffer
-            _ebo = _mesh.GenerateElementBuffer(BufferUsageARB.StaticDraw, _gl);
-            _ebo.Bind();
-
+            PTexture texture = new(_gl, new(@"Textures/texture.png"));
             //vertex shader
-            PShader vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
+            FileContract VertexShaderSource = new("Shaders/shader.vert");
+            PShaderSource vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
             //fragment shader
-            PShader fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
+            FileContract FragmentShaderSource = new("Shaders/shader.frag");
+            PShaderSource fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
             //merge shaders
-            _shader = new(vertexShader, fragmentShader, _gl);
+            PShader shader = new(_gl, vertexShader, fragmentShader);
+            _sprite = new(_gl, texture, shader);
 
-            _gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), null);
-            _gl.EnableVertexAttribArray(0);
+            _sprite.Load();
+            //_vao = new(_gl);
+            //_vao.Bind();
+
+            ////vertex buffer
+            //_vbo = _mesh.GenerateVertexBuffer(BufferUsageARB.StaticDraw, _gl);
+            //_vbo.Bind();
+
+            ////element buffer
+            //_ebo = _mesh.GenerateElementBuffer(BufferUsageARB.StaticDraw, _gl);
+            //_ebo.Bind();
+
+            ////vertex shader
+            //PShaderSource vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
+            ////fragment shader
+            //PShaderSource fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
+            ////merge shaders
+            //_shader = new(vertexShader, fragmentShader, _gl);
+
+            //_gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), null);
+            //_gl.EnableVertexAttribArray(0);
         }
 
 
@@ -255,11 +267,7 @@ namespace Pleiad.Render.Windows
         {
             _gl.Clear((uint)ClearBufferMask.ColorBufferBit);
 
-            _vao.Bind();
-
-            _shader.Use();
-
-            _gl.DrawElements(PrimitiveType.Triangles, (uint)_mesh.Indices.Length, DrawElementsType.UnsignedInt, null);
+            _sprite.Draw();
         }
         private void OnUpdate(double deltaTime)
         {
@@ -270,24 +278,11 @@ namespace Pleiad.Render.Windows
             Closed?.Invoke();
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    _window.Dispose();
-                }
 
-                _window = null;
-                _disposedValue = true;
-            }
-        }
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            //_sprite.Dispose();
+            _window.Dispose();
         }
     }
 }
