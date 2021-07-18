@@ -149,24 +149,27 @@ namespace Pleiad.Render.Windows
         {
             _gl.Clear((uint)ClearBufferMask.ColorBufferBit);
 
-            _sprite.Draw();
 
-            //_sprite.Transform(new()
-            //{
-            //    Position = new(2.0f, 0.0f, 0.0f)
-            //});
-            //_sprite.Transform(new()
-            //{
-            //    Rotation = 20.0f
-            //});
+            _sprite.Transform(new()
+            {
+                Position = new(0.5f, 0.0f, 0.0f)
+            });
+            _sprite.Transform(new()
+            {
+                Rotation = Quaternion.CreateFromAxisAngle(new Vector3(0.0f, 0.0f, 1.0f), PTransform.DegreesToRadians(45.0f))
+            });
             //_sprite.Transform(new()
             //{
             //    Scale = 0.5f
             //});
 
-            var diff = (float)(_window.Time * 100);
-            var model = Matrix4x4.CreateRotationY(PTransform.DegreesToRadians(diff))
-                * Matrix4x4.CreateRotationX(PTransform.DegreesToRadians(diff));
+
+            _sprite.Draw();
+
+            //var diff = (float)(_window.Time * 100);
+            //var model = Matrix4x4.CreateRotationY(PTransform.DegreesToRadians(diff))
+            //    * Matrix4x4.CreateRotationX(PTransform.DegreesToRadians(diff));
+            var model = Matrix4x4.Identity;
             var view = Matrix4x4.CreateLookAt(CameraPosition, CameraTarget, CameraUp);
             var projection = Matrix4x4.CreatePerspectiveFieldOfView(PTransform.DegreesToRadians(45.0f), 800 / 600, 0.1f, 100.0f);
 
@@ -175,7 +178,7 @@ namespace Pleiad.Render.Windows
             _shader.SetUniform("uProjection", projection);
 
 
-            _gl.DrawArrays(PrimitiveType.Triangles, 0, 36);
+            //_gl.DrawArrays(PrimitiveType.Triangles, 0, 36);
         }
 
         private void ConnectDevices<T>(IReadOnlyCollection<T> devices) where T : IInputDevice

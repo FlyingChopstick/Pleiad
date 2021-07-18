@@ -50,6 +50,10 @@ namespace Pleiad.Render.Models
             {
                 ApplyTransforms();
             }
+            else
+            {
+                DrawElements();
+            }
         }
 
         private unsafe void ApplyTransforms()

@@ -14,7 +14,8 @@ namespace Pleiad.Render.Models
         public Quaternion Rotation { get; set; } = Quaternion.Identity;
 
         public Matrix4x4 ViewMatrix => Matrix4x4.Identity
-            * Matrix4x4.CreateFromQuaternion(Rotation)
+            * Matrix4x4.CreateRotationX(DegreesToRadians(Rotation.X))
+            * Matrix4x4.CreateRotationY(DegreesToRadians(Rotation.Y))
             * Matrix4x4.CreateScale(Scale)
             * Matrix4x4.CreateTranslation(Position);
 
