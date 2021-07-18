@@ -2,11 +2,13 @@
 using Pleiad.Render.Handles;
 using Silk.NET.OpenGL;
 
-namespace Pleiad.Render.Buffers
+namespace Pleiad.Render.Models
 {
-    public sealed class PElementBufferObject : IDisposable
+    public sealed class PBufferObject<TDataType> : IDisposable
+        where TDataType : unmanaged
     {
-        public unsafe PElementBufferObject(BufferTargetARB bufferTarget, Span<uint> indices, BufferUsageARB bufferUsage, GL api)
+
+        public unsafe PBufferObject(BufferTargetARB bufferTarget, Span<TDataType> data, BufferUsageARB bufferUsage, GL api)
         {
             _gl = api;
             BufferTarget = bufferTarget;
@@ -14,34 +16,32 @@ namespace Pleiad.Render.Buffers
 
             Handle = new(_gl.GenBuffer());
             Bind();
-            fixed (void* v = &indices[0])
+            fixed (void* v = &data[0])
             {
                 //set buffer data
                 _gl.BufferData(
                     BufferTarget,
-                    (nuint)(indices.Length * sizeof(uint)),
+                    (nuint)(data.Length * sizeof(uint)),
                     v,
                     BufferUsage);
             }
         }
+
+        public BufferHandle Handle { get; }
+        public BufferTargetARB BufferTarget { get; }
+        public BufferUsageARB BufferUsage { get; }
+
         public unsafe void Bind()
         {
             _gl.BindBuffer(BufferTarget, Handle);
         }
-
         public void Dispose()
         {
             _gl.DeleteBuffer(Handle);
         }
 
-        public BufferHandle Handle { get; private set; }
-        public BufferTargetARB BufferTarget { get; }
-        public BufferUsageARB BufferUsage { get; }
 
-        public static implicit operator BufferHandle(PElementBufferObject b) => b.Handle;
-
-        public static implicit operator uint(PElementBufferObject b) => b.Handle;
-
+        public static implicit operator BufferHandle(PBufferObject<TDataType> b) => b.Handle;
 
         private GL _gl;
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Pleiad.Extensions.Files;
 using Pleiad.Render.ControlEvents;
 using Pleiad.Render.Models;
@@ -60,7 +61,7 @@ namespace Pleiad.Render.Windows
 
 
         private IWindow _window;
-        private IInputContext _input;
+        private PShader _shader;
         private GL _gl;
 
         //private PVertexBufferObject _vbo;
@@ -113,9 +114,15 @@ namespace Pleiad.Render.Windows
         //};
 
         PSprite _sprite;
+        //Setup the camera's location, and relative up and right directions
+        private static Vector3 CameraPosition = new Vector3(0.0f, 0.0f, 3.0f);
+        private static Vector3 CameraTarget = Vector3.Zero;
+        private static Vector3 CameraDirection = Vector3.Normalize(CameraPosition - CameraTarget);
+        private static Vector3 CameraRight = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, CameraDirection));
+        private static Vector3 CameraUp = Vector3.Cross(CameraDirection, CameraRight);
         private unsafe void OnLoad()
         {
-            _input = _window.CreateInput();
+            IInputContext _input = _window.CreateInput();
             _input.ConnectionChanged += ConnectInput;
 
             //ConnectDevices(_input.Gamepads);
@@ -134,32 +141,42 @@ namespace Pleiad.Render.Windows
             FileContract FragmentShaderSource = new("Shaders/shader.frag");
             PShaderSource fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
             //merge shaders
-            PShader shader = new(_gl, vertexShader, fragmentShader);
-            _sprite = new(_gl, texture, shader);
-
+            _shader = new(_gl, vertexShader, fragmentShader);
+            _sprite = new(_gl, PMesh<float, uint>.Quad, texture, _shader);
             _sprite.Load();
-            //_vao = new(_gl);
-            //_vao.Bind();
-
-            ////vertex buffer
-            //_vbo = _mesh.GenerateVertexBuffer(BufferUsageARB.StaticDraw, _gl);
-            //_vbo.Bind();
-
-            ////element buffer
-            //_ebo = _mesh.GenerateElementBuffer(BufferUsageARB.StaticDraw, _gl);
-            //_ebo.Bind();
-
-            ////vertex shader
-            //PShaderSource vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
-            ////fragment shader
-            //PShaderSource fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
-            ////merge shaders
-            //_shader = new(vertexShader, fragmentShader, _gl);
-
-            //_gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), null);
-            //_gl.EnableVertexAttribArray(0);
         }
+        private unsafe void OnRender(double obj)
+        {
+            _gl.Clear((uint)ClearBufferMask.ColorBufferBit);
 
+            _sprite.Draw();
+
+            //_sprite.Transform(new()
+            //{
+            //    Position = new(2.0f, 0.0f, 0.0f)
+            //});
+            //_sprite.Transform(new()
+            //{
+            //    Rotation = 20.0f
+            //});
+            //_sprite.Transform(new()
+            //{
+            //    Scale = 0.5f
+            //});
+
+            var diff = (float)(_window.Time * 100);
+            var model = Matrix4x4.CreateRotationY(PTransform.DegreesToRadians(diff))
+                * Matrix4x4.CreateRotationX(PTransform.DegreesToRadians(diff));
+            var view = Matrix4x4.CreateLookAt(CameraPosition, CameraTarget, CameraUp);
+            var projection = Matrix4x4.CreatePerspectiveFieldOfView(PTransform.DegreesToRadians(45.0f), 800 / 600, 0.1f, 100.0f);
+
+            _shader.SetUniform("uModel", model);
+            _shader.SetUniform("uView", view);
+            _shader.SetUniform("uProjection", projection);
+
+
+            _gl.DrawArrays(PrimitiveType.Triangles, 0, 36);
+        }
 
         private void ConnectDevices<T>(IReadOnlyCollection<T> devices) where T : IInputDevice
         {
@@ -263,12 +280,7 @@ namespace Pleiad.Render.Windows
         }
 
 
-        private unsafe void OnRender(double obj)
-        {
-            _gl.Clear((uint)ClearBufferMask.ColorBufferBit);
 
-            _sprite.Draw();
-        }
         private void OnUpdate(double deltaTime)
         {
             Updated?.Invoke(deltaTime);

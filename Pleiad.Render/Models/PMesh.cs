@@ -1,24 +1,63 @@
-﻿using Pleiad.Render.Buffers;
-using Silk.NET.OpenGL;
+﻿using Silk.NET.OpenGL;
 
 namespace Pleiad.Render.Models
 {
-    public struct PMesh
+    public struct PMesh<TVertexType, TIndexType>
+        where TVertexType : unmanaged
+        where TIndexType : unmanaged
     {
-        public PMesh(float[] vertices, uint[] indices) : this()
+        public PMesh(TVertexType[] vertices, TIndexType[] indices)
         {
             Vertices = vertices;
             Indices = indices;
         }
-        public static readonly PMesh Quad = new()
+
+        public static PMesh<float, uint> Quad => new()
         {
             Vertices = new float[]
             { 
-                 //X    Y      Z     U   V
-                 0.5f,  0.5f, 0.0f, 1f, 1f,
-                 0.5f, -0.5f, 0.0f, 1f, 0f,
-                -0.5f, -0.5f, 0.0f, 0f, 0f,
-                -0.5f,  0.5f, 0.5f, 0f, 1f
+                 // X      Y      Z      U     V
+                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+                 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+                 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+                 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+             0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
             },
             Indices = new uint[]
             {
@@ -27,14 +66,14 @@ namespace Pleiad.Render.Models
             }
         };
 
-        public float[] Vertices { get; init; }
-        public uint[] Indices { get; init; }
+        public TVertexType[] Vertices { get; init; }
+        public TIndexType[] Indices { get; init; }
 
-        public PVertexBufferObject GenerateVertexBuffer(BufferUsageARB usage, GL api)
+        public PBufferObject<TVertexType> GenerateVertexBuffer(BufferUsageARB usage, GL api)
         {
             return new(BufferTargetARB.ArrayBuffer, Vertices, usage, api);
         }
-        public PElementBufferObject GenerateElementBuffer(BufferUsageARB usage, GL api)
+        public PBufferObject<TIndexType> GenerateElementBuffer(BufferUsageARB usage, GL api)
         {
             return new(BufferTargetARB.ElementArrayBuffer, Indices, usage, api);
         }

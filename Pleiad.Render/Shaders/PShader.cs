@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using Pleiad.Render.Handles;
 using Silk.NET.OpenGL;
 
@@ -61,6 +62,16 @@ namespace Pleiad.Render.Shaders
             }
 
             _gl.Uniform1(location, value);
+        }
+        public unsafe void SetUniform(string uniformName, Matrix4x4 value)
+        {
+            int location = _gl.GetUniformLocation(Handle, uniformName);
+            if (location == -1)
+            {
+                throw new ArgumentException($"Uniform \"{uniformName}\" not found on shader.");
+            }
+
+            _gl.UniformMatrix4(location, 1, false, (float*)&value);
         }
 
 

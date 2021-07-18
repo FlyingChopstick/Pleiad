@@ -1,6 +1,6 @@
 ﻿using System;
-using Pleiad.Render.Buffers;
 using Pleiad.Render.Handles;
+using Pleiad.Render.Models;
 using Silk.NET.OpenGL;
 
 namespace Pleiad.Render.Arrays
@@ -9,7 +9,7 @@ namespace Pleiad.Render.Arrays
         where TVertexType : unmanaged
         where TIndexType : unmanaged
     {
-        public PVertexArrayObject(GL api, PVertexBufferObject vbo, PElementBufferObject ebo)
+        public PVertexArrayObject(GL api, PBufferObject<TVertexType> vbo, PBufferObject<TIndexType> ebo)
         {
             _gl = api;
             Handle = new(_gl.GenVertexArray());
