@@ -45,7 +45,8 @@ namespace Pleiad.Worlds
         //    }
         //}
 
-        public static World DefaultWorld { get; } = new();
+        public static World ActiveWorld { get; set; } = null;
+        //public static World DefaultWorld { get; } = new();
 
 
         private EntityManager _em;

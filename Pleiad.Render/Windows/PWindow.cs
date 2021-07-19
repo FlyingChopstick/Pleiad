@@ -15,11 +15,16 @@ namespace Pleiad.Render.Windows
     {
         public delegate bool UpdatedDelegate(double deltaTime);
         public delegate void ClosedDelegate();
+        public delegate void WindowLoadDelegate();
+        public delegate void RenderDelegate(double obj);
 
         public event UpdatedDelegate Updated;
         public event ClosedDelegate Closed;
+        public event WindowLoadDelegate Load;
+        public event RenderDelegate Render;
 
         public bool IsClosing => _window.IsClosing;
+
 
         public PWindow(IPWindowOptions options)
         {
@@ -45,9 +50,9 @@ namespace Pleiad.Render.Windows
         }
         public void Close()
         {
-            _gl.BindBuffer(GLEnum.ArrayBuffer, 0);
+            Api.BindBuffer(GLEnum.ArrayBuffer, 0);
 
-            _sprite.Dispose();
+            //_sprite.Dispose();
             //_vao.Unbind();
             //_shader.Delete();
             //_vbo.Delete();
@@ -68,8 +73,8 @@ namespace Pleiad.Render.Windows
 
 
         private IWindow _window;
-        private PShader _shader;
-        private GL _gl;
+        public PShader Shader { get; set; }
+        public GL Api;
 
         //private PVertexBufferObject _vbo;
         //private PElementBufferObject _ebo;
@@ -138,9 +143,11 @@ namespace Pleiad.Render.Windows
 
 
 
-            _gl = GL.GetApi(_window);
+            Api = GL.GetApi(_window);
 
-            PTexture texture = new(_gl, new(@"Textures/texture.png"));
+            //Load?.Invoke();
+
+            PTexture texture = new(Api, new(@"Textures/texture.png"));
             //vertex shader
             FileContract VertexShaderSource = new("Shaders/shader.vert");
             PShaderSource vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
@@ -148,8 +155,8 @@ namespace Pleiad.Render.Windows
             FileContract FragmentShaderSource = new("Shaders/shader.frag");
             PShaderSource fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
             //merge shaders
-            _shader = new(_gl, vertexShader, fragmentShader);
-            _sprite = new(_gl, PMesh<float, uint>.Quad, texture, _shader);
+            Shader = new(Api, vertexShader, fragmentShader);
+            _sprite = new(Api, PMesh<float, uint>.Quad, texture, Shader);
             _sprite.Load();
 
 
@@ -164,18 +171,20 @@ namespace Pleiad.Render.Windows
         }
         private unsafe void OnRender(double obj)
         {
-            _gl.Clear((uint)ClearBufferMask.ColorBufferBit);
+            Api.Clear((uint)ClearBufferMask.ColorBufferBit);
+
+            //Render?.Invoke(obj);
 
 
-            _sprite.Translate(new(0.5f, 0.0f));
-            _sprite.Rotate(45.0f);
+            //_sprite.Translate(new(0.5f, 0.0f));
+            //_sprite.Rotate(45.0f);
 
-            _sprite.Transform(new()
-            {
-                Position = new(0.5f, 0.0f, 0.0f),
-                Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, PTransform.DegreesToRadians(45.0f)),
-                Scale = 1.2f
-            });
+            //_sprite.Transform(new()
+            //{
+            //    Position = new(0.5f, 0.0f, 0.0f),
+            //    Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, PTransform.DegreesToRadians(45.0f)),
+            //    Scale = 1.2f
+            //});
 
             _sprite.Draw();
 
@@ -184,13 +193,13 @@ namespace Pleiad.Render.Windows
             //    * Matrix4x4.CreateRotationX(PTransform.DegreesToRadians(diff));
             //var model = Matrix4x4.CreateTranslation(_sprite.Position);
             var view = Matrix4x4.CreateLookAt(CameraPosition, CameraTarget, CameraUp);
-            //var projection = Matrix4x4.CreatePerspectiveFieldOfView(PTransform.DegreesToRadians(45.0f), Width / Height, 0.1f, 100.0f);
+            ////var projection = Matrix4x4.CreatePerspectiveFieldOfView(PTransform.DegreesToRadians(45.0f), Width / Height, 0.1f, 100.0f);
             var projection = Matrix4x4.CreateOrthographicOffCenter(-1.0f * Width / Height, 1.0f * Width / Height, -1.0f, 1.0f, 0.1f, 100.0f);
 
-            // the model is set in _sprite.Draw() and therefore does not need to be set here
-            //_shader.SetUniform("uModel", _sprite);
-            _shader.SetUniform("uView", view);
-            _shader.SetUniform("uProjection", projection);
+            //// the model is set in _sprite.Draw() and therefore does not need to be set here
+            ////_shader.SetUniform("uModel", _sprite);
+            Shader.SetUniform("uView", view);
+            Shader.SetUniform("uProjection", projection);
 
 
             //_gl.DrawArrays(PrimitiveType.Triangles, 0, 36);

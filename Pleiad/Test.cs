@@ -1,15 +1,10 @@
-﻿using Pleiad.Entities;
+﻿using System;
 using Pleiad.Entities.Components;
-using Pleiad.Extensions.Files;
 using Pleiad.Input;
-using Pleiad.Misc.Dice;
+using Pleiad.Render.Models;
 using Pleiad.Systems;
 using Pleiad.Tasks;
-using Pleiad.Worlds;
-using System;
-using System.Collections.Generic;
-using System.Media;
-using System.Reflection.Metadata;
+using Silk.NET.Input;
 
 namespace Pleiad
 {
@@ -49,31 +44,8 @@ namespace Pleiad
         }
     }
 
-    public struct TextWriteTask : IPleiadTask
-    {
-        public FileContract file;
-        public string message;
-        public void Run()
-        {
-            file.Write(message);
-        }
-    }
 
-    public class TextWriter
-    {
-        TextWriteTask task = new TextWriteTask 
-        { 
-            message = "Writing in system", 
-            file = new FileContract("text.txt") 
-        };
-        TaskHandle handle;
-
-        public void Cycle(float dTime)
-        {
-            handle = new TaskHandle(task);
-            TaskManager.SetTask(handle);
-        }
-    }
+    
 
 
     public struct SoundComponent : IPleiadComponent

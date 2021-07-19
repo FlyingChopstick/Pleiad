@@ -4,13 +4,17 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Pleiad.Input;
+using Pleiad.Render.Shaders;
 using Pleiad.Render.Windows;
+using Pleiad.Systems.Interfaces;
+using Silk.NET.OpenGL;
 
 namespace Pleiad.Systems
 {
     public class SystemsManager
     {
-        private readonly Dictionary<Type, SystemPack> _systems;
+        private readonly Dictionary<Type, Dictionary<object, MethodInfo>> _systems;
+        private readonly Dictionary<Type, Dictionary<object, MethodInfo[]>> _renderers;
         private static readonly InputListener _il = new InputListener();
         private readonly Stopwatch _sw;
 
@@ -18,10 +22,14 @@ namespace Pleiad.Systems
         private float _currentTime;
 
 
+
         private PWindow _window;
+        public int WindowHeight => _window.Height;
+        public int WindowWidth => _window.Width;
 
         public float DeltaTime { get; private set; }
         public bool ShouldUpdate { get; set; }
+        public GL Api => _window.Api;
 
         //public bool UseInputTable { get => _il.UseInputTable; set { _il.UseInputTable = value; } }
 
@@ -32,9 +40,11 @@ namespace Pleiad.Systems
         {
             try
             {
-                _systems = new Dictionary<Type, SystemPack>();
+                _systems = new Dictionary<Type, Dictionary<object, MethodInfo>>();
+                _renderers = new Dictionary<Type, Dictionary<object, MethodInfo[]>>();
 
                 LoadSystems();
+                LoadRenderers();
                 //RegisterInput();
 
                 //Pause();
@@ -47,6 +57,7 @@ namespace Pleiad.Systems
                 //DeltaTime = 0;
 
                 ShouldUpdate = true;
+
             }
             catch (Exception e)
             {
@@ -72,7 +83,10 @@ namespace Pleiad.Systems
 
             _window = new(options);
             _window.Updated += Update;
+            _window.Load += WindowLoad;
+            _window.Render += Render;
         }
+
         public void AttachWindow()
         {
             _il.AttachToWindow(_window);
@@ -94,6 +108,7 @@ namespace Pleiad.Systems
             }
         }
 
+        public PShader Shader { get => _window.Shader; set => _window.Shader = value; }
 
         ///// <summary>
         ///// Stops the execution and waits for the key press (default: <see cref="Key.Enter"/>)
@@ -134,13 +149,12 @@ namespace Pleiad.Systems
 
         private void LoadSystems()
         {
-            var pleiadNsName = nameof(Pleiad);
             var systemPostfix = "System";
 
 
             Console.WriteLine("Loading Systems");
             List<Type> sysInterfaces = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
-                .Where(x => x.IsInterface && x.Name.Contains(pleiadNsName) && x.Name.Contains(systemPostfix)).ToList();
+                .Where(x => x.IsInterface && x.Name.StartsWith("IPleiad") && x.Name.EndsWith(systemPostfix)).ToList();
 
             foreach (var ISys in sysInterfaces)
             {
@@ -151,6 +165,7 @@ namespace Pleiad.Systems
                 catch (ArgumentException e)
                 {
                     Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
                 }
             }
 
@@ -163,7 +178,10 @@ namespace Pleiad.Systems
               .Where(x => system.IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
               .ToList();
 
-            if (systems.Count == 0) throw new ArgumentException($"Could not find any Systems of type \"{system}\"");
+            if (systems.Count == 0)  //throw new ArgumentException($"Could not find any Systems of type \"{system}\"");
+            {
+                Console.WriteLine($"Could not find any Systems of type \"{system}\"");
+            }
 
             List<object> systemObjBuffer = new List<object>();
             List<MethodInfo> methodBuffer = new List<MethodInfo>();
@@ -172,10 +190,60 @@ namespace Pleiad.Systems
             foreach (var systemType in systems)
             {
                 sysDict[systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { })] = systemType.GetMethod("Cycle");
-                Console.WriteLine($"  | Loaded {systemType}");
+                Console.WriteLine($"    | Loaded {systemType}");
             }
 
-            _systems[system] = new SystemPack(sysDict);
+            _systems[system] = sysDict;
+        }
+
+        private void LoadRenderers()
+        {
+            Console.WriteLine("Loading Renderers");
+            List<Type> sysInterfaces = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
+                .Where(x => x.IsInterface && x.Name.StartsWith("IRender")).ToList();
+
+            for (int i = 0; i < sysInterfaces.Count; i++)
+            {
+                try
+                {
+                    LoadRenderer(sysInterfaces[i]);
+                }
+                catch (ArgumentException e)
+                {
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
+                    throw;
+                }
+            }
+
+            Console.WriteLine("Renderers loaded");
+        }
+        private void LoadRenderer(Type renderType)
+        {
+            List<Type> renderers = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
+                .Where(x => renderType.IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
+                .ToList();
+
+            if (renderers.Count == 0)
+            {
+                Console.WriteLine($"Could not find any Renderers of type \"{renderType}\"");
+            }
+
+            List<object> objBuffer = new(renderers.Count);
+            List<MethodInfo> methodBuffer = new(renderers.Count);
+            Dictionary<object, MethodInfo[]> rendDict = new();
+
+            for (int i = 0; i < renderers.Count; i++)
+            {
+                MethodInfo[] methods = new MethodInfo[2];
+                methods[0] = renderType.GetMethod(nameof(IRenderSystem.Load));
+                methods[1] = renderType.GetMethod(nameof(IRenderSystem.Render));
+                rendDict[renderers[i].GetConstructor(Type.EmptyTypes).Invoke(new object[] { })] = methods;
+
+                Console.WriteLine($"    | Loaded {renderers[i]}");
+            }
+
+            _renderers[renderType] = rendDict;
         }
 
 
@@ -225,8 +293,8 @@ namespace Pleiad.Systems
                 var system = _systems[systemType];
 
 
-                var objEn = system.Systems.Keys.GetEnumerator();
-                var methEn = system.Systems.Values.GetEnumerator();
+                var objEn = system.Keys.GetEnumerator();
+                var methEn = system.Values.GetEnumerator();
                 //Using an iterator over objects and methods
                 while (objEn.MoveNext())
                 {
@@ -245,5 +313,36 @@ namespace Pleiad.Systems
 
             return ShouldUpdate;
         }
+        private void WindowLoad()
+        {
+            foreach (var rendererType in _renderers.Keys)
+            {
+                var objEnum = _renderers[rendererType].Keys.GetEnumerator();
+                var methEnum = _renderers[rendererType].Values.GetEnumerator();
+
+                while (objEnum.MoveNext())
+                {
+                    methEnum.MoveNext();
+
+                    methEnum.Current[0].Invoke(objEnum.Current, null);
+                }
+            }
+        }
+        private void Render(double obj)
+        {
+            foreach (var rendererType in _renderers.Keys)
+            {
+                var objEnum = _renderers[rendererType].Keys.GetEnumerator();
+                var methEnum = _renderers[rendererType].Values.GetEnumerator();
+
+                while (objEnum.MoveNext())
+                {
+                    methEnum.MoveNext();
+
+                    methEnum.Current[1].Invoke(objEnum.Current, new object[] { obj });
+                }
+            }
+        }
+
     }
 }

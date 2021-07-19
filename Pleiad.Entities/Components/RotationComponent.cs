@@ -1,10 +1,12 @@
-﻿namespace Pleiad.Entities.Components
+﻿using System.Numerics;
+
+namespace Pleiad.Entities.Components
 {
     /// <summary>
     /// Basic component for Entity rotation
     /// </summary>
-    struct RotationComponent : IPleiadComponent
+    public struct RotationComponent : IPleiadComponent
     {
-        public float rotationDegree;
+        public Quaternion rotationDegree;
     }
 }
