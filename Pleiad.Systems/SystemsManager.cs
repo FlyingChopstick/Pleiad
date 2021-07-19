@@ -7,6 +7,7 @@ using Pleiad.Input;
 using Pleiad.Render.Shaders;
 using Pleiad.Render.Windows;
 using Pleiad.Systems.Interfaces;
+using Pleiad.Tasks;
 using Silk.NET.OpenGL;
 
 namespace Pleiad.Systems
@@ -311,6 +312,7 @@ namespace Pleiad.Systems
 
             _lastTime = _currentTime;
 
+            //TaskManager.CompleteTasks();
             return ShouldUpdate;
         }
         private void WindowLoad()

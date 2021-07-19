@@ -18,6 +18,7 @@ namespace Pleiad.Render.Models
         private PVertexArrayObject<float, uint> _vao;
         private Queue<PTransform> _transforms = new();
 
+        public Matrix4x4 _viewMatrix;
         public Vector3 Position { get; set; } = new(0.0f);
 
 
@@ -28,6 +29,9 @@ namespace Pleiad.Render.Models
             _mesh = mesh;
             _texture = texture;
             _shader = shader;
+
+            _viewMatrix = Matrix4x4.Identity;
+            _shader.SetUniform("uModel", _viewMatrix);
         }
         public unsafe void Load()
         {
@@ -80,7 +84,8 @@ namespace Pleiad.Render.Models
 
             while (_transforms.Count > 0)
             {
-                _shader.SetUniform("uModel", _transforms.Dequeue().ViewMatrix);
+                _viewMatrix *= _transforms.Dequeue().ViewMatrix;
+                _shader.SetUniform("uModel", _viewMatrix);
             }
             DrawElements();
 

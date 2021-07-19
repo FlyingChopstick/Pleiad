@@ -20,7 +20,7 @@ namespace Pleiad.Tasks
         {
             _taskQueue.Add(Task.Run(handle.Action, handle.Token));
         }
-        public static void SetTask<T>(TaskOnHandle<T> handle) where T : IPleiadComponent
+        public static void SetTask<T>(TaskOnHandle<T> handle, bool readOnly = false) where T : IPleiadComponent
         {
             Type type = typeof(T);
             var datapack = _em.GetTypeData<T>();
@@ -30,16 +30,28 @@ namespace Pleiad.Tasks
             }
 
             var convertedData = datapack.GetConvertedData();
-            var updatedDatapack = new DataPack<T>(datapack.Length);
 
+            if (readOnly)
+            {
+                for (int i = 0; i < datapack.Length; i++)
+                {
+                    for (int j = 0; j < convertedData[i].Length; j++)
+                    {
+                        handle.ActionOn(j, ref convertedData[i]);
+                    }
+                }
+            }
+
+
+            var updatedDatapack = new DataPack<T>(datapack.Length);
             for (int i = 0; i < datapack.Length; i++)
             {
                 var size = datapack.Data[i].Length;
                 T[] arr = new T[size];
-                for (int j = 0; j < convertedData.Length; j++)
+                for (int j = 0; j < convertedData[i].Length; j++)
                 {
                     handle.ActionOn(j, ref convertedData[i]);
-                    arr[i] = convertedData[i][j];
+                    arr[j] = convertedData[i][j];
                 }
 
                 _em.SetDataAt(arr, i);

@@ -11,7 +11,6 @@ using Pleiad.Tasks;
 using Pleiad.Worlds;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
-using Silk.NET.SDL;
 
 public class SpriteEntityAdditionSystem : IPleiadSystem, IRegisterInput
 {
@@ -83,7 +82,7 @@ public class SpriteEntityAdditionSystem : IPleiadSystem, IRegisterInput
 
     private void OnKeyDown(IKeyboard keyboard, Key key, int code)
     {
-        if (key == Key.A)
+        if (key == Key.Y)
         {
             _shouldAdd = true;
         }
@@ -91,7 +90,7 @@ public class SpriteEntityAdditionSystem : IPleiadSystem, IRegisterInput
 
     private void OnKeyUp(IKeyboard keyboard, Key key, int keyCode)
     {
-        if (key == Key.A)
+        if (key == Key.Y)
         {
             _shouldAdd = false;
         }
@@ -103,20 +102,20 @@ public struct SpriteLoadingTask : IPleiadTaskOn<SpriteComponent>
 {
     public void RunOn(int i, ref SpriteComponent[] array)
     {
-        array[i].sprite.Load();
+        if (array[i].sprite is not null)
+        {
+            array[i].sprite.Load(); 
+        }
     }
 }
 public struct SpriteRenderingTask : IPleiadTaskOn<SpriteComponent>
 {
-    //public PShader shader;
-
-
     public void RunOn(int i, ref SpriteComponent[] array)
     {
-        array[i].sprite.Draw();
-
-        // the model is set in _sprite.Draw() and therefore does not need to be set here
-        //_shader.SetUniform("uModel", _sprite);
+        if (array[i].sprite is not null)
+        {
+            array[i].sprite.Draw(); 
+        }
     }
 }
 
@@ -161,7 +160,7 @@ public class SpriteRenderingSystem : IRenderSystem
             return;
         }
 
-        TaskManager.SetTask(new TaskOnHandle<SpriteComponent>(new SpriteRenderingTask()));
+        TaskManager.SetTask(new TaskOnHandle<SpriteComponent>(new SpriteRenderingTask()), true);
 
 
         var view = Matrix4x4.CreateLookAt(CameraPosition, CameraTarget, CameraUp);
@@ -184,8 +183,9 @@ public struct SpriteMovingTask : IPleiadTaskOn<SpriteComponent>
 }
 public class SpriteMovingSystem : IPleiadSystem, IRegisterInput
 {
-    bool shouldTransform = false;
-    PTransform transform = new();
+    static bool shouldTransform = false;
+    static bool isTransformQueued = false;
+    static PTransform transform = new();
 
     public void Cycle(double dTime)
     {
@@ -196,7 +196,9 @@ public class SpriteMovingSystem : IPleiadSystem, IRegisterInput
                 Transformation = transform
             });
 
-            TaskManager.SetTask(handle);
+            TaskManager.SetTask(handle, true);
+            shouldTransform = false;
+            isTransformQueued = false;
         }
     }
 
@@ -208,27 +210,63 @@ public class SpriteMovingSystem : IPleiadSystem, IRegisterInput
 
     private void OnKeyUp(IKeyboard keyboard, Key key, int keyCode)
     {
-        shouldTransform = false;
+        if (key == Key.A || key == Key.D)
+        {
+            if (isTransformQueued) return;
+
+            shouldTransform = false;
+        }
     }
 
     private void OnKeyDown(IKeyboard keyboard, Key key, int code)
     {
-        shouldTransform = true;
         switch (key)
         {
             case Key.A:
                 {
-                    transform.Position = new(-1, 0, 0);
+                    QueueTransform();
+                    transform.Position = new(-0.1f, 0.0f, 0.0f);
                     break;
                 }
             case Key.D:
                 {
-                    transform.Position = new(1, 0, 0);
+                    QueueTransform();
+                    transform.Position = new(0.1f, 0.0f, 0.0f);
+                    break;
+                }
+            case Key.W:
+                {
+                    QueueTransform();
+                    transform.Position = new(0.0f, 0.1f, 0.0f);
+                    break;
+                }
+            case Key.S:
+                {
+                    QueueTransform();
+                    transform.Position = new(0.0f, -0.1f, 0.0f);
+                    break;
+                }
+            case Key.E:
+                {
+                    QueueTransform();
+                    transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, PTransform.DegreesToRadians(22.5f));
+                    break;
+                }
+            case Key.Q:
+                {
+                    QueueTransform();
+                    transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, PTransform.DegreesToRadians(-22.5f));
                     break;
                 }
             default:
                 break;
         }
+    }
+
+    private void QueueTransform()
+    {
+        shouldTransform = true;
+        isTransformQueued = true;
     }
 }
 

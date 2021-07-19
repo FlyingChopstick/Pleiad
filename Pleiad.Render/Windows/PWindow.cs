@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Pleiad.Extensions.Files;
 using Pleiad.Render.ControlEvents;
 using Pleiad.Render.Models;
 using Pleiad.Render.Shaders;
@@ -145,19 +144,19 @@ namespace Pleiad.Render.Windows
 
             Api = GL.GetApi(_window);
 
-            //Load?.Invoke();
+            Load?.Invoke();
 
-            PTexture texture = new(Api, new(@"Textures/texture.png"));
-            //vertex shader
-            FileContract VertexShaderSource = new("Shaders/shader.vert");
-            PShaderSource vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
-            //fragment shader
-            FileContract FragmentShaderSource = new("Shaders/shader.frag");
-            PShaderSource fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
-            //merge shaders
-            Shader = new(Api, vertexShader, fragmentShader);
-            _sprite = new(Api, PMesh<float, uint>.Quad, texture, Shader);
-            _sprite.Load();
+            //PTexture texture = new(Api, new(@"Textures/texture.png"));
+            ////vertex shader
+            //FileContract VertexShaderSource = new("Shaders/shader.vert");
+            //PShaderSource vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
+            ////fragment shader
+            //FileContract FragmentShaderSource = new("Shaders/shader.frag");
+            //PShaderSource fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
+            ////merge shaders
+            //Shader = new(Api, vertexShader, fragmentShader);
+            //_sprite = new(Api, PMesh<float, uint>.Quad, texture, Shader);
+            //_sprite.Load();
 
 
             //_sprite.Transform(new()
@@ -173,7 +172,7 @@ namespace Pleiad.Render.Windows
         {
             Api.Clear((uint)ClearBufferMask.ColorBufferBit);
 
-            //Render?.Invoke(obj);
+            Render?.Invoke(obj);
 
 
             //_sprite.Translate(new(0.5f, 0.0f));
@@ -186,20 +185,20 @@ namespace Pleiad.Render.Windows
             //    Scale = 1.2f
             //});
 
-            _sprite.Draw();
+            //_sprite.Draw();
 
             //var diff = (float)(_window.Time * 100);
             //var model = Matrix4x4.CreateRotationY(PTransform.DegreesToRadians(diff))
             //    * Matrix4x4.CreateRotationX(PTransform.DegreesToRadians(diff));
             //var model = Matrix4x4.CreateTranslation(_sprite.Position);
-            var view = Matrix4x4.CreateLookAt(CameraPosition, CameraTarget, CameraUp);
-            ////var projection = Matrix4x4.CreatePerspectiveFieldOfView(PTransform.DegreesToRadians(45.0f), Width / Height, 0.1f, 100.0f);
-            var projection = Matrix4x4.CreateOrthographicOffCenter(-1.0f * Width / Height, 1.0f * Width / Height, -1.0f, 1.0f, 0.1f, 100.0f);
+            //var view = Matrix4x4.CreateLookAt(CameraPosition, CameraTarget, CameraUp);
+            //////var projection = Matrix4x4.CreatePerspectiveFieldOfView(PTransform.DegreesToRadians(45.0f), Width / Height, 0.1f, 100.0f);
+            //var projection = Matrix4x4.CreateOrthographicOffCenter(-1.0f * Width / Height, 1.0f * Width / Height, -1.0f, 1.0f, 0.1f, 100.0f);
 
-            //// the model is set in _sprite.Draw() and therefore does not need to be set here
-            ////_shader.SetUniform("uModel", _sprite);
-            Shader.SetUniform("uView", view);
-            Shader.SetUniform("uProjection", projection);
+            ////// the model is set in _sprite.Draw() and therefore does not need to be set here
+            //////_shader.SetUniform("uModel", _sprite);
+            //Shader.SetUniform("uView", view);
+            //Shader.SetUniform("uProjection", projection);
 
 
             //_gl.DrawArrays(PrimitiveType.Triangles, 0, 36);
