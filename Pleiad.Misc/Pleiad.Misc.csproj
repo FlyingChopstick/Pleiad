@@ -6,4 +6,8 @@
     <AssemblyName>Pleiad.Misc</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
 </Project>

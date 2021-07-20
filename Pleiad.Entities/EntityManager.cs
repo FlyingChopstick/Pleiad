@@ -225,37 +225,77 @@ namespace Pleiad.Entities
         }
 
 
+
         public DataPack<T> GetTypeData<T>() where T : IPleiadComponent
         {
-            //Dictionary<Type, List<int>> query = _lookup.GetIndices(template.Components);
             Type type = typeof(T);
-            var chunkIndices = _lookup.GetIndices(type);
-            var chunkSizes = new Dictionary<ChunkIndex, int>();
-            List<IPleiadComponent> data = new List<IPleiadComponent>();
-
-            foreach (var index in chunkIndices)
+            if (!_componentChunks.ContainsKey(type))
             {
-                chunkSizes[index] = _componentChunks[type][index].EntityCount;
-                data.AddRange(_componentChunks[type][index].GetAllData());
+                return default;
             }
 
-            return new(chunkIndices, chunkSizes, data.ToArray());
+            int count = _componentChunks[type].Count;
+
+            List<IPleiadComponent[]> chunkData = new(count);
+
+            for (int i = 0; i < count; i++)
+            {
+                chunkData.Add(_componentChunks[type][i].GetAllData());
+            }
+
+            return new(count)
+            {
+                Data = chunkData.ToArray()
+            };
+
         }
+        //public DataPack<T> GetTypeData<T>() where T : IPleiadComponent
+        //{
+        //    for (int i = 0; i < length; i++)
+        //    {
+
+        //    }
+
+        //    ////Dictionary<Type, List<int>> query = _lookup.GetIndices(template.Components);
+        //    //Type type = typeof(T);
+        //    //var chunkIndices = _lookup.GetIndices(type);
+        //    //var chunkSizes = new Dictionary<ChunkIndex, int>();
+        //    //List<IPleiadComponent> data = new List<IPleiadComponent>();
+
+        //    //foreach (var index in chunkIndices)
+        //    //{
+        //    //    chunkSizes[index] = _componentChunks[type][index].EntityCount;
+        //    //    data.AddRange(_componentChunks[type][index].GetAllData());
+        //    //}
+
+        //    //return new(chunkIndices, chunkSizes, data.ToArray());
+        //}
         public void SetTypeData<T>(DataPack<T> data) where T : IPleiadComponent
         {
             Type type = typeof(T);
-            foreach (var index in data.GetChunkIndices())
+            int count = _componentChunks[type].Count;
+            for (int i = 0; i < count; i++)
             {
-                //int chunkSize = data.ChunkSizes[index];
-
-                _componentChunks[type][index].SetAllData(data.GetConvertedData());
+                _componentChunks[type][i].SetAllData(data.Data[i]);
             }
+
+            //Type type = typeof(T);
+            //foreach (var index in data.GetChunkIndices())
+            //{
+            //    //int chunkSize = data.ChunkSizes[index];
+
+            //    _componentChunks[type][index].SetAllData(data.GetConvertedData());
+            //}
         }
-        public void SetTypeDataAt<T>(Payload<T> pack) where T : IPleiadComponent
+        public void SetDataAt<T>(T[] newData, int chIndex) where T : IPleiadComponent
         {
-            Type type = typeof(T);
-            _componentChunks[type][pack.ChunkIndex].SetDataAt(pack.Data);
+            _componentChunks[typeof(T)][chIndex].SetAllData(newData);
         }
+        //public void SetTypeDataAt<T>(Payload<T> pack) where T : IPleiadComponent
+        //{
+        //    Type type = typeof(T);
+        //    _componentChunks[type][pack.ChunkIndex].SetDataAt(pack.Data);
+        //}
 
 
 
@@ -293,6 +333,7 @@ namespace Pleiad.Entities
             }
 
             EntityCount++;
+            Console.WriteLine($"Created Entity ID{_nextID.ID}");
             return new Entity(_nextID++);
         }
         private void MapEntityToType(Entity entity, Type component, ChunkIndex chunkIndex)

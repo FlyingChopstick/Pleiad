@@ -80,14 +80,14 @@ namespace Pleiad.Entities
             return default;
         }
 
-        public List<IPleiadComponent> GetAllData()
+        public IPleiadComponent[] GetAllData()
         {
             //List<T> output = new List<T>(_componentData.Count);
             //foreach (var data in _componentData)
             //{
             //    output.Add((T)Convert.ChangeType(data, ChunkType));
             //}
-            return _componentData;
+            return _componentData.ToArray();
         }
         public void SetAllData<T>(T[] newData) where T : IPleiadComponent
         {

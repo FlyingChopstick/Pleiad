@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Pleiad.Extensions\Pleiad.Extensions.csproj" />
     <ProjectReference Include="..\Pleiad.Misc\Pleiad.Misc.csproj" />
+    <ProjectReference Include="..\Pleiad.Render\Pleiad.Render.csproj" />
   </ItemGroup>
 
 </Project>

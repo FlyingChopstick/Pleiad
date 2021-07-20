@@ -5,8 +5,8 @@ namespace Pleiad.Entities.Components
     /// <summary>
     /// Basic component for Entity rotation
     /// </summary>
-    struct RotationComponent : IPleiadComponent
+    public struct RotationComponent : IPleiadComponent
     {
-        public Quaternion rotation;
+        public Quaternion rotationDegree;
     }
 }

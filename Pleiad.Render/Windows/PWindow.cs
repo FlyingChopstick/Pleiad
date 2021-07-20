@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Pleiad.Render.Arrays;
-using Pleiad.Render.Buffers;
+using System.Numerics;
 using Pleiad.Render.ControlEvents;
 using Pleiad.Render.Models;
 using Pleiad.Render.Shaders;
@@ -11,41 +10,52 @@ using Silk.NET.Windowing;
 
 namespace Pleiad.Render.Windows
 {
-    public class PWindow : IDisposable
+    public sealed class PWindow : IDisposable
     {
         public delegate bool UpdatedDelegate(double deltaTime);
         public delegate void ClosedDelegate();
+        public delegate void WindowLoadDelegate();
+        public delegate void RenderDelegate(double obj);
 
         public event UpdatedDelegate Updated;
         public event ClosedDelegate Closed;
+        public event WindowLoadDelegate Load;
+        public event RenderDelegate Render;
 
         public bool IsClosing => _window.IsClosing;
+
 
         public PWindow(IPWindowOptions options)
         {
             _window = Window.Create(options.SilkOptions);
+            UpdateDimensions();
 
             _window.Load += OnLoad;
             _window.Render += OnRender;
             _window.Update += OnUpdate;
             _window.Closing += OnClose;
+            _window.Resize += OnResize;
 
             MouseEvents = new();
             GamepadEvents = new();
             KeyboardEvents = new();
         }
+
+
+
         public void Run()
         {
             _window.Run();
         }
         public void Close()
         {
-            _gl.BindBuffer(GLEnum.ArrayBuffer, 0);
+            Api.BindBuffer(GLEnum.ArrayBuffer, 0);
 
-            _vao.Unbind();
-            _shader.Delete();
-            _vbo.Delete();
-            _vao.Delete();
+            //_sprite.Dispose();
+            //_vao.Unbind();
+            //_shader.Delete();
+            //_vbo.Delete();
+            //_vao.Delete();
 
 
             _window.Close();
@@ -53,6 +63,8 @@ namespace Pleiad.Render.Windows
         }
 
 
+        public int Width { get; private set; }
+        public int Height { get; private set; }
         public MouseEvents MouseEvents { get; }
         public GamepadEvents GamepadEvents { get; }
         public KeyboardEvents KeyboardEvents { get; }
@@ -60,62 +72,68 @@ namespace Pleiad.Render.Windows
 
 
         private IWindow _window;
-        private IInputContext _input;
-        private GL _gl;
+        public PShader Shader { get; set; }
+        public GL Api;
 
-        private VertexBuffer _vbo;
-        private ElementBuffer _ebo;
-        private PVertexArray _vao;
-        private MergedShader _shader;
+        //private PVertexBufferObject _vbo;
+        //private PElementBufferObject _ebo;
+        //private PVertexArrayObject<float, uint> _vao;
+        //private PShader _shader;
 
-        private bool _disposedValue;
 
-        //Vertex shaders are run on each vertex.
-        private static readonly string VertexShaderSource = @"
-        #version 330 core //Using version GLSL version 3.3
-        layout (location = 0) in vec4 vPos;
-        
-        void main()
-        {
-            gl_Position = vec4(vPos.x, vPos.y, vPos.z, 1.0);
-        }
-        ";
+        ////Vertex shaders are run on each vertex.
+        //private static readonly string VertexShaderSource = @"
+        //#version 330 core //Using version GLSL version 3.3
+        //layout (location = 0) in vec4 vPos;
 
-        //Fragment shaders are run on each fragment/pixel of the geometry.
-        private static readonly string FragmentShaderSource = @"
-        #version 330 core
-        out vec4 FragColor;
+        //void main()
+        //{
+        //    gl_Position = vec4(vPos.x, vPos.y, vPos.z, 1.0);
+        //}
+        //";
 
-        void main()
-        {
-            FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-        }
-        ";
+        ////Fragment shaders are run on each fragment/pixel of the geometry.
+        //private static readonly string FragmentShaderSource = @"
+        //#version 330 core
+        //out vec4 FragColor;
 
-        private readonly PMesh _mesh = new()
-        {
-            //Vertex data, uploaded to the VBO.
-            Vertices = new float[]
-            {
-                //X    Y      Z
-                 0.5f,  0.5f, 0.0f,
-                 0.5f, -0.5f, 0.0f,
-                -0.5f, -0.5f, 0.0f,
-                -0.5f,  0.5f, 0.5f,
-                 0.0f,  1,0f, 0.0f
-            },
-            //Index data, uploaded to the EBO.
-            Indices = new uint[]
-            {
-                0, 1, 3,
-                1, 2, 3,
-                0, 3, 4
-            }
-        };
+        //void main()
+        //{
+        //    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+        //}
+        //";
 
+        //private readonly PMesh _mesh = new()
+        //{
+        //    //Vertex data, uploaded to the VBO.
+        //    Vertices = new float[]
+        //    {
+        //        //X    Y      Z
+        //         0.5f,  0.5f, 0.0f,
+        //         0.5f, -0.5f, 0.0f,
+        //        -0.5f, -0.5f, 0.0f,
+        //        -0.5f,  0.5f, 0.5f,
+        //         0.0f,  1,0f, 0.0f
+        //    },
+        //    //Index data, uploaded to the EBO.
+        //    Indices = new uint[]
+        //    {
+        //        0, 1, 3,
+        //        1, 2, 3,
+        //        0, 3, 4
+        //    }
+        //};
+
+        PSprite _sprite;
+        //Setup the camera's location, and relative up and right directions
+        private static Vector3 CameraPosition = new Vector3(0.0f, 0.0f, 3.0f);
+        private static Vector3 CameraTarget = Vector3.Zero;
+        private static Vector3 CameraDirection = Vector3.Normalize(CameraPosition - CameraTarget);
+        private static Vector3 CameraRight = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, CameraDirection));
+        private static Vector3 CameraUp = Vector3.Cross(CameraDirection, CameraRight);
         private unsafe void OnLoad()
         {
-            _input = _window.CreateInput();
+            IInputContext _input = _window.CreateInput();
             _input.ConnectionChanged += ConnectInput;
 
             //ConnectDevices(_input.Gamepads);
@@ -124,30 +142,67 @@ namespace Pleiad.Render.Windows
 
 
 
-            _gl = GL.GetApi(_window);
+            Api = GL.GetApi(_window);
 
-            _vao = new(_gl);
-            _vao.Bind();
+            Load?.Invoke();
 
-            //vertex buffer
-            _vbo = _mesh.GenerateVertexBuffer(BufferUsageARB.StaticDraw, _gl);
-            _vbo.Bind();
+            //PTexture texture = new(Api, new(@"Textures/texture.png"));
+            ////vertex shader
+            //FileContract VertexShaderSource = new("Shaders/shader.vert");
+            //PShaderSource vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
+            ////fragment shader
+            //FileContract FragmentShaderSource = new("Shaders/shader.frag");
+            //PShaderSource fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
+            ////merge shaders
+            //Shader = new(Api, vertexShader, fragmentShader);
+            //_sprite = new(Api, PMesh<float, uint>.Quad, texture, Shader);
+            //_sprite.Load();
 
-            //element buffer
-            _ebo = _mesh.GenerateElementBuffer(BufferUsageARB.StaticDraw, _gl);
-            _ebo.Bind();
 
-            //vertex shader
-            PShader vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
-            //fragment shader
-            PShader fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
-            //merge shaders
-            _shader = new(vertexShader, fragmentShader, _gl);
-
-            _gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), null);
-            _gl.EnableVertexAttribArray(0);
+            //_sprite.Transform(new()
+            //{
+            //    Position = new(0.5f, 0.0f, 0.0f)
+            //});
+            //_sprite.Transform(new()
+            //{
+            //    Scale = 0.5f
+            //});
         }
+        private unsafe void OnRender(double obj)
+        {
+            Api.Clear((uint)ClearBufferMask.ColorBufferBit);
 
+            Render?.Invoke(obj);
+
+
+            //_sprite.Translate(new(0.5f, 0.0f));
+            //_sprite.Rotate(45.0f);
+
+            //_sprite.Transform(new()
+            //{
+            //    Position = new(0.5f, 0.0f, 0.0f),
+            //    Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, PTransform.DegreesToRadians(45.0f)),
+            //    Scale = 1.2f
+            //});
+
+            //_sprite.Draw();
+
+            //var diff = (float)(_window.Time * 100);
+            //var model = Matrix4x4.CreateRotationY(PTransform.DegreesToRadians(diff))
+            //    * Matrix4x4.CreateRotationX(PTransform.DegreesToRadians(diff));
+            //var model = Matrix4x4.CreateTranslation(_sprite.Position);
+            //var view = Matrix4x4.CreateLookAt(CameraPosition, CameraTarget, CameraUp);
+            //////var projection = Matrix4x4.CreatePerspectiveFieldOfView(PTransform.DegreesToRadians(45.0f), Width / Height, 0.1f, 100.0f);
+            //var projection = Matrix4x4.CreateOrthographicOffCenter(-1.0f * Width / Height, 1.0f * Width / Height, -1.0f, 1.0f, 0.1f, 100.0f);
+
+            ////// the model is set in _sprite.Draw() and therefore does not need to be set here
+            //////_shader.SetUniform("uModel", _sprite);
+            //Shader.SetUniform("uView", view);
+            //Shader.SetUniform("uProjection", projection);
+
+
+            //_gl.DrawArrays(PrimitiveType.Triangles, 0, 36);
+        }
 
         private void ConnectDevices<T>(IReadOnlyCollection<T> devices) where T : IInputDevice
         {
@@ -251,15 +306,15 @@ namespace Pleiad.Render.Windows
         }
 
 
-        private unsafe void OnRender(double obj)
+
+        private void OnResize(Silk.NET.Maths.Vector2D<int> obj)
         {
-            _gl.Clear((uint)ClearBufferMask.ColorBufferBit);
-
-            _vao.Bind();
-
-            _shader.Use();
-
-            _gl.DrawElements(PrimitiveType.Triangles, (uint)_mesh.Indices.Length, DrawElementsType.UnsignedInt, null);
+            UpdateDimensions();
+        }
+        private void UpdateDimensions()
+        {
+            Width = _window.Size.X;
+            Height = _window.Size.Y;
         }
         private void OnUpdate(double deltaTime)
         {
@@ -270,24 +325,11 @@ namespace Pleiad.Render.Windows
             Closed?.Invoke();
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    _window.Dispose();
-                }
 
-                _window = null;
-                _disposedValue = true;
-            }
-        }
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            //_sprite.Dispose();
+            _window.Dispose();
         }
     }
 }

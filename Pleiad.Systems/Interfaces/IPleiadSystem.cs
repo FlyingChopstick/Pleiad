@@ -1,4 +1,4 @@
-﻿namespace Pleiad.Systems
+﻿namespace Pleiad.Systems.Interfaces
 {
     public interface IPleiadSystem
     {
