@@ -7,31 +7,31 @@ using Silk.NET.OpenGL;
 
 namespace Pleiad.Render.Models
 {
-    public sealed class PSprite : IDisposable
+    public sealed class PSprite : IDisposable, IRenderable
     {
         private readonly GL _gl;
         private readonly PTexture _texture;
-        private readonly PShader _shader;
+        //private readonly PShader _shader;
         private readonly PMesh<float, uint> _mesh;
         private PBufferObject<float> _vbo;
         private PBufferObject<uint> _ebo;
         private PVertexArrayObject<float, uint> _vao;
         private Queue<PTransform> _transforms = new();
 
-        public Matrix4x4 _viewMatrix;
+        public Matrix4x4 ViewMatrix;
         public Vector3 Position { get; set; } = new(0.0f);
 
 
-        public PSprite(GL api, PMesh<float, uint> mesh, PTexture texture, PShader shader)
+        public PSprite(GL api, PMesh<float, uint> mesh, PTexture texture)
         {
             _gl = api;
 
             _mesh = mesh;
             _texture = texture;
-            _shader = shader;
+            //_shader = shader;
 
-            _viewMatrix = Matrix4x4.Identity;
-            _shader.SetUniform("uModel", _viewMatrix);
+            ViewMatrix = Matrix4x4.Identity;
+            //_shader.SetUniform("uModel", ViewMatrix);
         }
         public unsafe void Load()
         {
@@ -74,40 +74,31 @@ namespace Pleiad.Render.Models
         }
 
 
-        public unsafe void Draw()
+        public unsafe void Draw(PShader shader)
         {
             _vao.Bind();
-            _shader.Use();
+            shader.Use();
             _texture.Bind();
-            _shader.SetUniform("uTexture0", 0);
+            shader.SetUniform("uTexture0", 0);
 
 
             while (_transforms.Count > 0)
             {
-                _viewMatrix *= _transforms.Dequeue().ViewMatrix;
-                _shader.SetUniform("uModel", _viewMatrix);
+                ViewMatrix *= _transforms.Dequeue().ViewMatrix;
+                shader.SetUniform("uModel", ViewMatrix);
             }
             DrawElements();
-
-            //if (_transforms.Count != 0)
-            //{
-            //    ApplyTransforms();
-            //}
-            //else
-            //{
-            //    DrawElements();
-            //}
         }
 
 
-        private unsafe void ApplyTransforms()
-        {
-            while (_transforms.Count > 0)
-            {
-                _shader.SetUniform("uModel", _transforms.Dequeue().ViewMatrix);
-                DrawElements();
-            }
-        }
+        //private unsafe void ApplyTransforms(PShader shader)
+        //{
+        //    while (_transforms.Count > 0)
+        //    {
+        //        shader.SetUniform("uModel", _transforms.Dequeue().ViewMatrix);
+        //        DrawElements();
+        //    }
+        //}
         private unsafe void DrawElements()
         {
             _gl.DrawElements(
@@ -121,7 +112,7 @@ namespace Pleiad.Render.Models
             _vbo.Dispose();
             _ebo.Dispose();
             _vao.Dispose();
-            _shader.Dispose();
+            //_shader.Dispose();
             _texture.Dispose();
         }
     }

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
+using Pleiad.Extensions.Files;
 using Pleiad.Input;
+using Pleiad.Render;
 using Pleiad.Render.Shaders;
 using Pleiad.Render.Windows;
 using Pleiad.Systems.Interfaces;
@@ -14,25 +16,18 @@ namespace Pleiad.Systems
 {
     public class SystemsManager
     {
-        private readonly Dictionary<Type, Dictionary<object, MethodInfo>> _systems;
-        private readonly Dictionary<Type, Dictionary<object, MethodInfo[]>> _renderers;
-        private static readonly InputListener _il = new InputListener();
-        private readonly Stopwatch _sw;
 
-        private float _lastTime;
-        private float _currentTime;
+        public bool ShouldUpdate { get; set; }
 
 
-
+        public GL Api => _window.Api;
         private PWindow _window;
         public int WindowHeight => _window.Height;
         public int WindowWidth => _window.Width;
+        //public PShader Shader { get => _window.Shader; set => _window.Shader = value; }
 
-        public float DeltaTime { get; private set; }
-        public bool ShouldUpdate { get; set; }
-        public GL Api => _window.Api;
-
-        //public bool UseInputTable { get => _il.UseInputTable; set { _il.UseInputTable = value; } }
+        public Matrix4x4 CameraMatrix { get => _window.CameraMatrix; set => _window.CameraMatrix = value; }
+        public Matrix4x4 ProjectionMatrix { get => _window.ProjectionMatrix; set => _window.ProjectionMatrix = value; }
 
         /// <summary>
         /// Constructor, tries to load all Systems in the namespace and sets up initial values
@@ -46,16 +41,6 @@ namespace Pleiad.Systems
 
                 LoadSystems();
                 LoadRenderers();
-                //RegisterInput();
-
-                //Pause();
-
-
-                _sw = new Stopwatch();
-                _sw.Start();
-                _lastTime = 0;
-                _currentTime = 0;
-                //DeltaTime = 0;
 
                 ShouldUpdate = true;
 
@@ -69,20 +54,9 @@ namespace Pleiad.Systems
         }
 
 
-        public void CreateWindow()
+        public void CreateWindow(PWindowOptions options, Matrix4x4 cameraMatrix, Matrix4x4 projectionMatrix)
         {
-            PWindowOptions options = new()
-            {
-                Title = "Test Rectangle",
-                Resolution = new()
-                {
-                    Width = 1280,
-                    Height = 720
-                },
-                VSync = false
-            };
-
-            _window = new(options);
+            _window = new(options, cameraMatrix, projectionMatrix);
             _window.Updated += Update;
             _window.Load += WindowLoad;
             _window.Render += Render;
@@ -109,7 +83,6 @@ namespace Pleiad.Systems
             }
         }
 
-        public PShader Shader { get => _window.Shader; set => _window.Shader = value; }
 
         ///// <summary>
         ///// Stops the execution and waits for the key press (default: <see cref="Key.Enter"/>)
@@ -201,7 +174,7 @@ namespace Pleiad.Systems
         {
             Console.WriteLine("Loading Renderers");
             List<Type> sysInterfaces = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
-                .Where(x => x.IsInterface && x.Name.StartsWith("IRender")).ToList();
+                .Where(x => x.IsInterface && x.Name.StartsWith("IRender") && x.Name.EndsWith("System")).ToList();
 
             for (int i = 0; i < sysInterfaces.Count; i++)
             {
@@ -275,6 +248,11 @@ namespace Pleiad.Systems
             method.Invoke(summoner, args);
         }
 
+        //public void DrawSprite(PSprite sprite)
+        //{
+        //    Shader.SetUniform("uModel", sprite.ViewMatrix);
+        //    sprite.Draw(Shader);
+        //}
 
 
         /// <summary>
@@ -283,12 +261,6 @@ namespace Pleiad.Systems
         /// <returns></returns>
         public bool Update(double deltaTime)
         {
-            //_il.ReadKeys();
-
-            //Update the time
-            //_currentTime = (float)_sw.Elapsed.TotalMilliseconds;
-            //DeltaTime = _currentTime - _lastTime;
-
             foreach (var systemType in _systems.Keys)
             {
                 var system = _systems[systemType];
@@ -310,13 +282,12 @@ namespace Pleiad.Systems
 
             }
 
-            _lastTime = _currentTime;
-
-            //TaskManager.CompleteTasks();
+            TaskManager.CompleteTasks();
             return ShouldUpdate;
         }
         private void WindowLoad()
         {
+            PleiadRenderer.Shader = CompileShader();
             foreach (var rendererType in _renderers.Keys)
             {
                 var objEnum = _renderers[rendererType].Keys.GetEnumerator();
@@ -330,6 +301,19 @@ namespace Pleiad.Systems
                 }
             }
         }
+        private PShader CompileShader()
+        {
+            // shaders
+            //vertex shader
+            FileContract VertexShaderSource = new("Shaders/shader.vert");
+            PShaderSource vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
+            //fragment shader
+            FileContract FragmentShaderSource = new("Shaders/shader.frag");
+            PShaderSource fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
+            // shader
+            return new(Api, vertexShader, fragmentShader);
+        }
+
         private void Render(double obj)
         {
             foreach (var rendererType in _renderers.Keys)
@@ -346,5 +330,10 @@ namespace Pleiad.Systems
             }
         }
 
+
+
+        private readonly Dictionary<Type, Dictionary<object, MethodInfo>> _systems;
+        private readonly Dictionary<Type, Dictionary<object, MethodInfo[]>> _renderers;
+        private static readonly InputListener _il = new();
     }
 }

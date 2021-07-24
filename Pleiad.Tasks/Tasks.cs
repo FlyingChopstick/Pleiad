@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Pleiad.Entities;
 using Pleiad.Entities.Components;
@@ -35,39 +36,87 @@ namespace Pleiad.Tasks
             {
                 for (int i = 0; i < datapack.Length; i++)
                 {
-                    for (int j = 0; j < convertedData[i].Length; j++)
+                    var index = i;
+                    _taskOnQueue.Add(Task.Run(() =>
                     {
-                        handle.ActionOn(j, ref convertedData[i]);
-                    }
+                        lock (convertedData[index])
+                        {
+                            for (int j = 0; j < convertedData[index].Length; j++)
+                            {
+                                handle.ActionOn(j, ref convertedData[index]);
+                            }
+                        }
+                    }));
                 }
+
+                return;
             }
 
 
             var updatedDatapack = new DataPack<T>(datapack.Length);
             for (int i = 0; i < datapack.Length; i++)
             {
-                var size = datapack.Data[i].Length;
-                T[] arr = new T[size];
-                for (int j = 0; j < convertedData[i].Length; j++)
+                _taskOnQueue.Add(Task.Run(() =>
                 {
-                    handle.ActionOn(j, ref convertedData[i]);
-                    arr[j] = convertedData[i][j];
-                }
+                    int currentIndex = i;
+                    var size = datapack.Data[currentIndex].Length;
+                    T[] arr = new T[size];
+                    for (int j = 0; j < convertedData[currentIndex].Length; j++)
+                    {
+                        handle.ActionOn(j, ref convertedData[currentIndex]);
+                        arr[j] = convertedData[currentIndex][j];
+                    }
 
-                _em.SetDataAt(arr, i);
-                //_taskOnQueue.Add(Task.Run(() =>
-                //{
-                //    var size = datapack.Data[cIndex].Length;
-                //    T[] arr = new T[size];
-                //    for (int j = 0; j < convertedData.Length; j++)
-                //    {
-                //        handle.ActionOn(j, ref convertedData[cIndex]);
-                //        arr[cIndex] = convertedData[cIndex][j];
-                //    }
-
-                //    _em.SetDataAt(arr, cIndex);
-                //}));
+                    _em.SetDataAt(arr, currentIndex);
+                }));
             }
+
+
+
+            //Parallel.For(0, datapack.Length, a =>
+            //{
+            //    int currentIndex = a;
+            //    var size = datapack.Data[currentIndex].Length;
+            //    T[] arr = new T[size];
+            //    for (int j = 0; j < convertedData[currentIndex].Length; j++)
+            //    {
+            //        handle.ActionOn(j, ref convertedData[currentIndex]);
+            //        arr[j] = convertedData[currentIndex][j];
+            //    }
+
+            //    _em.SetDataAt(arr, currentIndex);
+            //});
+            //for (int i = 0; i < datapack.Length; i++)
+            //{
+            //    int currentIndex = i;
+            //    _taskOnQueue.Add(Task.Run(() =>
+            //    {
+            //        lock (datapack.Data[currentIndex])
+            //        {
+            //            var size = datapack.Data[currentIndex].Length;
+            //            T[] arr = new T[size];
+            //            for (int j = 0; j < convertedData[currentIndex].Length; j++)
+            //            {
+            //                handle.ActionOn(j, ref convertedData[currentIndex]);
+            //                arr[j] = convertedData[currentIndex][j];
+            //            }
+
+            //            _em.SetDataAt(arr, currentIndex);
+            //        }
+            //    }));
+            //    //_taskOnQueue.Add(Task.Run(() =>
+            //    //{
+            //    //    var size = datapack.Data[cIndex].Length;
+            //    //    T[] arr = new T[size];
+            //    //    for (int j = 0; j < convertedData.Length; j++)
+            //    //    {
+            //    //        handle.ActionOn(j, ref convertedData[cIndex]);
+            //    //        arr[cIndex] = convertedData[cIndex][j];
+            //    //    }
+
+            //    //    _em.SetDataAt(arr, cIndex);
+            //    //}));
+            //}
 
 
             //var dataPack = _em.GetTypeData<T>();
@@ -99,16 +148,37 @@ namespace Pleiad.Tasks
             //}
         }
 
+        public static void SetRenderTask<T>(RenderTaskHandle<T> handle) where T : IPleiadComponent
+        {
+            var datapack = _em.GetTypeData<T>();
+            if (datapack.Data is null)
+            {
+                return;
+            }
+
+            var convertedData = datapack.GetConvertedData().Where(x => x is not null).ToArray();
+
+            for (int i = 0; i < datapack.Length; i++)
+            {
+                for (int j = 0; j < convertedData[i].Length; j++)
+                {
+                    handle.DrawingAction(j, ref convertedData[i]);
+                }
+            }
+
+            return;
+        }
+
         public static void CompleteTasks()
         {
             try
             {
-                int count = _taskQueue.Count + _taskOnQueue.Count;
+                //int count = _taskQueue.Count + _taskOnQueue.Count;
 
                 Task.WaitAll(_taskQueue.ToArray());
-                Console.WriteLine($"{_taskQueue.Count} simple tasks completed");
+                //Console.WriteLine($"{_taskQueue.Count} simple tasks completed");
                 Task.WaitAll(_taskOnQueue.ToArray());
-                Console.WriteLine($"{_taskOnQueue.Count} tasks on arrays completed");
+                //Console.WriteLine($"{_taskOnQueue.Count} tasks on arrays completed");
 
                 _taskQueue.Clear();
                 _taskOnQueue.Clear();
