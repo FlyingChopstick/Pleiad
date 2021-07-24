@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using Pleiad.Tasks.Interfaces;
 
 namespace Pleiad.Tasks
 {
@@ -7,20 +8,13 @@ namespace Pleiad.Tasks
         public TaskOnHandle(IPleiadTaskOn<T> task)
         {
             ActionOn = task.RunOn;
-            Source = new CancellationTokenSource();
-            Token = Source.Token;
+            TokenSource = new CancellationTokenSource();
         }
 
-        public ActionOnDelegate ActionOn { get; }
-        public CancellationToken Token { get; }
-        public CancellationTokenSource Source { get; }
-
-
-        public delegate void ActionOnDelegate(int index, ref T[] array);
+        public ActionOnDelegate<T> ActionOn { get; }
+        public CancellationToken Token { get => TokenSource.Token; }
+        public CancellationTokenSource TokenSource { get; }
     }
-
-
-    public delegate void ActionRef<T, D>(int index, D[] array);
 }
 
 

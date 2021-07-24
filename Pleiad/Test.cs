@@ -1,10 +1,6 @@
 ﻿using System;
 using Pleiad.Entities.Components;
-using Pleiad.Input;
-using Pleiad.Render.Models;
-using Pleiad.Systems;
-using Pleiad.Tasks;
-using Silk.NET.Input;
+using Pleiad.Tasks.Interfaces;
 
 namespace Pleiad
 {

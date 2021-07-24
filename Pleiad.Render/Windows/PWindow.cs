@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Numerics;
 using Pleiad.Render.ControlEvents;
-using Pleiad.Render.Models;
 using Pleiad.Render.Shaders;
 using Silk.NET.Input;
+using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 
@@ -22,10 +22,8 @@ namespace Pleiad.Render.Windows
         public event WindowLoadDelegate Load;
         public event RenderDelegate Render;
 
-        public bool IsClosing => _window.IsClosing;
 
-
-        public PWindow(IPWindowOptions options)
+        public PWindow(IPWindowOptions options, Matrix4x4 cameraMatrix, Matrix4x4 projectionMatrix)
         {
             _window = Window.Create(options.SilkOptions);
             UpdateDimensions();
@@ -36,10 +34,34 @@ namespace Pleiad.Render.Windows
             _window.Closing += OnClose;
             _window.Resize += OnResize;
 
+            _cameraMatrix = cameraMatrix;
+            _projectionMatrix = projectionMatrix;
+
             MouseEvents = new();
             GamepadEvents = new();
             KeyboardEvents = new();
         }
+
+
+        public GL Api;
+        public PShader Shader { get; set; }
+        public bool IsClosing => _window.IsClosing;
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+        public MouseEvents MouseEvents { get; }
+        public GamepadEvents GamepadEvents { get; }
+        public KeyboardEvents KeyboardEvents { get; }
+        public Matrix4x4 CameraMatrix
+        {
+            get { return _cameraMatrix; }
+            set { _cameraMatrix = value; }
+        }
+        public Matrix4x4 ProjectionMatrix
+        {
+            get { return _projectionMatrix; }
+            set { _projectionMatrix = value; }
+        }
+
 
 
 
@@ -63,74 +85,13 @@ namespace Pleiad.Render.Windows
         }
 
 
-        public int Width { get; private set; }
-        public int Height { get; private set; }
-        public MouseEvents MouseEvents { get; }
-        public GamepadEvents GamepadEvents { get; }
-        public KeyboardEvents KeyboardEvents { get; }
+
+        private readonly IWindow _window;
+
+        private Matrix4x4 _cameraMatrix;
+        private Matrix4x4 _projectionMatrix;
 
 
-
-        private IWindow _window;
-        public PShader Shader { get; set; }
-        public GL Api;
-
-        //private PVertexBufferObject _vbo;
-        //private PElementBufferObject _ebo;
-        //private PVertexArrayObject<float, uint> _vao;
-        //private PShader _shader;
-
-
-        ////Vertex shaders are run on each vertex.
-        //private static readonly string VertexShaderSource = @"
-        //#version 330 core //Using version GLSL version 3.3
-        //layout (location = 0) in vec4 vPos;
-
-        //void main()
-        //{
-        //    gl_Position = vec4(vPos.x, vPos.y, vPos.z, 1.0);
-        //}
-        //";
-
-        ////Fragment shaders are run on each fragment/pixel of the geometry.
-        //private static readonly string FragmentShaderSource = @"
-        //#version 330 core
-        //out vec4 FragColor;
-
-        //void main()
-        //{
-        //    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-        //}
-        //";
-
-        //private readonly PMesh _mesh = new()
-        //{
-        //    //Vertex data, uploaded to the VBO.
-        //    Vertices = new float[]
-        //    {
-        //        //X    Y      Z
-        //         0.5f,  0.5f, 0.0f,
-        //         0.5f, -0.5f, 0.0f,
-        //        -0.5f, -0.5f, 0.0f,
-        //        -0.5f,  0.5f, 0.5f,
-        //         0.0f,  1,0f, 0.0f
-        //    },
-        //    //Index data, uploaded to the EBO.
-        //    Indices = new uint[]
-        //    {
-        //        0, 1, 3,
-        //        1, 2, 3,
-        //        0, 3, 4
-        //    }
-        //};
-
-        PSprite _sprite;
-        //Setup the camera's location, and relative up and right directions
-        private static Vector3 CameraPosition = new Vector3(0.0f, 0.0f, 3.0f);
-        private static Vector3 CameraTarget = Vector3.Zero;
-        private static Vector3 CameraDirection = Vector3.Normalize(CameraPosition - CameraTarget);
-        private static Vector3 CameraRight = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, CameraDirection));
-        private static Vector3 CameraUp = Vector3.Cross(CameraDirection, CameraRight);
         private unsafe void OnLoad()
         {
             IInputContext _input = _window.CreateInput();
@@ -168,6 +129,10 @@ namespace Pleiad.Render.Windows
             //    Scale = 0.5f
             //});
         }
+        private void OnUpdate(double deltaTime)
+        {
+            Updated?.Invoke(deltaTime);
+        }
         private unsafe void OnRender(double obj)
         {
             Api.Clear((uint)ClearBufferMask.ColorBufferBit);
@@ -203,6 +168,15 @@ namespace Pleiad.Render.Windows
 
             //_gl.DrawArrays(PrimitiveType.Triangles, 0, 36);
         }
+        private void OnResize(Vector2D<int> obj)
+        {
+            UpdateDimensions();
+        }
+        private void OnClose()
+        {
+            Closed?.Invoke();
+        }
+
 
         private void ConnectDevices<T>(IReadOnlyCollection<T> devices) where T : IInputDevice
         {
@@ -243,7 +217,6 @@ namespace Pleiad.Render.Windows
                 Console.WriteLine("Unknown input device detected");
             }
         }
-
         private void ConnectMouse(bool isConnected, string connectionState, IMouse mouse)
         {
             Console.WriteLine($"Mouse {mouse.Index} {connectionState}");
@@ -306,23 +279,10 @@ namespace Pleiad.Render.Windows
         }
 
 
-
-        private void OnResize(Silk.NET.Maths.Vector2D<int> obj)
-        {
-            UpdateDimensions();
-        }
         private void UpdateDimensions()
         {
             Width = _window.Size.X;
             Height = _window.Size.Y;
-        }
-        private void OnUpdate(double deltaTime)
-        {
-            Updated?.Invoke(deltaTime);
-        }
-        private void OnClose()
-        {
-            Closed?.Invoke();
         }
 
 

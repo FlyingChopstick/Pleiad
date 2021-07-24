@@ -2,12 +2,12 @@ using System;
 using System.Numerics;
 using Pleiad.Entities;
 using Pleiad.Entities.Components;
-using Pleiad.Extensions.Files;
 using Pleiad.Input;
+using Pleiad.Render;
 using Pleiad.Render.Models;
-using Pleiad.Render.Shaders;
 using Pleiad.Systems.Interfaces;
 using Pleiad.Tasks;
+using Pleiad.Tasks.Interfaces;
 using Pleiad.Worlds;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
@@ -15,11 +15,10 @@ using Silk.NET.OpenGL;
 public class SpriteEntityAdditionSystem : IPleiadSystem, IRegisterInput
 {
     static bool _shouldAdd = false;
-    static bool _isLoaded = false;
 
     static GL _gl;
     static PTexture _texture;
-    static PShader _shader;
+    //static PShader _shader;
     static PSprite _sprite;
     static EntityTemplate _template;
 
@@ -28,12 +27,10 @@ public class SpriteEntityAdditionSystem : IPleiadSystem, IRegisterInput
     {
         if (_shouldAdd)
         {
-            if (!_isLoaded)
-            {
-                LoadTemplate();
-            }
+            LoadTemplate();
 
             World.ActiveWorld.EntityManager.AddEntity(_template);
+            _shouldAdd = false;
         }
     }
 
@@ -43,21 +40,10 @@ public class SpriteEntityAdditionSystem : IPleiadSystem, IRegisterInput
 
         // texture
         _texture = new(_gl, new(@"Textures/texture.png"));
-
-        // shaders
-        //vertex shader
-        FileContract VertexShaderSource = new("Shaders/shader.vert");
-        PShaderSource vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
-        //fragment shader
-        FileContract FragmentShaderSource = new("Shaders/shader.frag");
-        PShaderSource fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
-        // shader
-        _shader = new(_gl, vertexShader, fragmentShader);
-        World.ActiveWorld.SystemsManager.Shader = _shader;
-
         // sprite
-        _sprite = new(_gl, PMesh<float, uint>.Quad, _texture, _shader);
+        _sprite = new(_gl, PMesh<float, uint>.Quad, _texture);
         _sprite.Load();
+        //_sprite.Translate(new(0.0f, 0.0f));
 
         _template =
             new EntityTemplate(
@@ -74,25 +60,18 @@ public class SpriteEntityAdditionSystem : IPleiadSystem, IRegisterInput
                 });
     }
 
+
+
     public void InputRegistration(ref InputListener listener)
     {
-        listener.KeyboardEvents.OnKeyDown += OnKeyDown;
         listener.KeyboardEvents.OnKeyboadrKeyUp += OnKeyUp;
-    }
-
-    private void OnKeyDown(IKeyboard keyboard, Key key, int code)
-    {
-        if (key == Key.Y)
-        {
-            _shouldAdd = true;
-        }
     }
 
     private void OnKeyUp(IKeyboard keyboard, Key key, int keyCode)
     {
         if (key == Key.Y)
         {
-            _shouldAdd = false;
+            _shouldAdd = true;
         }
     }
 }
@@ -104,18 +83,15 @@ public struct SpriteLoadingTask : IPleiadTaskOn<SpriteComponent>
     {
         if (array[i].sprite is not null)
         {
-            array[i].sprite.Load(); 
+            array[i].sprite.Load();
         }
     }
 }
-public struct SpriteRenderingTask : IPleiadTaskOn<SpriteComponent>
+public struct SpriteRenderingTask : IPleiadRenderTask<SpriteComponent>
 {
-    public void RunOn(int i, ref SpriteComponent[] array)
+    public void Draw(int index, ref SpriteComponent[] array)
     {
-        if (array[i].sprite is not null)
-        {
-            array[i].sprite.Draw(); 
-        }
+        PleiadRenderer.DrawSprite(array[index].sprite);
     }
 }
 
@@ -131,43 +107,47 @@ public class SpriteRenderingSystem : IRenderSystem
 
     public void Load()
     {
-        var _gl = World.ActiveWorld.SystemsManager.Api;
+        //var _gl = World.ActiveWorld.SystemsManager.Api;
 
-        // texture
-        PTexture _texture = new(_gl, new(@"Textures/texture.png"));
+        //// texture
+        //PTexture _texture = new(_gl, new(@"Textures/texture.png"));
 
-        // shaders
-        //vertex shader
-        FileContract VertexShaderSource = new("Shaders/shader.vert");
-        PShaderSource vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
-        //fragment shader
-        FileContract FragmentShaderSource = new("Shaders/shader.frag");
-        PShaderSource fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
-        // shader
-        PShader _shader = new(_gl, vertexShader, fragmentShader);
-        World.ActiveWorld.SystemsManager.Shader = _shader;
+        //// shaders
+        ////vertex shader
+        //FileContract VertexShaderSource = new("Shaders/shader.vert");
+        //PShaderSource vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
+        ////fragment shader
+        //FileContract FragmentShaderSource = new("Shaders/shader.frag");
+        //PShaderSource fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
+        //// shader
+        //PShader _shader = new(_gl, vertexShader, fragmentShader);
+        //World.ActiveWorld.SystemsManager.Shader = _shader;
 
-        // sprite
-        PSprite _sprite = new(_gl, PMesh<float, uint>.Quad, _texture, _shader);
-        _sprite.Load();
+        //// sprite
+        //PSprite _sprite = new(_gl, PMesh<float, uint>.Quad, _texture, _shader);
+        //_sprite.Load();
     }
 
     public void Render(double obj)
     {
-        var shader = World.ActiveWorld.SystemsManager.Shader;
-        if (shader is null)
-        {
-            return;
-        }
+        //var shader = pleiad.Shader;
+        //if (shader is null)
+        //{
+        //    return;
+        //}
 
-        TaskManager.SetTask(new TaskOnHandle<SpriteComponent>(new SpriteRenderingTask()), true);
+        TaskManager.SetRenderTask(new RenderTaskHandle<SpriteComponent>(new SpriteRenderingTask()));
 
 
         var view = Matrix4x4.CreateLookAt(CameraPosition, CameraTarget, CameraUp);
-        //var projection = Matrix4x4.CreatePerspectiveFieldOfView(PTransform.DegreesToRadians(45.0f), Width / Height, 0.1f, 100.0f);
+        ////var projection = Matrix4x4.CreatePerspectiveFieldOfView(PTransform.DegreesToRadians(45.0f), Width / Height, 0.1f, 100.0f);
         var projection = Matrix4x4.CreateOrthographicOffCenter(-1.0f * Width / Height, 1.0f * Width / Height, -1.0f, 1.0f, 0.1f, 100.0f);
-        shader.SetUniform("uView", view);
-        shader.SetUniform("uProjection", projection);
+
+        bool ve = view == World.ActiveWorld.CameraMatrix;
+        bool pe = projection == World.ActiveWorld.ProjectionMatrix;
+
+        PleiadRenderer.Shader.SetUniform("uView", World.ActiveWorld.CameraMatrix);
+        PleiadRenderer.Shader.SetUniform("uProjection", World.ActiveWorld.ProjectionMatrix);
     }
 }
 

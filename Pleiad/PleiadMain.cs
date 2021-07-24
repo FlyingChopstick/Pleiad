@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.Numerics;
+using System.Threading.Tasks;
 using Pleiad.Entities;
 using Pleiad.Input;
+using Pleiad.Render.Windows;
 using Pleiad.Tasks;
 using Pleiad.Worlds;
 using Silk.NET.Input;
@@ -67,7 +69,33 @@ namespace Pleiad
 
 
             // added to the SystemsManager ctor
-            systemsManager.CreateWindow();
+
+
+            PWindowOptions options = new()
+            {
+                Title = "Test Rectangle",
+                Resolution = new()
+                {
+                    Width = 1280,
+                    Height = 720
+                },
+                VSync = false
+            };
+
+            //Setup the camera's location, and relative up and right directions
+            Vector3 CameraPosition = new Vector3(0.0f, 0.0f, 3.0f);
+            Vector3 CameraTarget = Vector3.Zero;
+            Vector3 CameraDirection = Vector3.Normalize(CameraPosition - CameraTarget);
+            Vector3 CameraRight = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, CameraDirection));
+            Vector3 CameraUp = Vector3.Cross(CameraDirection, CameraRight);
+
+            var cameraMatrix = Matrix4x4.CreateLookAt(CameraPosition, CameraTarget, CameraUp);
+            var projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(-1.0f * options.Resolution.Width / options.Resolution.Height,
+                1.0f * options.Resolution.Width / options.Resolution.Height,
+                -1.0f, 1.0f,
+                0.1f, 100.0f);
+
+            systemsManager.CreateWindow(options, cameraMatrix, projectionMatrix);
             systemsManager.AttachWindow();
             systemsManager.RunWindow();
 
