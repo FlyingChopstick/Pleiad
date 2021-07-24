@@ -1,11 +1,15 @@
 ﻿using System.Numerics;
 using System.Threading.Tasks;
 using Pleiad.Entities;
+using Pleiad.Extensions.Files;
 using Pleiad.Input;
+using Pleiad.Render;
 using Pleiad.Render.Windows;
+using Pleiad.Systems;
 using Pleiad.Tasks;
 using Pleiad.Worlds;
 using Silk.NET.Input;
+using Silk.NET.OpenGL;
 
 namespace Pleiad
 {
@@ -13,67 +17,17 @@ namespace Pleiad
     {
         static async Task Main(string[] args)
         {
-            //World activeWorld = new();
-            World.ActiveWorld = new();
+            SystemsManager.Init();
+
+
+            //World.ActiveWorld = new();
             EntityManager em = World.ActiveWorld.EntityManager;
-            var systemsManager = World.ActiveWorld.SystemsManager;
             TaskManager.EntityManager = em;
-
-
-
-            //EntityTemplate template1 = new EntityTemplate
-            //    (
-            //    new Type[]
-            //    {
-            //        typeof(TestComponent),
-            //        typeof(IntTestComponent)
-            //    },
-            //    new IPleiadComponent[]
-            //    {
-            //        new TestComponent(),
-            //        new IntTestComponent() { testValue = 13}
-            //    });
-
-            //EntityTemplate template2 = new EntityTemplate
-            //    (
-            //    new Type[]
-            //    {
-            //        typeof(TestComponent)
-            //    },
-            //    new IPleiadComponent[]
-            //    {
-            //        new TestComponent() { testValue = "hello" }
-            //    });
-
-
-            //EntityTemplate soundTemplate = new EntityTemplate(
-            //    new Type[]
-            //    {
-            //        typeof(SoundComponent)
-            //    },
-            //    new IPleiadComponent[]
-            //    {
-            //        new SoundComponent
-            //        { files = new string[]
-            //        {
-            //            @"Sounds\dice1.wav",
-            //            @"Sounds\dice2.wav",
-            //            @"Sounds\dice3.wav",
-            //            @"Sounds\dice4.wav",
-            //            @"Sounds\dice5.wav",
-            //            @"Sounds\dice6.wav"
-            //        }
-            //        }
-            //    });
-
-
-
-            // added to the SystemsManager ctor
 
 
             PWindowOptions options = new()
             {
-                Title = "Test Rectangle",
+                Title = "Test Window",
                 Resolution = new()
                 {
                     Width = 1280,
@@ -95,25 +49,10 @@ namespace Pleiad
                 -1.0f, 1.0f,
                 0.1f, 100.0f);
 
-            systemsManager.CreateWindow(options, cameraMatrix, projectionMatrix);
-            systemsManager.AttachWindow();
-            systemsManager.RunWindow();
-
-
-
-
-
-
-
-
-
-            //var spritedEntity = em.AddEntity(spriteTemplate);
-
-
-            //while (World.ActiveWorld.CanUpdate)
-            //{
-
-            //}
+            PleiadRenderer.VertexShaderSource = new(ShaderType.VertexShader, new FileContract(@"Shaders\shader.vert"));
+            PleiadRenderer.FragmentShaderSource = new(ShaderType.FragmentShader, new FileContract(@"Shaders\shader.frag"));
+            PleiadRenderer.CreateWindow(options, cameraMatrix, projectionMatrix);
+            PleiadRenderer.RunWindow();
 
         }
 
@@ -126,7 +65,7 @@ namespace Pleiad
         {
             if (key == Key.Escape)
             {
-                World.ActiveWorld.SystemsManager.CloseWindow();
+                PleiadRenderer.CloseWindow();
             }
         }
     }

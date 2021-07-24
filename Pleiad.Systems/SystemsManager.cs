@@ -1,46 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Reflection;
-using Pleiad.Extensions.Files;
 using Pleiad.Input;
 using Pleiad.Render;
-using Pleiad.Render.Shaders;
-using Pleiad.Render.Windows;
 using Pleiad.Systems.Interfaces;
 using Pleiad.Tasks;
-using Silk.NET.OpenGL;
 
 namespace Pleiad.Systems
 {
-    public class SystemsManager
+    public static class SystemsManager
     {
+        public static bool ShouldUpdate
+        {
+            get => PleiadRenderer.ShouldUpdate;
+            set => PleiadRenderer.ShouldUpdate = value;
+        }
 
-        public bool ShouldUpdate { get; set; }
+        //MOVED INTO PleiadRenderer
 
-
-        public GL Api => _window.Api;
-        private PWindow _window;
-        public int WindowHeight => _window.Height;
-        public int WindowWidth => _window.Width;
+        //public static GL Api => _window.Api;
+        //private static PWindow _window;
+        //public static int WindowHeight => _window.Height;
+        //public static int WindowWidth => _window.Width;
         //public PShader Shader { get => _window.Shader; set => _window.Shader = value; }
 
-        public Matrix4x4 CameraMatrix { get => _window.CameraMatrix; set => _window.CameraMatrix = value; }
-        public Matrix4x4 ProjectionMatrix { get => _window.ProjectionMatrix; set => _window.ProjectionMatrix = value; }
+        //public static Matrix4x4 CameraMatrix { get => _window.CameraMatrix; set => _window.CameraMatrix = value; }
+        //public static Matrix4x4 ProjectionMatrix { get => _window.ProjectionMatrix; set => _window.ProjectionMatrix = value; }
 
-        /// <summary>
-        /// Constructor, tries to load all Systems in the namespace and sets up initial values
-        /// </summary>
-        public SystemsManager()
+
+        public static void Init()
         {
             try
             {
                 _systems = new Dictionary<Type, Dictionary<object, MethodInfo>>();
-                _renderers = new Dictionary<Type, Dictionary<object, MethodInfo[]>>();
+                _renderers = new Dictionary<Type, Dictionary<object, MethodInfo>>();
 
                 LoadSystems();
                 LoadRenderers();
+
+                PleiadRenderer.OnWindowLoad += WindowLoad;
+                PleiadRenderer.OnUpdate += Update;
+                PleiadRenderer.OnRender += Render;
 
                 ShouldUpdate = true;
 
@@ -52,76 +53,46 @@ namespace Pleiad.Systems
                 throw e;
             }
         }
-
-
-        public void CreateWindow(PWindowOptions options, Matrix4x4 cameraMatrix, Matrix4x4 projectionMatrix)
+        public static void AttachToRenderer()
         {
-            _window = new(options, cameraMatrix, projectionMatrix);
-            _window.Updated += Update;
-            _window.Load += WindowLoad;
-            _window.Render += Render;
-        }
-
-        public void AttachWindow()
-        {
-            _il.AttachToWindow(_window);
+            _il.AttachToWindow(PleiadRenderer.Window);
             RegisterInput();
         }
-        public void RunWindow()
-        {
-            ShouldUpdate = true;
-            _window.Run();
-        }
-        public void CloseWindow()
-        {
-            if (_window is not null
-                && !_window.IsClosing
-                && ShouldUpdate)
-            {
-                ShouldUpdate = false;
-                _window.Close();
-            }
-        }
 
 
-        ///// <summary>
-        ///// Stops the execution and waits for the key press (default: <see cref="Key.Enter"/>)
-        ///// </summary>
-        ///// <param name="key">Key to wait for</param>
-        ///// <param name="showMessage">Should the message be displayed</param>
-        //public static void Pause(Key key = Key.Enter, bool showMessage = true)
+        //MOVED INTO PleiadRenderer
+
+        //public static SystemsManager()
         //{
-        //    if (showMessage)
+        //    Init();
+        //}
+
+
+        //public static void CreateWindow(PWindowOptions options, Matrix4x4 cameraMatrix, Matrix4x4 projectionMatrix)
+        //{
+        //    _window = new(options, cameraMatrix, projectionMatrix);
+        //    _window.Updated += Update;
+        //    _window.Load += WindowLoad;
+        //    _window.Render += Render;
+        //}
+        //public static void RunWindow()
+        //{
+        //    ShouldUpdate = true;
+        //    _window.Run();
+        //}
+        //public static void CloseWindow()
+        //{
+        //    if (_window is not null
+        //        && !_window.IsClosing
+        //        && ShouldUpdate)
         //    {
-        //        Console.WriteLine($"Press {key} to continue");
+        //        ShouldUpdate = false;
+        //        _window.Close();
         //    }
-
-        //    //need to temporarily disable InputTable to prevent the key not being found
-        //    bool uit = _il.UseInputTable;
-        //    _il.UseInputTable = false;
-        //    _il.WaitForInput(key);
-        //    _il.UseInputTable = uit;
-        //}
-        ///// <summary>
-        ///// Waits for any of the keys
-        ///// </summary>
-        ///// <param name="keys">Keys to wait for</param>
-        //public static void WaitForInput(Key[] keys)
-        //{
-        //    _il.WaitForInput(keys);
-        //}
-        ///// <summary>
-        ///// Waits for key press
-        ///// </summary>
-        ///// <param name="key">Key to wait for</param>
-        //public static void WaitForInput(Key key)
-        //{
-        //    _il.WaitForInput(key);
         //}
 
 
-
-        private void LoadSystems()
+        private static void LoadSystems()
         {
             var systemPostfix = "System";
 
@@ -145,7 +116,7 @@ namespace Pleiad.Systems
 
             Console.WriteLine("Systems loaded.");
         }
-        private void LoadSystem(Type system)
+        private static void LoadSystem(Type system)
         {
             //Get all classes that implement the selected System interface
             List<Type> systems = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
@@ -163,14 +134,15 @@ namespace Pleiad.Systems
 
             foreach (var systemType in systems)
             {
-                sysDict[systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { })] = systemType.GetMethod("Cycle");
+                sysDict[systemType.GetConstructor(Type.EmptyTypes).Invoke(new object[] { })]
+                    = systemType.GetMethod("Cycle");
                 Console.WriteLine($"    | Loaded {systemType}");
             }
 
             _systems[system] = sysDict;
         }
 
-        private void LoadRenderers()
+        private static void LoadRenderers()
         {
             Console.WriteLine("Loading Renderers");
             List<Type> sysInterfaces = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
@@ -192,7 +164,7 @@ namespace Pleiad.Systems
 
             Console.WriteLine("Renderers loaded");
         }
-        private void LoadRenderer(Type renderType)
+        private static void LoadRenderer(Type renderType)
         {
             List<Type> renderers = AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes())
                 .Where(x => renderType.IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
@@ -205,23 +177,19 @@ namespace Pleiad.Systems
 
             List<object> objBuffer = new(renderers.Count);
             List<MethodInfo> methodBuffer = new(renderers.Count);
-            Dictionary<object, MethodInfo[]> rendDict = new();
+            Dictionary<object, MethodInfo> rendDict = new();
 
             for (int i = 0; i < renderers.Count; i++)
             {
-                MethodInfo[] methods = new MethodInfo[2];
-                methods[0] = renderType.GetMethod(nameof(IRenderSystem.Load));
-                methods[1] = renderType.GetMethod(nameof(IRenderSystem.Render));
-                rendDict[renderers[i].GetConstructor(Type.EmptyTypes).Invoke(new object[] { })] = methods;
-
+                rendDict[renderers[i].GetConstructor(Type.EmptyTypes).Invoke(new object[] { })]
+                    = renderType.GetMethod(nameof(IRenderSystem.Render));
                 Console.WriteLine($"    | Loaded {renderers[i]}");
             }
 
             _renderers[renderType] = rendDict;
         }
 
-
-        private void RegisterInput()
+        private static void RegisterInput()
         {
             Type ir = typeof(IRegisterInput);
             Console.WriteLine("Input registration");
@@ -240,7 +208,7 @@ namespace Pleiad.Systems
 
             Console.WriteLine($"Input registration complete.");
         }
-        private void RegisterInputFor(Type system)
+        private static void RegisterInputFor(Type system)
         {
             object summoner = system.GetConstructor(Type.EmptyTypes).Invoke(new object[] { });
             MethodInfo method = system.GetMethod(typeof(IRegisterInput).GetMethods()[0].Name);
@@ -248,6 +216,8 @@ namespace Pleiad.Systems
             method.Invoke(summoner, args);
         }
 
+        //MOVED INTO PleiadRenderer
+        // 
         //public void DrawSprite(PSprite sprite)
         //{
         //    Shader.SetUniform("uModel", sprite.ViewMatrix);
@@ -259,7 +229,25 @@ namespace Pleiad.Systems
         /// Function goes over each system in namespace and executes their Cycle()
         /// </summary>
         /// <returns></returns>
-        public bool Update(double deltaTime)
+        private static void WindowLoad()
+        {
+            AttachToRenderer();
+
+            //PleiadRenderer.Shader = CompileShader();
+            //foreach (var rendererType in _renderers.Keys)
+            //{
+            //    var objEnum = _renderers[rendererType].Keys.GetEnumerator();
+            //    var methEnum = _renderers[rendererType].Values.GetEnumerator();
+
+            //    while (objEnum.MoveNext())
+            //    {
+            //        methEnum.MoveNext();
+
+            //        methEnum.Current.Invoke(objEnum.Current, null);
+            //    }
+            //}
+        }
+        private static void Update(double deltaTime)
         {
             foreach (var systemType in _systems.Keys)
             {
@@ -283,38 +271,8 @@ namespace Pleiad.Systems
             }
 
             TaskManager.CompleteTasks();
-            return ShouldUpdate;
         }
-        private void WindowLoad()
-        {
-            PleiadRenderer.Shader = CompileShader();
-            foreach (var rendererType in _renderers.Keys)
-            {
-                var objEnum = _renderers[rendererType].Keys.GetEnumerator();
-                var methEnum = _renderers[rendererType].Values.GetEnumerator();
-
-                while (objEnum.MoveNext())
-                {
-                    methEnum.MoveNext();
-
-                    methEnum.Current[0].Invoke(objEnum.Current, null);
-                }
-            }
-        }
-        private PShader CompileShader()
-        {
-            // shaders
-            //vertex shader
-            FileContract VertexShaderSource = new("Shaders/shader.vert");
-            PShaderSource vertexShader = new(ShaderType.VertexShader, VertexShaderSource);
-            //fragment shader
-            FileContract FragmentShaderSource = new("Shaders/shader.frag");
-            PShaderSource fragmentShader = new(ShaderType.FragmentShader, FragmentShaderSource);
-            // shader
-            return new(Api, vertexShader, fragmentShader);
-        }
-
-        private void Render(double obj)
+        private static void Render(double obj)
         {
             foreach (var rendererType in _renderers.Keys)
             {
@@ -325,15 +283,14 @@ namespace Pleiad.Systems
                 {
                     methEnum.MoveNext();
 
-                    methEnum.Current[1].Invoke(objEnum.Current, new object[] { obj });
+                    methEnum.Current.Invoke(objEnum.Current, new object[] { obj });
                 }
             }
         }
 
 
-
-        private readonly Dictionary<Type, Dictionary<object, MethodInfo>> _systems;
-        private readonly Dictionary<Type, Dictionary<object, MethodInfo[]>> _renderers;
+        private static Dictionary<Type, Dictionary<object, MethodInfo>> _systems;
+        private static Dictionary<Type, Dictionary<object, MethodInfo>> _renderers;
         private static readonly InputListener _il = new();
     }
 }

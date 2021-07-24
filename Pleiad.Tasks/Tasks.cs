@@ -15,12 +15,12 @@ namespace Pleiad.Tasks
         public static EntityManager EntityManager { set => _em = value; }
 
 
-        public static void SetEntityManager(ref EntityManager entityManager) => _em = entityManager;
 
         public static void SetTask(TaskHandle handle)
         {
             _taskQueue.Add(Task.Run(handle.Action, handle.Token));
         }
+
         public static void SetTask<T>(TaskOnHandle<T> handle, bool readOnly = false) where T : IPleiadComponent
         {
             Type type = typeof(T);
@@ -58,96 +58,27 @@ namespace Pleiad.Tasks
             {
                 _taskOnQueue.Add(Task.Run(() =>
                 {
-                    int currentIndex = i;
-                    var size = datapack.Data[currentIndex].Length;
-                    T[] arr = new T[size];
-                    for (int j = 0; j < convertedData[currentIndex].Length; j++)
+                    int index = i;
+                    lock (convertedData[index])
                     {
-                        handle.ActionOn(j, ref convertedData[currentIndex]);
-                        arr[j] = convertedData[currentIndex][j];
-                    }
+                        var size = datapack.Data[index].Length;
+                        T[] arr = new T[size];
+                        for (int j = 0; j < convertedData[index].Length; j++)
+                        {
+                            handle.ActionOn(j, ref convertedData[index]);
+                            arr[j] = convertedData[index][j];
+                        }
 
-                    _em.SetDataAt(arr, currentIndex);
+                        _em.SetDataAt(arr, index);
+                    }
                 }));
             }
-
-
-
-            //Parallel.For(0, datapack.Length, a =>
-            //{
-            //    int currentIndex = a;
-            //    var size = datapack.Data[currentIndex].Length;
-            //    T[] arr = new T[size];
-            //    for (int j = 0; j < convertedData[currentIndex].Length; j++)
-            //    {
-            //        handle.ActionOn(j, ref convertedData[currentIndex]);
-            //        arr[j] = convertedData[currentIndex][j];
-            //    }
-
-            //    _em.SetDataAt(arr, currentIndex);
-            //});
-            //for (int i = 0; i < datapack.Length; i++)
-            //{
-            //    int currentIndex = i;
-            //    _taskOnQueue.Add(Task.Run(() =>
-            //    {
-            //        lock (datapack.Data[currentIndex])
-            //        {
-            //            var size = datapack.Data[currentIndex].Length;
-            //            T[] arr = new T[size];
-            //            for (int j = 0; j < convertedData[currentIndex].Length; j++)
-            //            {
-            //                handle.ActionOn(j, ref convertedData[currentIndex]);
-            //                arr[j] = convertedData[currentIndex][j];
-            //            }
-
-            //            _em.SetDataAt(arr, currentIndex);
-            //        }
-            //    }));
-            //    //_taskOnQueue.Add(Task.Run(() =>
-            //    //{
-            //    //    var size = datapack.Data[cIndex].Length;
-            //    //    T[] arr = new T[size];
-            //    //    for (int j = 0; j < convertedData.Length; j++)
-            //    //    {
-            //    //        handle.ActionOn(j, ref convertedData[cIndex]);
-            //    //        arr[cIndex] = convertedData[cIndex][j];
-            //    //    }
-
-            //    //    _em.SetDataAt(arr, cIndex);
-            //    //}));
-            //}
-
-
-            //var dataPack = _em.GetTypeData<T>();
-
-            //T[] chunkData = dataPack.GetConvertedData();
-            //int[] chunkSizes = new int[dataPack.ChunkSizes.Keys.Count];
-            //ChunkIndex[] chunkIndices = dataPack.GetChunkIndices();
-
-            ////Run the action for each type chunk
-            //for (int i = 0; i < chunkIndices.Length; i++)
-            //{
-            //    ChunkIndex chIndex = new(chunkIndices[i]);
-            //    chunkSizes[i] = dataPack.ChunkSizes[chIndex];
-            //    int currentChSize = chunkSizes[chIndex];
-            //    _taskOnQueue.Add(Task.Run(() =>
-            //    {
-            //        //List<T> newData = new List<T>();
-            //        T[] newData = new T[currentChSize];
-            //        for (int j = 0; j < currentChSize; j++)
-            //        {
-            //            handle.ActionOn(j, ref chunkData);
-            //            newData[j] = chunkData[j];
-            //        }
-
-            //        //var a = newData.ToArray();
-            //        Payload<T> payload = new Payload<T>(chIndex, newData);
-            //        _em.SetTypeDataAt(payload);
-            //    }, handle.Token));
-            //}
         }
-
+        /// <summary>
+        /// Render tasks will be executed on the main thread, without parallelisation.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="handle"></param>
         public static void SetRenderTask<T>(RenderTaskHandle<T> handle) where T : IPleiadComponent
         {
             var datapack = _em.GetTypeData<T>();
@@ -182,6 +113,7 @@ namespace Pleiad.Tasks
 
                 _taskQueue.Clear();
                 _taskOnQueue.Clear();
+
             }
             catch (AggregateException ae)
             {

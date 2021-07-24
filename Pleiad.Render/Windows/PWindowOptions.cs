@@ -3,19 +3,6 @@
 
 namespace Pleiad.Render.Windows
 {
-    public struct WindowResolution
-    {
-        //options.Size = new Vector2D<int>(800, 600);                 
-        //options.Title = "Test Window";
-        //options.VSync = true;
-        public WindowResolution(int width, int height)
-        {
-            Width = width;
-            Height = height;
-        }
-        public int Width { get; init; }
-        public int Height { get; init; }
-    }
     public class PWindowOptions : IPWindowOptions
     {
         public WindowOptions SilkOptions
@@ -30,7 +17,7 @@ namespace Pleiad.Render.Windows
             }
         }
         public string Title { get; init; } = "Default Title";
-        public WindowResolution Resolution { get; init; } = new WindowResolution(800, 600);
+        public PWindowResolution Resolution { get; init; } = new PWindowResolution(800, 600);
         public bool VSync { get; init; } = true;
     }
 }

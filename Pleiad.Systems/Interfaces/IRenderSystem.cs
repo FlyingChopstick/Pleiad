@@ -1,10 +1,8 @@
-﻿using Silk.NET.OpenGL;
-
-namespace Pleiad.Systems.Interfaces
+﻿namespace Pleiad.Systems.Interfaces
 {
     public interface IRenderSystem
     {
-        void Load();
+        //void Load();
         void Render(double obj);
     }
 }
