@@ -278,26 +278,11 @@ namespace Pleiad.Entities
             {
                 _componentChunks[type][i].SetAllData(data.Data[i]);
             }
-
-            //Type type = typeof(T);
-            //foreach (var index in data.GetChunkIndices())
-            //{
-            //    //int chunkSize = data.ChunkSizes[index];
-
-            //    _componentChunks[type][index].SetAllData(data.GetConvertedData());
-            //}
         }
         public void SetDataAt<T>(T[] newData, int chIndex) where T : IPleiadComponent
         {
             _componentChunks[typeof(T)][chIndex].SetAllData(newData);
         }
-        //public void SetTypeDataAt<T>(Payload<T> pack) where T : IPleiadComponent
-        //{
-        //    Type type = typeof(T);
-        //    _componentChunks[type][pack.ChunkIndex].SetDataAt(pack.Data);
-        //}
-
-
 
         private bool HasAllComponents(Entity entity, List<Type> components)
         {
@@ -355,16 +340,16 @@ namespace Pleiad.Entities
 
             _entityTypeChunks[entity].Add(component, chunkIndex);
         }
-        private Dictionary<Type, ChunkIndex> GetEntityChunks(Entity entity, List<Type> components)
-        {
-            var chunks = new Dictionary<Type, ChunkIndex>();
-            for (int compCounter = 0; compCounter < components.Count; compCounter++)
-            {
-                chunks.Add(components[compCounter], FindComponentChunk(entity, components[compCounter]));
-            }
+        //private Dictionary<Type, ChunkIndex> GetEntityChunks(Entity entity, List<Type> components)
+        //{
+        //    var chunks = new Dictionary<Type, ChunkIndex>();
+        //    for (int compCounter = 0; compCounter < components.Count; compCounter++)
+        //    {
+        //        chunks.Add(components[compCounter], FindComponentChunk(entity, components[compCounter]));
+        //    }
 
-            return chunks;
-        }
+        //    return chunks;
+        //}
 
 
 
@@ -425,21 +410,21 @@ namespace Pleiad.Entities
             return GetComponentChunk(component);
         }
 
-        private ChunkIndex FindComponentChunk(Entity entity, Type chunkType)
-        {
-            for (int i = 0; i < _componentChunks[chunkType].Count; i++)
-            {
-                var chunk = _componentChunks[chunkType][i];
-                if (chunk.ContainsEntity(entity))
-                {
-                    return new(i);
-                }
-            }
+        //private ChunkIndex FindComponentChunk(Entity entity, Type chunkType)
+        //{
+        //    for (int i = 0; i < _componentChunks[chunkType].Count; i++)
+        //    {
+        //        var chunk = _componentChunks[chunkType][i];
+        //        if (chunk.ContainsEntity(entity))
+        //        {
+        //            return new(i);
+        //        }
+        //    }
 
-            ThrowError(ErrorType.EntityWithoutComponent, entity, chunkType);
-            //this will not be returned, unless ThrowError is supressed here
-            return new();
-        }
+        //    ThrowError(ErrorType.EntityWithoutComponent, entity, chunkType);
+        //    //this will not be returned, unless ThrowError is supressed here
+        //    return new();
+        //}
 
         private enum ErrorType
         {
@@ -452,7 +437,7 @@ namespace Pleiad.Entities
             EntityWithoutComponent = 6,
             NoEntitiesWithComponent = 7,
         }
-        private void ThrowError(ErrorType errorType, Entity entity, Type component = null, bool supress = false)
+        private static void ThrowError(ErrorType errorType, Entity entity, Type component = null, bool supress = false)
         {
             var st = new StackTrace();
             var caller = st.GetFrame(1).GetMethod().Name;
