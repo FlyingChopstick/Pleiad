@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Numerics;
+using Pleiad.Render.Camera;
 using Pleiad.Render.Models;
 using Pleiad.Render.Shaders;
 using Pleiad.Render.Windows;
 using Silk.NET.OpenGL;
+using Silk.NET.Windowing;
 
 namespace Pleiad.Render
 {
@@ -23,7 +25,8 @@ namespace Pleiad.Render
         public static PShader Shader { get => _shader; }
         private static PShader _shader;
 
-        public static Matrix4x4 CameraMatrix { get; set; }
+        public static PCamera Camera { get; set; }
+        //public static Matrix4x4 CameraMatrix { get; set; }
         public static Matrix4x4 ProjectionMatrix { get; set; }
 
         public static bool ShouldUpdate { get; set; }
@@ -34,7 +37,7 @@ namespace Pleiad.Render
         public static int WindowWidth { get => _window.Width; }
 
 
-        public static void CreateWindow(PWindowOptions options, Matrix4x4 cameraMatrix, Matrix4x4 projectionMatrix)
+        public static void CreateWindow(WindowOptions options, PCamera camera, Matrix4x4 projectionMatrix)
         {
             _window = new(options);
             _window.Load += Load; ;
@@ -42,7 +45,7 @@ namespace Pleiad.Render
             _window.Render += Render;
             _window.Closed += Closing;
 
-            CameraMatrix = cameraMatrix;
+            Camera = camera;
             ProjectionMatrix = projectionMatrix;
         }
         public static void RunWindow()
@@ -80,6 +83,7 @@ namespace Pleiad.Render
             _shader = new(Api, VertexShaderSource, FragmentShaderSource);
         }
 
+
         // event handlers/forwarders
         private static void Load()
         {
@@ -95,7 +99,7 @@ namespace Pleiad.Render
         {
             OnRender?.Invoke(obj);
 
-            _shader.SetUniform("uView", PleiadRenderer.CameraMatrix);
+            _shader.SetUniform("uView", Camera);
             _shader.SetUniform("uProjection", PleiadRenderer.ProjectionMatrix);
         }
         private static void Closing()

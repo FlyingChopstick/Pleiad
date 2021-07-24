@@ -22,9 +22,9 @@ namespace Pleiad.Render.Windows
         public event RenderDelegate Render;
 
 
-        public PWindow(IPWindowOptions options)
+        public PWindow(WindowOptions options)
         {
-            _window = Window.Create(options.SilkOptions);
+            _window = Window.Create(options);
 
             _window.Load += OnLoad;
             _window.Render += OnRender;

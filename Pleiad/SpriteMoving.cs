@@ -12,154 +12,158 @@ using Pleiad.Worlds;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 
-public class SpriteEntityAdditionSystem : IPleiadSystem, IRegisterInput
+
+namespace Pleiad
 {
-    static bool _shouldAdd = false;
-
-    static GL _gl;
-    static PTexture _texture;
-    static PSprite _sprite;
-    static EntityTemplate _template;
-
-    public void Cycle(double dTime)
+    public class SpriteEntityAdditionSystem : IPleiadSystem, IRegisterInput
     {
-        if (_shouldAdd)
+        static bool _shouldAdd = false;
+
+        static GL _gl;
+        static PTexture _texture;
+        static PSprite _sprite;
+        static EntityTemplate _template;
+
+        public void Cycle(double dTime)
         {
-            LoadTemplate();
+            if (_shouldAdd)
+            {
+                LoadTemplate();
 
-            World.ActiveWorld.EntityManager.AddEntity(_template);
-            _shouldAdd = false;
+                World.ActiveWorld.EntityManager.AddEntity(_template);
+                _shouldAdd = false;
+            }
         }
-    }
-    private static void LoadTemplate()
-    {
-        _gl = PleiadRenderer.Api;
+        private static void LoadTemplate()
+        {
+            _gl = PleiadRenderer.Api;
 
-        // texture
-        _texture = new(_gl, new(@"Textures/texture.png"));
-        // sprite
-        _sprite = new(_gl, PMesh<float, uint>.Quad, _texture);
-        _sprite.Load();
+            // texture
+            _texture = new(_gl, new(@"Textures/texture.png"));
+            // sprite
+            _sprite = new(_gl, PMesh<float, uint>.Quad, _texture);
+            _sprite.Load();
 
-        _template =
-            new EntityTemplate(
-                new Type[]
-                {
+            _template =
+                new EntityTemplate(
+                    new Type[]
+                    {
                     typeof(SpriteComponent)
-                },
-                new IPleiadComponent[]
-                {
+                    },
+                    new IPleiadComponent[]
+                    {
                     new SpriteComponent()
                     {
                         sprite = _sprite
                     }
-                });
-    }
-
-    public void InputRegistration(ref InputListener listener)
-    {
-        listener.KeyboardEvents.OnKeyboadrKeyUp += OnKeyUp;
-    }
-    private void OnKeyUp(IKeyboard keyboard, Key key, int keyCode)
-    {
-        if (key == Key.Y)
-        {
-            _shouldAdd = true;
+                    });
         }
-    }
-}
 
-
-public struct SpriteRenderingTask : IPleiadRenderTask<SpriteComponent>
-{
-    public void Draw(int index, ref SpriteComponent[] array)
-    {
-        PleiadRenderer.DrawSprite(array[index].sprite);
-    }
-}
-
-public class SpriteRenderingSystem : IRenderSystem
-{
-    public void Render(double obj)
-    {
-        TaskManager.SetRenderTask(new RenderTaskHandle<SpriteComponent>(new SpriteRenderingTask()));
-    }
-}
-
-
-public struct SpriteMovingTask : IPleiadTaskOn<SpriteComponent>
-{
-    public PTransform Transformation;
-    public void RunOn(int i, ref SpriteComponent[] array)
-    {
-        array[i].sprite.Transform(Transformation);
-    }
-}
-public class SpriteMovingSystem : IPleiadSystem, IRegisterInput
-{
-    static bool shouldTransform = false;
-    static PTransform transform = new();
-
-    public void Cycle(double dTime)
-    {
-        if (shouldTransform)
+        public void InputRegistration(ref InputListener listener)
         {
-            TaskOnHandle<SpriteComponent> handle = new(new SpriteMovingTask()
+            listener.KeyboardEvents.OnKeyboadrKeyUp += OnKeyUp;
+        }
+        private void OnKeyUp(IKeyboard keyboard, Key key, int keyCode)
+        {
+            if (key == Key.Y)
             {
-                Transformation = transform
-            });
-
-            TaskManager.SetTask(handle, true);
-            shouldTransform = false;
+                _shouldAdd = true;
+            }
         }
     }
-    public void InputRegistration(ref InputListener listener)
+
+
+    public struct SpriteRenderingTask : IPleiadRenderTask<SpriteComponent>
     {
-        listener.KeyboardEvents.OnKeyDown += OnKeyDown;
-    }
-    private void OnKeyDown(IKeyboard keyboard, Key key, int code)
-    {
-        transform = new();
-        switch (key)
+        public void Draw(int index, ref SpriteComponent[] array)
         {
-            case Key.A:
+            PleiadRenderer.DrawSprite(array[index].sprite);
+        }
+    }
+
+    public class SpriteRenderingSystem : IRenderSystem
+    {
+        public void Render(double obj)
+        {
+            TaskManager.SetRenderTask(new RenderTaskHandle<SpriteComponent>(new SpriteRenderingTask()));
+        }
+    }
+
+
+    public struct SpriteMovingTask : IPleiadTaskOn<SpriteComponent>
+    {
+        public PTransform Transformation;
+        public void RunOn(int i, ref SpriteComponent[] array)
+        {
+            array[i].sprite.Transform(Transformation);
+        }
+    }
+    public class SpriteMovingSystem : IPleiadSystem, IRegisterInput
+    {
+        static bool shouldTransform = false;
+        static PTransform transform = new();
+
+        public void Cycle(double dTime)
+        {
+            if (shouldTransform)
+            {
+                TaskOnHandle<SpriteComponent> handle = new(new SpriteMovingTask()
                 {
-                    shouldTransform = true;
-                    transform.Position = new(-0.1f, 0.0f, 0.0f);
+                    Transformation = transform
+                });
+
+                TaskManager.SetTask(handle, true);
+                shouldTransform = false;
+            }
+        }
+        public void InputRegistration(ref InputListener listener)
+        {
+            listener.KeyboardEvents.OnKeyDown += OnKeyDown;
+        }
+        private void OnKeyDown(IKeyboard keyboard, Key key, int code)
+        {
+            transform = new();
+            switch (key)
+            {
+                case Key.A:
+                    {
+                        shouldTransform = true;
+                        transform.Position = new(-0.1f, 0.0f, 0.0f);
+                        break;
+                    }
+                case Key.D:
+                    {
+                        shouldTransform = true;
+                        transform.Position = new(0.1f, 0.0f, 0.0f);
+                        break;
+                    }
+                case Key.W:
+                    {
+                        shouldTransform = true;
+                        transform.Position = new(0.0f, 0.1f, 0.0f);
+                        break;
+                    }
+                case Key.S:
+                    {
+                        shouldTransform = true;
+                        transform.Position = new(0.0f, -0.1f, 0.0f);
+                        break;
+                    }
+                case Key.E:
+                    {
+                        shouldTransform = true;
+                        transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, PTransform.DegreesToRadians(22.5f));
+                        break;
+                    }
+                case Key.Q:
+                    {
+                        shouldTransform = true;
+                        transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, PTransform.DegreesToRadians(-22.5f));
+                        break;
+                    }
+                default:
                     break;
-                }
-            case Key.D:
-                {
-                    shouldTransform = true;
-                    transform.Position = new(0.1f, 0.0f, 0.0f);
-                    break;
-                }
-            case Key.W:
-                {
-                    shouldTransform = true;
-                    transform.Position = new(0.0f, 0.1f, 0.0f);
-                    break;
-                }
-            case Key.S:
-                {
-                    shouldTransform = true;
-                    transform.Position = new(0.0f, -0.1f, 0.0f);
-                    break;
-                }
-            case Key.E:
-                {
-                    shouldTransform = true;
-                    transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, PTransform.DegreesToRadians(22.5f));
-                    break;
-                }
-            case Key.Q:
-                {
-                    shouldTransform = true;
-                    transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitZ, PTransform.DegreesToRadians(-22.5f));
-                    break;
-                }
-            default:
-                break;
+            }
         }
     }
 }
