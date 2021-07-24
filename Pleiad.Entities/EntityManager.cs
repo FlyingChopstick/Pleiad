@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Pleiad.Entities.Components;
 using Pleiad.Entities.Model;
+using Pleiad.Render.Camera;
 
 namespace Pleiad.Entities
 {
@@ -11,7 +12,6 @@ namespace Pleiad.Entities
     /// </summary>
     public class EntityManager
     {
-
         public EntityManager()
         {
             _chunkIndex = new(1);
@@ -82,12 +82,28 @@ namespace Pleiad.Entities
         /// Adds an Entity with Components and no data
         /// </summary>
         /// <param name="components">Array of Component types</param>
-        /// <returns>Entity handle</returns>
+        /// <returns>Entity handle</returns>MO
         public Entity AddEntity(Type[] components)
         {
             return CreateEntity(new EntityTemplate(components, new IPleiadComponent[components.Length]));
         }
 
+        public Entity AddCameraEntity(PCamera camera)
+        {
+            if (_isCameraCreated)
+            {
+                ThrowError(ErrorType.CameraAlreadyCreated);
+            }
+
+            Console.WriteLine("Adding Camera Entity");
+            EntityTemplate cameraTemplate = new(
+                new Type[] { typeof(CameraComponent) },
+                new IPleiadComponent[] { new CameraComponent() { Position = camera.Position, Target = camera.Target } });
+            var entity = AddEntity(cameraTemplate);
+            _isCameraCreated = entity != default;
+
+            return entity;
+        }
 
         public List<Entity> GetAllWith(List<Type> components)
         {
@@ -436,8 +452,9 @@ namespace Pleiad.Entities
             CompDoesNotExist = 5,
             EntityWithoutComponent = 6,
             NoEntitiesWithComponent = 7,
+            CameraAlreadyCreated = 8,
         }
-        private static void ThrowError(ErrorType errorType, Entity entity, Type component = null, bool supress = false)
+        private static void ThrowError(ErrorType errorType, Entity entity = default, Type component = null, bool supress = false)
         {
             var st = new StackTrace();
             var caller = st.GetFrame(1).GetMethod().Name;
@@ -486,6 +503,11 @@ namespace Pleiad.Entities
                         LogAndThrow(st, $"There are no entities with {component.Name} component", supress);
                         return;
                     }
+                case ErrorType.CameraAlreadyCreated:
+                    {
+                        LogAndThrow(st, "Camera Entity is already created. There can be only one");
+                        return;
+                    }
             }
         }
         private static void LogAndThrow(StackTrace st, string message, bool supress = false)
@@ -511,6 +533,7 @@ namespace Pleiad.Entities
         private readonly Dictionary<Entity, Dictionary<Type, ChunkIndex>> _entityTypeChunks;
 
         private readonly ChunkLookup _lookup;
+        private bool _isCameraCreated = false;
 
         #region DebugFunctions
 #if DEBUG

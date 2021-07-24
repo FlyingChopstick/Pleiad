@@ -4,12 +4,13 @@ using Pleiad.Entities;
 using Pleiad.Extensions.Files;
 using Pleiad.Input;
 using Pleiad.Render;
-using Pleiad.Render.Windows;
+using Pleiad.Render.Camera;
 using Pleiad.Systems;
 using Pleiad.Tasks;
 using Pleiad.Worlds;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
+using Silk.NET.Windowing;
 
 namespace Pleiad
 {
@@ -18,43 +19,38 @@ namespace Pleiad
         static async Task Main(string[] args)
         {
             SystemsManager.Init();
-
-
-            //World.ActiveWorld = new();
             EntityManager em = World.ActiveWorld.EntityManager;
             TaskManager.EntityManager = em;
 
 
-            PWindowOptions options = new()
-            {
-                Title = "Test Window",
-                Resolution = new()
-                {
-                    Width = 1280,
-                    Height = 720
-                },
-                VSync = false
-            };
+            WindowOptions options = WindowOptions.Default;
+            options.Title = "Test Window";
+            options.Size = new(1280, 720);
+            options.FramesPerSecond = 60;
+            options.VSync = false;
 
-            //Setup the camera's location, and relative up and right directions
+
+
             Vector3 CameraPosition = new Vector3(0.0f, 0.0f, 3.0f);
             Vector3 CameraTarget = Vector3.Zero;
-            Vector3 CameraDirection = Vector3.Normalize(CameraPosition - CameraTarget);
-            Vector3 CameraRight = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, CameraDirection));
-            Vector3 CameraUp = Vector3.Cross(CameraDirection, CameraRight);
+            PCamera camera = new(CameraPosition, CameraTarget, new(0.0f, 0.0f, -1.0f));
+            em.AddCameraEntity(camera);
 
-            var cameraMatrix = Matrix4x4.CreateLookAt(CameraPosition, CameraTarget, CameraUp);
-            var projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(-1.0f * options.Resolution.Width / options.Resolution.Height,
-                1.0f * options.Resolution.Width / options.Resolution.Height,
+
+            var projectionMatrix = Matrix4x4.CreateOrthographicOffCenter(-1.0f * options.Size.X / options.Size.Y,
+                1.0f * options.Size.X / options.Size.Y,
                 -1.0f, 1.0f,
                 0.1f, 100.0f);
 
+
             PleiadRenderer.VertexShaderSource = new(ShaderType.VertexShader, new FileContract(@"Shaders\shader.vert"));
             PleiadRenderer.FragmentShaderSource = new(ShaderType.FragmentShader, new FileContract(@"Shaders\shader.frag"));
-            PleiadRenderer.CreateWindow(options, cameraMatrix, projectionMatrix);
-            PleiadRenderer.RunWindow();
+            PleiadRenderer.CreateWindow(options, camera, projectionMatrix);
 
+
+            PleiadRenderer.RunWindow();
         }
+
 
         public void InputRegistration(ref InputListener listener)
         {

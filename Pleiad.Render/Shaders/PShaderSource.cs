@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Pleiad.Extensions.Files;
 using Silk.NET.OpenGL;
 
@@ -15,6 +16,11 @@ namespace Pleiad.Render.Shaders
         {
             Type = type;
             var src = sourceFile.ReadLines();
+            if (src.Length == 0)
+            {
+                throw new ArgumentException($"File provided as {type} source file was empty");
+            }
+
             StringBuilder sb = new();
             for (int i = 0; i < src.Length; i++)
             {
