@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Tasks", "Pleiad.Task
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Input", "Pleiad.Input\Pleiad.Input.csproj", "{33E5D97E-2752-466A-A596-EF6486538F28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pleiad.Render", "Pleiad.Render\Pleiad.Render.csproj", "{AC958C25-FBD7-49BF-A49F-6B94758E1281}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Render", "Pleiad.Render\Pleiad.Render.csproj", "{AC958C25-FBD7-49BF-A49F-6B94758E1281}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

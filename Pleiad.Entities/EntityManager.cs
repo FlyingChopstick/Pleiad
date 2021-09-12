@@ -44,7 +44,11 @@ namespace Pleiad.Entities
             get => _chunkSize;
             set
             {
-                if (value < 0) throw new ArgumentOutOfRangeException($"Chunk size must be >0 (tried {value})");
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException($"Chunk size must be >0 (tried {value})");
+                }
+
                 _chunkSize = value;
             }
         }
@@ -90,17 +94,11 @@ namespace Pleiad.Entities
 
         public Entity AddCameraEntity(PCamera camera)
         {
-            if (_isCameraCreated)
-            {
-                ThrowError(ErrorType.CameraAlreadyCreated);
-            }
-
             Console.WriteLine("Adding Camera Entity");
             EntityTemplate cameraTemplate = new(
                 new Type[] { typeof(CameraComponent) },
                 new IPleiadComponent[] { new CameraComponent() { Position = camera.Position, Target = camera.Target } });
             var entity = AddEntity(cameraTemplate);
-            _isCameraCreated = entity != default;
 
             return entity;
         }
@@ -319,14 +317,14 @@ namespace Pleiad.Entities
         }
         private Entity CreateEntity(EntityTemplate template)
         {
-            var chunks = new Dictionary<Type, int>();
+            //var chunks = new Dictionary<Type, int>()
             for (int i = 0; i < template.Components.Length; i++)
             {
                 var component = template.Components[i];
                 ChunkIndex chunkIndex = GetComponentChunk(component);
                 Entity newEntity = new(_nextID);
                 _componentChunks[component][chunkIndex].AddEntity(newEntity, template.ComponentData[i]);
-                chunks[component] = chunkIndex;
+                //chunks[component] = chunkIndex;
 
                 _lookup.AddIndex(template.Components, component, chunkIndex);
 
@@ -533,7 +531,6 @@ namespace Pleiad.Entities
         private readonly Dictionary<Entity, Dictionary<Type, ChunkIndex>> _entityTypeChunks;
 
         private readonly ChunkLookup _lookup;
-        private bool _isCameraCreated = false;
 
         #region DebugFunctions
 #if DEBUG

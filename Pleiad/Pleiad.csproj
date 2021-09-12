@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -54,6 +54,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Pleiad.Worlds\Pleiad.Worlds.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Design\" />
   </ItemGroup>
 
 </Project>
