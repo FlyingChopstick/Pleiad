@@ -1,4 +1,4 @@
-﻿namespace Pleiad.Misc.Core
+﻿namespace Pleiad.Common.Model
 {
     public class ValueClass<T>
     {

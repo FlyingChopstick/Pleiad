@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Pleiad.Common.Extensions.Arrays;
 using Pleiad.Entities.Model;
-using Pleiad.Extensions.Arrays;
 using Pleiad.Misc.Comparers;
 
 namespace Pleiad.Entities

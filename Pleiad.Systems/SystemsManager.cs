@@ -50,7 +50,7 @@ namespace Pleiad.Systems
             {
                 Console.WriteLine($"Could not start: {e.Message}");
                 Console.WriteLine($"{e.StackTrace}");
-                throw e;
+                throw;
             }
         }
         public static void AttachToRenderer()
@@ -58,38 +58,6 @@ namespace Pleiad.Systems
             _il.AttachToWindow(PleiadRenderer.Window);
             RegisterInput();
         }
-
-
-        //MOVED INTO PleiadRenderer
-
-        //public static SystemsManager()
-        //{
-        //    Init();
-        //}
-
-
-        //public static void CreateWindow(PWindowOptions options, Matrix4x4 cameraMatrix, Matrix4x4 projectionMatrix)
-        //{
-        //    _window = new(options, cameraMatrix, projectionMatrix);
-        //    _window.Updated += Update;
-        //    _window.Load += WindowLoad;
-        //    _window.Render += Render;
-        //}
-        //public static void RunWindow()
-        //{
-        //    ShouldUpdate = true;
-        //    _window.Run();
-        //}
-        //public static void CloseWindow()
-        //{
-        //    if (_window is not null
-        //        && !_window.IsClosing
-        //        && ShouldUpdate)
-        //    {
-        //        ShouldUpdate = false;
-        //        _window.Close();
-        //    }
-        //}
 
 
         private static void LoadSystems()

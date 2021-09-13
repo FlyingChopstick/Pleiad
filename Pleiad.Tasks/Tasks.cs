@@ -126,7 +126,7 @@ namespace Pleiad.Tasks
             {
                 Console.WriteLine($"Could not complete Tasks! {e.Message}");
                 Console.WriteLine(e.StackTrace);
-                throw e;
+                throw;
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text;
-using Pleiad.Extensions.Files;
+using Pleiad.Common.Model.Files;
 using Silk.NET.OpenGL;
 
 namespace Pleiad.Render.Shaders

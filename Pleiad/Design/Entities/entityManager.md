@@ -5,7 +5,7 @@
 - **Component** - a structure containing some user-defined fields;
 - **System** - a structure that executes user-defined action every cycle. It can be an action on entities with a specified *component*(s) or not;
 - **Data** - *component* data of some type;
-- **Chunk** - structure that contains entity IDs and entity *data*;
+- **[Chunk](./entityChunk.md)** - structure that contains entity IDs and entity *data*;
 - **Open chunk** - a chunk with at least 1 empty slot for entity;
 - **Entity data** - *data*, associated with the specified *entity*;
 - **Entity chunk** - *chunk* that contains *entity data*;
@@ -31,10 +31,10 @@
 - **Entity component removal**
 	1. **FIND** *entity chunk* of *component* type
 	2. **REMOVE** *entity data*
-- **Entity component retrieval**
+- **Entity component data retrieval**
 	1. **FIND** *entity chunk* of *component* type
 	2. **GET** *entity data* from *entity chunk*
-- **Entity component update**
+- **Entity component data update**
 	1. **FIND** *entity chunk* of *component* type
 	2. **SET** *entity data*
 

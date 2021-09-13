@@ -5,9 +5,9 @@ using Pleiad.Entities.Model;
 
 namespace Pleiad.Entities
 {
-    internal class EntityChunk
+    internal class OldEntityChunk
     {
-        public EntityChunk(ChunkIndex chunkIndex, int chunkSize, Type chunkType)
+        public OldEntityChunk(ChunkIndex chunkIndex, int chunkSize, Type chunkType)
         {
             ChunkIndex = chunkIndex;
             Capacity = chunkSize;

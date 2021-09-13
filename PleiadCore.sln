@@ -7,9 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad", "Pleiad\Pleiad.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Entities", "Pleiad.Entities\Pleiad.Entities.csproj", "{655F2891-4730-4A05-A64D-217C6C9CCCC7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Extensions", "Pleiad.Extensions\Pleiad.Extensions.csproj", "{FB5B0090-EA5A-4D61-8DF7-1208E2F63922}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Misc", "Pleiad.Misc\Pleiad.Misc.csproj", "{F8BC0178-08DA-4223-BB20-ABFFC017BCAD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Common", "Pleiad.Misc\Pleiad.Common.csproj", "{F8BC0178-08DA-4223-BB20-ABFFC017BCAD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pleiad.Systems", "Pleiad.Systems\Pleiad.Systems.csproj", "{5BA37964-FF33-4358-8937-1C6B3D4BBCAB}"
 EndProject
@@ -35,10 +33,6 @@ Global
 		{655F2891-4730-4A05-A64D-217C6C9CCCC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{655F2891-4730-4A05-A64D-217C6C9CCCC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{655F2891-4730-4A05-A64D-217C6C9CCCC7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FB5B0090-EA5A-4D61-8DF7-1208E2F63922}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FB5B0090-EA5A-4D61-8DF7-1208E2F63922}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FB5B0090-EA5A-4D61-8DF7-1208E2F63922}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FB5B0090-EA5A-4D61-8DF7-1208E2F63922}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F8BC0178-08DA-4223-BB20-ABFFC017BCAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F8BC0178-08DA-4223-BB20-ABFFC017BCAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8BC0178-08DA-4223-BB20-ABFFC017BCAD}.Release|Any CPU.ActiveCfg = Release|Any CPU

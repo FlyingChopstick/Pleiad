@@ -7,13 +7,14 @@
     {
         public Entity(int id)
         {
-            ID = id;
+            Id = id;
         }
 
-        public int ID { get; }
+        public int Id { get; }
+        public override string ToString() => Id.ToString();
 
-        public static implicit operator int(Entity entity) => entity.ID;
-        public static Entity operator ++(Entity entity) => new(entity.ID + 1);
-        public static Entity operator --(Entity entity) => new(entity.ID - 1);
+        public static implicit operator int(Entity entity) => entity.Id;
+        public static Entity operator ++(Entity entity) => new(entity.Id + 1);
+        public static Entity operator --(Entity entity) => new(entity.Id - 1);
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Pleiad.Extensions.Files;
+using Pleiad.Common.Model.Files;
 using Pleiad.Render.Handles;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
@@ -16,7 +16,7 @@ namespace Pleiad.Render.Models
             _gl = api;
 
             // load an image
-            Image<Rgba32> img = (Image<Rgba32>)Image.Load(textureFile.FileName);
+            Image<Rgba32> img = (Image<Rgba32>)Image.Load(textureFile.Filepath);
             // flip (imagesharp uses another coordinate system
             img.Mutate(x => x.Flip(FlipMode.Vertical));
 
