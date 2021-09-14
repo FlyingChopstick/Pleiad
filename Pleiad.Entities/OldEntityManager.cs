@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Pleiad.Entities.Components;
 using Pleiad.Entities.Model;
-using Pleiad.Render.Camera;
 
 namespace Pleiad.Entities
 {
@@ -92,16 +91,16 @@ namespace Pleiad.Entities
             return CreateEntity(new EntityTemplate(components, new IPleiadComponent[components.Length]));
         }
 
-        public Entity AddCameraEntity(PCamera camera)
-        {
-            Console.WriteLine("Adding Camera Entity");
-            EntityTemplate cameraTemplate = new(
-                new Type[] { typeof(CameraComponent) },
-                new IPleiadComponent[] { new CameraComponent() { Position = camera.Position, Target = camera.Target } });
-            var entity = AddEntity(cameraTemplate);
+        //public Entity AddCameraEntity(PCamera camera)
+        //{
+        //    Console.WriteLine("Adding Camera Entity");
+        //    EntityTemplate cameraTemplate = new(
+        //        new Type[] { typeof(CameraComponent) },
+        //        new IPleiadComponent[] { new CameraComponent() { Position = camera.Position, Target = camera.Target } });
+        //    var entity = AddEntity(cameraTemplate);
 
-            return entity;
-        }
+        //    return entity;
+        //}
 
         public List<Entity> GetAllWith(List<Type> components)
         {
@@ -395,7 +394,7 @@ namespace Pleiad.Entities
         private ChunkIndex CreateComponentChunk(Type component, int chunkSize = -1)
         {
             if (chunkSize <= 0) chunkSize = DEFAULT_ENTITY_CHUNK_SIZE;
-            EntityChunk newChunk = new EntityChunk(_chunkIndex++, chunkSize, component);
+            OldEntityChunk newChunk = new OldEntityChunk(_chunkIndex++, chunkSize, component);
 
             if (!_componentChunks.ContainsKey(component))
             {
@@ -524,7 +523,7 @@ namespace Pleiad.Entities
         private Entity _nextID;
 
         private readonly Dictionary<Type, Stack<ChunkIndex>> _openTypeChunks;
-        private readonly Dictionary<Type, List<EntityChunk>> _componentChunks;
+        private readonly Dictionary<Type, List<OldEntityChunk>> _componentChunks;
         private readonly Dictionary<Type, ChunkIndex> _currentChunk;
 
         private readonly Dictionary<Type, List<Entity>> _entitiesOfType;

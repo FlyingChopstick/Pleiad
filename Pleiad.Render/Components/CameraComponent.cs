@@ -1,7 +1,8 @@
 ﻿using System.Numerics;
+using Pleiad.Entities.Components;
 using Pleiad.Render.Camera;
 
-namespace Pleiad.Entities.Components
+namespace Pleiad.Render.Components
 {
     public struct CameraComponent : IPleiadComponent
     {

@@ -15,6 +15,6 @@ namespace Pleiad.Entities.Model
         void RemoveEntity(Entity entity);
 
         TComponent GetEntityData<TComponent>(Entity entity) where TComponent : IPleiadComponent;
-        void SetEntityData(Entity entity);
+        void SetEntityData(Entity entity, IPleiadComponent entityData);
     }
 }

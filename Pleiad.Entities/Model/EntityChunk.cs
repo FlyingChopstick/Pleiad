@@ -20,8 +20,9 @@ namespace Pleiad.Entities.Model
         public const int DefaultChunkSize = 16;
 
 
-        private List<int> _entities;
-        private List<IPleiadComponent> _entitiesData;
+        private readonly List<Entity> _entities;
+        private readonly List<IPleiadComponent> _entitiesData;
+        private readonly Queue<int> _openIndices;
 
         public EntityChunk(int id, Type chunkType, int chunkSize = DefaultChunkSize)
         {
@@ -32,26 +33,38 @@ namespace Pleiad.Entities.Model
 
             _entities = new(_size);
             _entitiesData = new(_size);
+            _openIndices = new Queue<int>(_size);
+
+            for (int i = 0; i < _size; i++)
+            {
+                _entities.Add(default);
+                _entitiesData.Add(default);
+                _openIndices.Enqueue(i);
+            }
         }
 
         public void AddEntity(Entity entity, IPleiadComponent entityData)
         {
             if (!IsOpen)
             {
-                throw new InvalidOperationException($"Tried to add a new entity to a closed chunk, Chunk ID{Id}");
+                throw new InvalidOperationException(
+                    $"Tried to add a Entity ID{entity} to a closed chunk, Chunk ID{Id}");
+            }
+            if (ChunkType != entityData.GetType())
+            {
+                throw new ArgumentException(
+                    $"Tried to add data with type {entityData.GetType()} to the chunk of {ChunkType}");
             }
 
-            _entities[_count] = entity.Id;
-            _entitiesData[_count] = entityData;
+            int index = _openIndices.Dequeue();
+            _entities[index] = entity;
+            _entitiesData[index] = entityData;
 
             _count++;
         }
         public TComponent GetEntityData<TComponent>(Entity entity) where TComponent : IPleiadComponent
         {
-            if (!IsInChunk(entity.Id))
-            {
-                throw new ArgumentException($"Entity ID{entity} was not in Chunk ID{Id}");
-            }
+            CheckIsInChunk(entity);
 
             int index = _entities.IndexOf(entity);
             IPleiadComponent temp = _entitiesData[index];
@@ -59,19 +72,40 @@ namespace Pleiad.Entities.Model
             return (TComponent)Convert.ChangeType(temp, typeof(TComponent));
         }
 
+
         public void RemoveEntity(Entity entity)
         {
-            throw new System.NotImplementedException();
+            CheckIsInChunk(entity);
+
+            int index = _entities.IndexOf(entity);
+            _entities[index] = default;
+            _entitiesData[index] = default;
+
+            _openIndices.Enqueue(index);
+            _count--;
         }
 
-        public void SetEntityData(Entity entity)
+        public void SetEntityData(Entity entity, IPleiadComponent entityData)
         {
-            throw new System.NotImplementedException();
+            CheckDataType(entityData);
+
+            int index = _entities.IndexOf(entity);
+            _entitiesData[index] = entityData;
         }
 
-        private bool IsInChunk(int entityId)
+        private void CheckDataType(IPleiadComponent entityData)
         {
-            return _entities.Contains(entityId);
+            if (entityData.GetType() != ChunkType)
+            {
+                throw new ArgumentException($"Tried to add data type {entityData.GetType()} to the chunk of type {ChunkType}");
+            }
+        }
+        private void CheckIsInChunk(Entity entity)
+        {
+            if (!_entities.Contains(entity))
+            {
+                throw new ArgumentException($"Entity ID{entity} was not in Chunk ID{Id}");
+            }
         }
     }
 }

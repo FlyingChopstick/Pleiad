@@ -1,6 +1,7 @@
-﻿using Pleiad.Render.Models;
+﻿using Pleiad.Entities.Components;
+using Pleiad.Render.Models;
 
-namespace Pleiad.Entities.Components
+namespace Pleiad.Render.Components
 {
     public struct SpriteComponent : IPleiadComponent
     {
